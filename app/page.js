@@ -1,5 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import Problem from "@/components/Problem";
+import SolutionOverview from "@/components/SolutionOverview";
 import Workflow from "@/components/Workflow";
 import Features from "@/components/Features";
 import UseCases from "@/components/UseCases";
@@ -13,6 +15,8 @@ export default function Home() {
     <main className="min-h-screen bg-[#f8fafc]">
       <Navbar />
       <Hero />
+      <Problem />
+      <SolutionOverview />
       <Workflow />
       <Features />
       <UseCases />

@@ -2,11 +2,12 @@
 
 import { motion } from "framer-motion";
 import { Monitor, Smartphone, Database, Zap, AlertTriangle, FileText, Bell, Star } from "lucide-react";
+import SectionWrapper from "./SectionWrapper";
 
 export default function Features() {
     return (
-        <section id="features" className="py-24 px-4 md:px-10 bg-slate-50">
-            <div className="max-w-[1280px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+        <SectionWrapper id="features" className="bg-slate-50">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
                 {/* Backend Team Features */}
                 <div className="flex flex-col gap-10">
                     <div className="flex items-center gap-5">
@@ -105,6 +106,6 @@ export default function Features() {
                     </div>
                 </div>
             </div>
-        </section>
+        </SectionWrapper>
     );
 }

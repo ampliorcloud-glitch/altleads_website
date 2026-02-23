@@ -3,62 +3,77 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import SectionWrapper from "./SectionWrapper";
 
 const faqs = [
     {
         k: "How is AltLeads different from Salesforce?",
-        v: "Most CRMs like Salesforce are 'Database-first'—great for storing data but clunky for doing work. AltLeads is 'Workflow-first.' We align your backend lead generation directly with frontend sales activities, reducing friction and administrative overhead by up to 40%."
+        v: "Most CRMs focus on data storage (records). AltLeads focuses on the 'Action Gap' between a lead entering your system and a rep sitting at the meeting. We are built for velocity, not just record-keeping.",
     },
     {
-        k: "Can I migrate my existing data?",
-        v: "Yes. Our 'Live in 14 Days' implementation package includes a dedicated data specialist who will map, clean, and migrate your data from HubSpot, Pipedrive, Salesforce, or Excel spreadsheets during the first 3 days of onboarding."
+        k: "Can we use our own lead generation tools?",
+        v: "Yes. AltLeads provides a robust API and custom Web Portals to intake leads from any source—Facebook Ads, Google, or direct website traffic.",
     },
     {
-        k: "Is there a minimum seat requirement?",
-        v: "We require a minimum of 3 seats for our Team plan. This ensures you get the full value of our collaborative workflow features. For Enterprise plans, we typically work with teams of 20+."
+        k: "Does the mobile app work offline?",
+        v: "Absolutely. We know field sales happen in basements and areas with poor signal. Data is cached locally and synced automatically when back online.",
     },
     {
-        k: "Does it work offline?",
-        v: "Absolutely. Our mobile app (iOS and Android) caches all your territory data. You can log visits, update deal stages, and take notes without an internet connection. Data syncs automatically once you're back online."
+        k: "How long is the setup process?",
+        v: "We aim for full integration within 14 days. This includes data migration, custom workflow configuration, and team onboarding.",
     },
 ];
 
 export default function FAQ() {
-    const [openIndex, setOpenIndex] = useState(null);
+    const [openIndex, setOpenIndex] = useState(0);
 
     return (
-        <section id="faq" className="py-24 px-4 md:px-10 bg-white">
-            <div className="max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-5xl font-black text-[#0f172a] mb-12 text-center">Frequently Asked Questions</h2>
-                <div className="space-y-4">
+        <SectionWrapper id="faq" className="bg-white">
+            <div className="flex flex-col lg:flex-row gap-20">
+                <div className="lg:w-1/3">
+                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Support</span>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6">
+                        Everything you <br /> <span className="text-primary">need to know.</span>
+                    </h2>
+                    <p className="text-slate-500 text-lg font-medium mb-10">
+                        Have a different question? Our deployment specialists are ready to help.
+                    </p>
+                    <button className="px-8 py-4 border border-slate-200 rounded-2xl font-bold text-[#0f172a] hover:bg-slate-50 transition-all">
+                        Contact Support
+                    </button>
+                </div>
+
+                <div className="lg:w-2/3 flex flex-col gap-4">
                     {faqs.map((faq, index) => (
-                        <div
-                            key={index}
-                            className={`rounded-2xl border transition-all duration-300 ${openIndex === index
-                                    ? "border-primary bg-primary-light/30 shadow-lg shadow-primary/5"
-                                    : "border-slate-100 bg-[#f8fafc] hover:border-slate-200"
-                                }`}
+                        <motion.div
+                            key={faq.k}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className={`border rounded-3xl overflow-hidden transition-all duration-300 ${openIndex === index ? "border-primary bg-primary-light/10 ring-1 ring-primary/20" : "border-slate-100 bg-[#f8fafc] hover:border-slate-300"}`}
                         >
                             <button
-                                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                                className="flex w-full items-center justify-between p-6 text-left"
+                                onClick={() => setOpenIndex(index === openIndex ? -1 : index)}
+                                className="w-full p-6 md:p-8 flex items-center justify-between text-left group"
                             >
-                                <h3 className="font-bold text-lg text-[#0f172a]">{faq.k}</h3>
-                                <ChevronDown className={`size-5 text-primary transition-transform duration-300 ${openIndex === index ? "rotate-180" : ""}`} />
+                                <span className={`text-lg font-bold transition-colors ${openIndex === index ? "text-primary" : "text-[#0f172a]"}`}>
+                                    {faq.k}
+                                </span>
+                                <ChevronDown className={`size-5 transition-transform duration-300 ${openIndex === index ? "rotate-180 text-primary" : "text-slate-400"}`} />
                             </button>
-                            {openIndex === index && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    className="px-6 pb-6 text-slate-600 leading-relaxed font-medium"
-                                >
+                            <motion.div
+                                initial={false}
+                                animate={{ height: openIndex === index ? "auto" : 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="p-6 md:p-8 pt-0 text-slate-500 font-medium leading-relaxed">
                                     {faq.v}
-                                </motion.div>
-                            )}
-                        </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
-        </section>
+        </SectionWrapper>
     );
 }
