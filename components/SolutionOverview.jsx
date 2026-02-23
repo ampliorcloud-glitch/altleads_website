@@ -69,9 +69,12 @@ export default function SolutionOverview() {
                         AltLeads bridges the critical gap between marketing intent and sales results, ensuring every qualified lead gets the attention it deserves.
                     </p>
                 </div>
-                <button className="px-8 py-4 bg-[#0f172a] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 whitespace-nowrap">
+                <a
+                    href="#features"
+                    className="px-8 py-4 bg-[#0f172a] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 whitespace-nowrap text-center"
+                >
                     See the Difference
-                </button>
+                </a>
             </div>
         </SectionWrapper>
     );

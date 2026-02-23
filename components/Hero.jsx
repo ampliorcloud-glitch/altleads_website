@@ -58,16 +58,22 @@ export default function Hero() {
                         transition={{ duration: 0.6, delay: 0.3 }}
                         className="flex flex-col sm:flex-row items-center gap-5 mb-20 w-full sm:w-auto"
                     >
-                        <button className="w-full sm:w-auto px-8 py-4 bg-[#0f172a] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 flex items-center justify-center gap-2 group">
+                        <a
+                            href="#cta"
+                            className="w-full sm:w-auto px-8 py-4 bg-[#0f172a] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 flex items-center justify-center gap-2 group"
+                        >
                             Book a Free Demo
                             <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                        <button className="w-full sm:w-auto px-8 py-4 bg-white text-[#0f172a] font-bold rounded-2xl border border-slate-200 hover:border-primary/50 transition-all flex items-center justify-center gap-2 group">
+                        </a>
+                        <a
+                            href="#solution"
+                            className="w-full sm:w-auto px-8 py-4 bg-white text-[#0f172a] font-bold rounded-2xl border border-slate-200 hover:border-primary/50 transition-all flex items-center justify-center gap-2 group"
+                        >
                             <div className="size-6 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-primary-light transition-colors">
                                 <Play className="size-3 fill-primary text-primary" />
                             </div>
                             Watch Product Tour
-                        </button>
+                        </a>
                     </motion.div>
 
                     {/* Device Montage */}

@@ -38,9 +38,12 @@ export default function FAQ() {
                     <p className="text-slate-500 text-lg font-medium mb-10">
                         Have a different question? Our deployment specialists are ready to help.
                     </p>
-                    <button className="px-8 py-4 border border-slate-200 rounded-2xl font-bold text-[#0f172a] hover:bg-slate-50 transition-all">
+                    <a
+                        href="mailto:support@altleads.com"
+                        className="px-8 py-4 border border-slate-200 rounded-2xl font-bold text-[#0f172a] hover:bg-slate-50 transition-all text-center inline-block"
+                    >
                         Contact Support
-                    </button>
+                    </a>
                 </div>
 
                 <div className="lg:w-2/3 flex flex-col gap-4">

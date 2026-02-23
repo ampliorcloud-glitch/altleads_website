@@ -28,24 +28,30 @@ export default function Navbar() {
         >
             <div className="max-w-[1280px] mx-auto flex items-center justify-between">
                 {/* Logo */}
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center size-9 rounded bg-[#0099d6] p-1.5 shadow-lg shadow-primary/20">
+                <a href="#top" className="flex items-center gap-3 group">
+                    <div className="flex items-center justify-center size-9 rounded bg-[#0099d6] p-1.5 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                         <Image src="/logo-white.png" alt="AltLeads Logo" width={32} height={32} className="object-contain" />
                     </div>
                     <h1 className="text-xl font-bold tracking-tight text-[#0f172a]">
                         <span className="text-[#0099d6]">Alt</span>Leads
                     </h1>
-                </div>
+                </a>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex flex-1 justify-center gap-8">
-                    {["Solution", "Features", "Use Cases", "Pricing"].map((item) => (
+                    {[
+                        { name: "Workflow", id: "workflow" },
+                        { name: "Solutions", id: "solution" },
+                        { name: "Features", id: "features" },
+                        { name: "Use Cases", id: "usecases" },
+                        { name: "FAQ", id: "faq" }
+                    ].map((item) => (
                         <a
-                            key={item}
-                            href={`#${item.toLowerCase().replace(" ", "-")}`}
+                            key={item.name}
+                            href={`#${item.id}`}
                             className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
                         >
-                            {item}
+                            {item.name}
                         </a>
                     ))}
                 </nav>
@@ -55,9 +61,12 @@ export default function Navbar() {
                     <a href="#" className="hidden sm:block text-sm font-bold text-slate-600 hover:text-primary transition-colors">
                         Login
                     </a>
-                    <button className="hidden sm:flex items-center justify-center rounded-lg bg-[#0f172a] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 shadow-md">
+                    <a
+                        href="#cta"
+                        className="hidden sm:flex items-center justify-center rounded-lg bg-[#0f172a] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 shadow-md"
+                    >
                         Book a Demo
-                    </button>
+                    </a>
 
                     {/* Mobile Toggle */}
                     <button
@@ -76,19 +85,29 @@ export default function Navbar() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="absolute top-full left-0 w-full bg-white border-b border-slate-200 p-6 flex flex-col gap-4 md:hidden shadow-xl"
                 >
-                    {["Solution", "Features", "Use Cases", "Pricing"].map((item) => (
+                    {[
+                        { name: "Workflow", id: "workflow" },
+                        { name: "Solutions", id: "solution" },
+                        { name: "Features", id: "features" },
+                        { name: "Use Cases", id: "usecases" },
+                        { name: "FAQ", id: "faq" }
+                    ].map((item) => (
                         <a
-                            key={item}
-                            href={`#${item.toLowerCase().replace(" ", "-")}`}
+                            key={item.name}
+                            href={`#${item.id}`}
                             className="text-lg font-bold text-slate-900 border-b border-slate-50 pb-2"
                             onClick={() => setIsOpen(false)}
                         >
-                            {item}
+                            {item.name}
                         </a>
                     ))}
-                    <button className="w-full py-4 bg-primary text-white font-bold rounded-xl mt-4">
+                    <a
+                        href="#cta"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full py-4 bg-primary text-white font-bold text-center rounded-xl mt-4"
+                    >
                         Book a Demo
-                    </button>
+                    </a>
                 </motion.div>
             )}
         </motion.header>

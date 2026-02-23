@@ -23,13 +23,19 @@ export default function FinalCTA() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <button className="w-full sm:w-auto px-10 py-5 bg-white text-[#0f172a] font-black rounded-2xl hover:bg-slate-100 transition-all shadow-2xl flex items-center justify-center gap-2 group">
+                    <a
+                        href="#top"
+                        className="w-full sm:w-auto px-10 py-5 bg-white text-[#0f172a] font-black rounded-2xl hover:bg-slate-100 transition-all shadow-2xl flex items-center justify-center gap-2 group text-center"
+                    >
                         Get Started Now
                         <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                    <button className="w-full sm:w-auto px-10 py-5 bg-transparent text-white border-2 border-slate-700 font-black rounded-2xl hover:bg-white/5 transition-all">
+                    </a>
+                    <a
+                        href="#top"
+                        className="w-full sm:w-auto px-10 py-5 bg-transparent text-white border-2 border-slate-700 font-black rounded-2xl hover:bg-white/5 transition-all text-center"
+                    >
                         Schedule a Demo
-                    </button>
+                    </a>
                 </div>
 
                 <p className="mt-12 text-slate-500 text-sm font-bold tracking-wide">

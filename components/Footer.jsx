@@ -34,10 +34,10 @@ export default function Footer() {
                     <div>
                         <h4 className="font-black text-[#0f172a] mb-6">Product</h4>
                         <ul className="space-y-4 text-sm font-bold text-slate-500">
-                            <li><a href="#" className="hover:text-primary transition-colors">Features</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Workflow</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Enterprise</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Changelog</a></li>
+                            <li><a href="#features" className="hover:text-primary transition-colors">Features</a></li>
+                            <li><a href="#workflow" className="hover:text-primary transition-colors">Workflow</a></li>
+                            <li><a href="#solution" className="hover:text-primary transition-colors">Solutions</a></li>
+                            <li><a href="#faq" className="hover:text-primary transition-colors">FAQ</a></li>
                         </ul>
                     </div>
 
@@ -54,10 +54,10 @@ export default function Footer() {
                     <div>
                         <h4 className="font-black text-[#0f172a] mb-6">Company</h4>
                         <ul className="space-y-4 text-sm font-bold text-slate-500">
-                            <li><a href="#" className="hover:text-primary transition-colors">About</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Partners</a></li>
+                            <li><a href="#top" className="hover:text-primary transition-colors">About</a></li>
+                            <li><a href="#cta" className="hover:text-primary transition-colors">Careers</a></li>
+                            <li><a href="mailto:support@altleads.com" className="hover:text-primary transition-colors">Contact</a></li>
+                            <li><a href="#top" className="hover:text-primary transition-colors">Partners</a></li>
                         </ul>
                     </div>
                 </div>
