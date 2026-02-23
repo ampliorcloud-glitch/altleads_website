@@ -44,11 +44,12 @@ export default function Navbar() {
                         { name: "Solutions", id: "solution" },
                         { name: "Features", id: "features" },
                         { name: "Use Cases", id: "usecases" },
-                        { name: "FAQ", id: "faq" }
+                        { name: "FAQ", id: "faq" },
+                        { name: "Contact", id: "contact", isExternal: true, path: "/contact" }
                     ].map((item) => (
                         <a
                             key={item.name}
-                            href={`#${item.id}`}
+                            href={item.isExternal ? item.path : `#${item.id}`}
                             className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
                         >
                             {item.name}
@@ -62,7 +63,7 @@ export default function Navbar() {
                         Login
                     </a>
                     <a
-                        href="#cta"
+                        href="/contact"
                         className="hidden sm:flex items-center justify-center rounded-lg bg-[#0f172a] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 shadow-md"
                     >
                         Book a Demo
@@ -90,11 +91,12 @@ export default function Navbar() {
                         { name: "Solutions", id: "solution" },
                         { name: "Features", id: "features" },
                         { name: "Use Cases", id: "usecases" },
-                        { name: "FAQ", id: "faq" }
+                        { name: "FAQ", id: "faq" },
+                        { name: "Contact", id: "contact", isExternal: true, path: "/contact" }
                     ].map((item) => (
                         <a
                             key={item.name}
-                            href={`#${item.id}`}
+                            href={item.isExternal ? item.path : `#${item.id}`}
                             className="text-lg font-bold text-slate-900 border-b border-slate-50 pb-2"
                             onClick={() => setIsOpen(false)}
                         >
@@ -102,7 +104,7 @@ export default function Navbar() {
                         </a>
                     ))}
                     <a
-                        href="#cta"
+                        href="/contact"
                         onClick={() => setIsOpen(false)}
                         className="w-full py-4 bg-primary text-white font-bold text-center rounded-xl mt-4"
                     >

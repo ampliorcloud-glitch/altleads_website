@@ -59,7 +59,7 @@ export default function Hero() {
                         className="flex flex-col sm:flex-row items-center gap-5 mb-20 w-full sm:w-auto"
                     >
                         <a
-                            href="#cta"
+                            href="/contact"
                             className="w-full sm:w-auto px-8 py-4 bg-[#0f172a] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 flex items-center justify-center gap-2 group"
                         >
                             Book a Free Demo

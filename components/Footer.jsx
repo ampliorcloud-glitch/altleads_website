@@ -15,9 +15,12 @@ export default function Footer() {
                             </div>
                             <span className="text-xl font-black text-[#0f172a]">AltLeads</span>
                         </div>
-                        <p className="text-slate-500 max-w-xs mb-8 font-medium leading-relaxed">
-                            The first CRM built for operations-heavy sales teams. Bridge the gap between lead gen and closed revenue.
+                        <p className="max-w-xs text-slate-500 font-medium leading-relaxed">
+                            Precision-engineered B2B lead generation. We automate the complexity of sales execution so your team can focus on closing.
                         </p>
+                        <div className="pt-4 text-xs font-bold text-slate-400">
+                            © 2026 AltLeads. All rights reserved.
+                        </div>
                         <div className="flex gap-4">
                             <a href="#" className="p-2 border border-slate-100 rounded-lg text-slate-400 hover:text-primary hover:border-primary/20 transition-all">
                                 <Twitter className="size-5" />
@@ -56,7 +59,13 @@ export default function Footer() {
                         <ul className="space-y-4 text-sm font-bold text-slate-500">
                             <li><a href="#top" className="hover:text-primary transition-colors">About</a></li>
                             <li><a href="#cta" className="hover:text-primary transition-colors">Careers</a></li>
-                            <li><a href="mailto:support@altleads.com" className="hover:text-primary transition-colors">Contact</a></li>
+                            <li><a href="/contact" className="hover:text-primary transition-colors">Contact</a></li>
+                            <li className="pt-4">
+                                <span className="block text-[#0f172a] mb-1">Headquarters:</span>
+                                Global Tech Park, Tower D,<br />
+                                Bellandur, Bengaluru,<br />
+                                India 560103
+                            </li>
                             <li><a href="#top" className="hover:text-primary transition-colors">Partners</a></li>
                         </ul>
                     </div>
