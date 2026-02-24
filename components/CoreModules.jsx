@@ -57,10 +57,10 @@ const modules = [
 export default function CoreModules() {
     return (
         <SectionWrapper id="modules" className="bg-white">
-            <div className="text-center mb-20 max-w-3xl mx-auto">
-                <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Platform</span>
-                <h2 className="text-4xl md:text-6xl font-black tracking-tight text-[#0f172a] mb-6">
-                    What AltLeads gives <br /><span className="text-primary italic">your team.</span>
+            <div className="text-center mb-24 max-w-4xl mx-auto">
+                <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The Infrastructure</span>
+                <h2 className="text-[40px] md:text-[64px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
+                    One platform. <br /><span className="text-primary italic">Absolute mastery.</span>
                 </h2>
             </div>
 
@@ -73,21 +73,23 @@ export default function CoreModules() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.08 }}
-                        className={`relative p-8 rounded-[40px] border ${mod.border} bg-white hover:shadow-xl hover:-translate-y-1 transition-all group ${mod.span ? "md:col-span-2 lg:col-span-1" : ""}`}
+                        className={`relative p-10 rounded-[48px] border border-slate-100 bg-white hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-2 transition-all group ${mod.span ? "md:col-span-2 lg:col-span-1" : ""}`}
                     >
                         {mod.badge && (
-                            <span className="absolute top-6 right-6 px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 rounded-full">
+                            <span className="absolute top-8 right-8 px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary rounded-full">
                                 {mod.badge}
                             </span>
                         )}
-                        <div className={`size-14 rounded-2xl ${mod.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                            <mod.icon className={`size-7 ${mod.color}`} />
+                        <div className={`size-16 rounded-3xl ${mod.bg} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform`}>
+                            <mod.icon className={`size-8 ${mod.color}`} />
                         </div>
-                        <h3 className="text-xl font-bold text-[#0f172a] mb-3 group-hover:text-primary transition-colors">{mod.title}</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed font-medium mb-6">{mod.desc}</p>
-                        <div className="flex items-center gap-2 text-xs font-black text-primary uppercase tracking-widest">
-                            Learn More
-                            <ArrowRight className="size-3 group-hover:translate-x-1 transition-transform" />
+                        <h3 className="text-2xl font-black text-[#0f172a] mb-4 group-hover:text-primary transition-colors">{mod.title}</h3>
+                        <p className="text-slate-500 text-base leading-relaxed font-medium mb-10">{mod.desc}</p>
+                        <div className="flex items-center gap-3 text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+                            Open Solution
+                            <div className="size-6 rounded-full border border-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all">
+                                <ArrowRight className="size-3 group-hover:translate-x-0.5 group-hover:text-white transition-all" />
+                            </div>
                         </div>
                     </motion.a>
                 ))}

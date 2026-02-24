@@ -18,9 +18,10 @@ const outcomes = [
 
 export default function Hero() {
     return (
-        <section className="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 overflow-hidden bg-white">
-            {/* Cinematic Background Mesh */}
+        <section className="relative min-h-[95vh] flex items-center justify-center pt-32 pb-20 overflow-hidden bg-white">
+            {/* Cinematic Background Mesh & Grid */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                <div className="absolute inset-0 bg-grid opacity-[0.4]" />
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-100/40 rounded-full blur-[140px]" />
                 <div className="absolute top-[20%] right-[30%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
@@ -32,13 +33,13 @@ export default function Hero() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-light border border-primary/10 mb-8 backdrop-blur-sm"
+                        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-100 mb-10 shadow-sm"
                     >
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                         </span>
-                        <span className="text-xs font-bold text-primary tracking-wide uppercase">Multi-Channel Outbound Engine</span>
+                        <span className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase">The Outbound OS</span>
                     </motion.div>
 
                     {/* Main Headline */}
@@ -46,7 +47,7 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-[36px] leading-[1.1] md:text-[72px] font-black tracking-tighter text-[#0f172a] mb-8"
+                        className="text-[42px] leading-[0.9] md:text-[88px] font-black headline-premium text-[#0f172a] mb-10"
                     >
                         Outbound execution, <br />
                         <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent italic">intelligence</span>, and CRM <br />
@@ -58,38 +59,23 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-lg md:text-xl text-slate-500 max-w-3xl mb-10 font-medium leading-relaxed"
+                        className="text-lg md:text-xl text-slate-500 max-w-2xl mb-12 font-medium leading-relaxed"
                     >
-                        AltLeads helps SDR/BDR and sales teams run multi-channel outreach — Email, LinkedIn, WhatsApp, Calls — in one workflow. Better follow-up discipline, cleaner visibility, and practical intelligence teams actually use.
+                        Multi-channel outreach — Email, LinkedIn, WhatsApp, Calls — in one unified system. Built for high-performance teams that care about conversion, not just activity.
                     </motion.p>
-
-                    {/* Channel Badges */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="flex flex-wrap items-center justify-center gap-3 mb-10"
-                    >
-                        {channels.map((ch) => (
-                            <div key={ch.label} className={`flex items-center gap-2 px-4 py-2 ${ch.bg} border border-slate-100 rounded-full group hover:scale-105 transition-transform`}>
-                                <ch.icon className={`size-4 ${ch.color}`} />
-                                <span className="text-xs font-bold text-slate-600">{ch.label}</span>
-                            </div>
-                        ))}
-                    </motion.div>
 
                     {/* CTAs */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
-                        className="flex flex-col sm:flex-row items-center gap-5 mb-16 w-full sm:w-auto"
+                        className="flex flex-col sm:flex-row items-center gap-5 mb-20 w-full sm:w-auto"
                     >
                         <a
                             href="/contact"
-                            className="w-full sm:w-auto px-8 py-4 bg-[#0f172a] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 flex items-center justify-center gap-2 group"
+                            className="w-full sm:w-auto px-10 py-5 bg-[#0f172a] text-white font-black rounded-2xl hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 flex items-center justify-center gap-3 group glow-on-hover"
                         >
-                            Book a Demo
+                            Get Exclusive Access
                             <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                         </a>
                         <a

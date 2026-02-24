@@ -9,12 +9,12 @@ export default function SolutionOverview() {
         <SectionWrapper id="intelligence" className="bg-[#f8fafc]">
             <div className="flex flex-col lg:flex-row gap-16 items-center">
                 <div className="lg:w-1/2">
-                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">What Makes Us Different</span>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                        Usable intelligence — <br /><span className="text-primary italic">built from real outbound.</span>
+                    <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The Differentiator</span>
+                    <h2 className="text-[40px] md:text-[56px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
+                        Usable intelligence — <br /><span className="text-primary italic text-[0.9em]">built from real outbound.</span>
                     </h2>
-                    <p className="text-slate-500 text-lg leading-relaxed font-medium mb-8">
-                        AltLeads intelligence doesn't try to "replace sales." It helps teams execute better by suggesting practical next steps, pitch angles, and message guidance inside the workflow — where reps already work.
+                    <p className="text-slate-500 text-lg md:text-xl leading-relaxed font-medium mb-10">
+                        AltLeads intelligence doesn't try to "replace sales." It simplifies execution by suggesting practical next steps, pitch angles, and message guidance directly inside the workflow.
                     </p>
 
                     <div className="space-y-4">
