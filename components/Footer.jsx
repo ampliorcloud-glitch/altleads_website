@@ -59,7 +59,7 @@ export default function Footer() {
                 <div className="pt-8 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-slate-400 font-medium">© 2026 AltLeads Inc. All rights reserved.</p>
                     <div className="flex gap-8 text-sm font-bold text-slate-400">
-                        <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+                        <a href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</a>
                         <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
                     </div>
                 </div>
