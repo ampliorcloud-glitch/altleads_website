@@ -30,28 +30,18 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h4 className="font-black text-[#0f172a] mb-6">Resources</h4>
-                        <ul className="space-y-4 text-sm font-bold text-slate-500">
-                            <li><a href="#" className="hover:text-primary transition-colors">Documentation</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">API Reference</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Community</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
-                        </ul>
-                    </div>
-
-                    <div>
                         <h4 className="font-black text-[#0f172a] mb-6">Company</h4>
                         <ul className="space-y-4 text-sm font-bold text-slate-500">
                             <li><a href="#top" className="hover:text-primary transition-colors">About</a></li>
-                            <li><a href="#cta" className="hover:text-primary transition-colors">Careers</a></li>
+                            <li><a href="/careers" className="hover:text-primary transition-colors">Careers</a></li>
                             <li><a href="/contact" className="hover:text-primary transition-colors">Contact</a></li>
+                            <li><a href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</a></li>
                             <li className="pt-4">
                                 <span className="block text-[#0f172a] mb-1">Headquarters:</span>
                                 Global Tech Park, Tower D,<br />
                                 Bellandur, Bengaluru,<br />
                                 India 560103
                             </li>
-                            <li><a href="#top" className="hover:text-primary transition-colors">Partners</a></li>
                         </ul>
                     </div>
                 </div>
