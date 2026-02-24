@@ -14,12 +14,12 @@ export default function FinalCTA() {
             </div>
 
             <div className="relative z-10 max-w-4xl mx-auto">
-                <span className="text-blue-400 font-bold tracking-widest text-xs uppercase mb-8 block">Ready to Scale?</span>
+                <span className="text-blue-400 font-bold tracking-widest text-xs uppercase mb-8 block">Ready to Execute?</span>
                 <h2 className="text-4xl md:text-7xl font-black tracking-tight text-white mb-8 leading-[1.05]">
-                    Stop losing leads to <br /> <span className="text-slate-500">invisible friction.</span>
+                    Turn scattered outreach <br /> into a <span className="text-slate-500">predictable pipeline.</span>
                 </h2>
                 <p className="text-slate-400 text-xl font-medium mb-12 max-w-2xl mx-auto">
-                    Join the elite sales operations using AltLeads to turn every lead into a high-value meeting.
+                    Bring CRM workflow, multi-channel execution, and usable intelligence into one system your team actually uses.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -27,19 +27,19 @@ export default function FinalCTA() {
                         href="/contact"
                         className="w-full sm:w-auto px-10 py-5 bg-white text-[#0f172a] font-black rounded-2xl hover:bg-slate-100 transition-all shadow-2xl flex items-center justify-center gap-2 group text-center"
                     >
-                        Get Started Now
+                        Book a Demo
                         <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                     </a>
                     <a
                         href="/contact"
                         className="w-full sm:w-auto px-10 py-5 bg-transparent text-white border-2 border-slate-700 font-black rounded-2xl hover:bg-white/5 transition-all text-center"
                     >
-                        Schedule a Demo
+                        Get Pilot Pricing
                     </a>
                 </div>
 
                 <p className="mt-12 text-slate-500 text-sm font-bold tracking-wide">
-                    POWERING AGENTS NATIONWIDE • NO LONG-TERM CONTRACTS • 14-DAY SETUP
+                    FAST ONBOARDING • MULTI-CHANNEL EXECUTION • PRIVACY-SAFE INTELLIGENCE
                 </p>
             </div>
         </SectionWrapper>

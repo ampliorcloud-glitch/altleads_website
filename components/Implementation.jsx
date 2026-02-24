@@ -1,72 +1,74 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Database, Share2, School, Rocket } from "lucide-react";
+import { ArrowRight, Upload, Link2, Zap } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
 
-const steps = [
-    {
-        day: "Day 1-3",
-        title: "Data Migration",
-        desc: "Secure transfer of all your existing client data and leads into the AltLeads engine.",
-        icon: Database
-    },
-    {
-        day: "Day 4-7",
-        title: "Workflow Mapping",
-        desc: "We configure your custom intake forms and automated qualification scripts.",
-        icon: Share2
-    },
-    {
-        day: "Day 8-10",
-        title: "Team Training",
-        desc: "Live walkthroughs for backend coordinators and field agents on the mobile app.",
-        icon: School
-    },
-    {
-        day: "Day 14",
-        title: "Full Launch",
-        desc: "Go live with a unified operation. Start turning leads into meetings at scale.",
-        icon: Rocket
-    },
+const faqTeasers = [
+    "Is AltLeads a CRM replacement or execution layer?",
+    "How is AltLeads different from HubSpot/Zoho/Salesloft?",
+    "What data is stored and how is privacy handled?",
+    "What does onboarding look like?",
+];
+
+const migrationSteps = [
+    { icon: Upload, title: "Import", desc: "CSV or existing CRM" },
+    { icon: Link2, title: "Connect", desc: "Existing workflows" },
+    { icon: Zap, title: "Go Live", desc: "In days, not months" },
 ];
 
 export default function Implementation() {
     return (
-        <SectionWrapper id="implementation" className="bg-[#f8fafc]">
-            <div className="text-center mb-20 max-w-3xl mx-auto">
-                <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Deployment</span>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6">
-                    Up and running in <br /> <span className="text-primary italic">under 14 days.</span>
-                </h2>
-                <p className="text-slate-500 text-lg font-medium">
-                    Our rapid deployment model ensures you start seeing ROI within weeks, not months. We handle the heavy lifting of the transition.
-                </p>
-            </div>
+        <SectionWrapper id="integrations" className="bg-[#f8fafc]">
+            <div className="flex flex-col lg:flex-row gap-20 items-start">
+                <div className="lg:w-1/2">
+                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Switch Easily</span>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
+                        Reduce <span className="text-primary italic">switching fear.</span>
+                    </h2>
+                    <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">
+                        AltLeads is designed to reduce switching fear: import from CSV, connect to existing CRM workflows, and go live in days — not months.
+                    </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {steps.map((step, index) => (
-                    <motion.div
-                        key={step.title}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="p-8 bg-white border border-slate-100 rounded-[40px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all group"
-                    >
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="size-12 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-primary-light transition-colors">
-                                <step.icon className="size-6 text-slate-500 group-hover:text-primary transition-colors" />
-                            </div>
-                            <span className="text-xs font-black text-primary bg-primary-light px-3 py-1 rounded-full uppercase tracking-tighter">
-                                {step.day}
-                            </span>
-                        </div>
-                        <h3 className="text-xl font-bold text-[#0f172a] mb-3">{step.title}</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed">
-                            {step.desc}
-                        </p>
-                    </motion.div>
-                ))}
+                    <div className="grid grid-cols-3 gap-4">
+                        {migrationSteps.map((step, index) => (
+                            <motion.div
+                                key={step.title}
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1 }}
+                                className="p-6 bg-white border border-slate-100 rounded-3xl text-center group hover:border-primary/20 transition-all"
+                            >
+                                <div className="size-12 rounded-2xl bg-primary-light flex items-center justify-center mx-auto mb-4 group-hover:bg-primary transition-colors">
+                                    <step.icon className="size-6 text-primary group-hover:text-white transition-colors" />
+                                </div>
+                                <h4 className="font-bold text-[#0f172a] mb-1">{step.title}</h4>
+                                <p className="text-xs text-slate-500 font-medium">{step.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="lg:w-1/2">
+                    <h3 className="text-2xl font-black text-[#0f172a] mb-8">Frequently Asked</h3>
+                    <div className="space-y-4">
+                        {faqTeasers.map((faq, index) => (
+                            <motion.a
+                                key={faq}
+                                href="#faq"
+                                initial={{ opacity: 0, x: 10 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.08 }}
+                                className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-2xl hover:border-primary/20 hover:shadow-md transition-all group"
+                            >
+                                <span className="font-bold text-[#0f172a] group-hover:text-primary transition-colors text-sm">{faq}</span>
+                                <ArrowRight className="size-4 text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 ml-4" />
+                            </motion.a>
+                        ))}
+                    </div>
+                </div>
             </div>
         </SectionWrapper>
     );

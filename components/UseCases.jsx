@@ -1,69 +1,66 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Briefcase, Map, CheckCircle, ArrowRight } from "lucide-react";
+import { Users, Rocket, Eye, ArrowRight } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
 
 const useCases = [
     {
-        title: "B2B Agency Ops",
-        subtitle: "Agency",
-        icon: Briefcase,
-        desc: "Scale your lead generation without losing control over sales quality. Centralize client management and white-label reporting.",
+        title: "Outbound SDR Teams",
+        subtitle: "20–100 Seats",
+        icon: Users,
+        desc: "Improve follow-up discipline and meeting conversion with structured multi-channel cadences and automatic activity tracking.",
+        color: "bg-primary-light",
+        iconColor: "text-primary",
     },
     {
-        title: "Field Sales",
-        subtitle: "Enterprise",
-        icon: Map,
-        desc: "Coordinate massive frontline teams with pinpoint geographic accuracy. Optimize mobile-first routing and territory assignment.",
+        title: "Founder-Led Sales",
+        subtitle: "Speed Without Chaos",
+        icon: Rocket,
+        desc: "Move fast without losing track. Run outbound, track outcomes, and iterate on messaging — all without building a complex ops stack.",
+        color: "bg-violet-50",
+        iconColor: "text-violet-600",
+    },
+    {
+        title: "Sales Managers",
+        subtitle: "Visibility & Coaching",
+        icon: Eye,
+        desc: "Get visibility and coaching signals, not just activity noise. See what's actually happening in your pipeline and where reps need help.",
+        color: "bg-emerald-50",
+        iconColor: "text-emerald-600",
     },
 ];
 
 export default function UseCases() {
     return (
         <SectionWrapper id="usecases" className="bg-white">
-            <div className="flex flex-col lg:flex-row gap-16 items-center">
-                <div className="lg:w-1/2">
-                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Industry Expertise</span>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                        Powering <span className="text-primary italic">High-Stakes Sectors.</span>
-                    </h2>
-                    <p className="text-slate-500 text-lg leading-relaxed font-medium mb-10">
-                        From Facility Management to Global Food Services, we design custom prospecting flows for the complex industries that drive the economy.
-                    </p>
+            <div className="text-center mb-20 max-w-3xl mx-auto">
+                <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Use Cases</span>
+                <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
+                    Built for teams that <span className="text-primary italic">execute.</span>
+                </h2>
+            </div>
 
-                    <div className="space-y-4">
-                        {["Sales-Marketing Alignment", "Real-time Field Reporting", "Automated Lead Qualification"].map(item => (
-                            <div key={item} className="flex items-center gap-3">
-                                <CheckCircle className="size-5 text-emerald-500" />
-                                <span className="text-[#0f172a] font-bold">{item}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                    {useCases.map((useCase, index) => (
-                        <motion.div
-                            key={useCase.title}
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="p-8 bg-slate-50 border border-slate-100 rounded-[40px] hover:border-primary/20 transition-all group"
-                        >
-                            <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 block">{useCase.subtitle}</span>
-                            <useCase.icon className="size-10 text-[#0f172a] mb-6 group-hover:scale-110 transition-transform origin-left" />
-                            <h3 className="text-xl font-bold text-[#0f172a] mb-3">{useCase.title}</h3>
-                            <p className="text-slate-500 text-sm leading-relaxed mb-6 italic">
-                                "{useCase.desc}"
-                            </p>
-                            <button className="text-[#0f172a] font-bold text-xs flex items-center gap-2 group/btn border-b border-transparent hover:border-[#0f172a] transition-all w-fit">
-                                Read Case Study
-                                <ArrowRight className="size-3 group-hover/btn:translate-x-1 transition-transform" />
-                            </button>
-                        </motion.div>
-                    ))}
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {useCases.map((useCase, index) => (
+                    <motion.div
+                        key={useCase.title}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="p-10 bg-[#f8fafc] border border-slate-100 rounded-[40px] hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all group"
+                    >
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-6 block">{useCase.subtitle}</span>
+                        <div className={`size-14 rounded-2xl ${useCase.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                            <useCase.icon className={`size-7 ${useCase.iconColor}`} />
+                        </div>
+                        <h3 className="text-2xl font-bold text-[#0f172a] mb-4 group-hover:text-primary transition-colors">{useCase.title}</h3>
+                        <p className="text-slate-500 leading-relaxed font-medium">
+                            {useCase.desc}
+                        </p>
+                    </motion.div>
+                ))}
             </div>
         </SectionWrapper>
     );

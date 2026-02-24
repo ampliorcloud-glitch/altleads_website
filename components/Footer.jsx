@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Twitter, Linkedin, Facebook } from "lucide-react";
 
 export default function Footer() {
     return (
@@ -16,31 +15,20 @@ export default function Footer() {
                             <span className="text-xl font-black text-[#0f172a]">AltLeads</span>
                         </div>
                         <p className="max-w-xs text-slate-500 font-medium leading-relaxed">
-                            Precision-engineered B2B lead generation. We automate the complexity of sales execution so your team can focus on closing.
+                            Multi-channel outbound execution, intelligence, and CRM orchestration — built for B2B teams that care about outcomes.
                         </p>
                         <div className="pt-4 text-xs font-bold text-slate-400">
                             © 2026 AltLeads. All rights reserved.
                         </div>
-                        <div className="flex gap-4">
-                            <a href="#" className="p-2 border border-slate-100 rounded-lg text-slate-400 hover:text-primary hover:border-primary/20 transition-all">
-                                <Twitter className="size-5" />
-                            </a>
-                            <a href="#" className="p-2 border border-slate-100 rounded-lg text-slate-400 hover:text-primary hover:border-primary/20 transition-all">
-                                <Linkedin className="size-5" />
-                            </a>
-                            <a href="#" className="p-2 border border-slate-100 rounded-lg text-slate-400 hover:text-primary hover:border-primary/20 transition-all">
-                                <Facebook className="size-5" />
-                            </a>
-                        </div>
                     </div>
 
                     <div>
-                        <h4 className="font-black text-[#0f172a] mb-6">Product</h4>
+                        <h4 className="font-black text-[#0f172a] mb-6">Solutions</h4>
                         <ul className="space-y-4 text-sm font-bold text-slate-500">
-                            <li><a href="#features" className="hover:text-primary transition-colors">Features</a></li>
-                            <li><a href="#workflow" className="hover:text-primary transition-colors">Workflow</a></li>
-                            <li><a href="#solution" className="hover:text-primary transition-colors">Solutions</a></li>
-                            <li><a href="#faq" className="hover:text-primary transition-colors">FAQ</a></li>
+                            <li><a href="/solutions/crm" className="hover:text-primary transition-colors">CRM Solution</a></li>
+                            <li><a href="/solutions/data" className="hover:text-primary transition-colors">Data & Intelligence</a></li>
+                            <li><a href="/solutions/whatsapp" className="hover:text-primary transition-colors">WhatsApp SDR</a></li>
+                            <li><a href="/#faq" className="hover:text-primary transition-colors">FAQ</a></li>
                         </ul>
                     </div>
 
@@ -72,7 +60,7 @@ export default function Footer() {
                 </div>
 
                 <div className="pt-8 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-sm text-slate-400 font-medium">© 2024 AltLeads Inc. All rights reserved.</p>
+                    <p className="text-sm text-slate-400 font-medium">© 2026 AltLeads Inc. All rights reserved.</p>
                     <div className="flex gap-8 text-sm font-bold text-slate-400">
                         <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
                         <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
