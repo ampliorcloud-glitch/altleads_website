@@ -54,9 +54,6 @@ export default function Navbar() {
             <div className="max-w-[1280px] mx-auto flex items-center justify-between">
                 {/* Logo */}
                 <a href="/" className="flex items-center gap-3 group">
-                    <div className="flex items-center justify-center size-9 rounded bg-[#0099d6] p-1.5 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                        <Image src="/logo-white.png" alt="AltLeads Logo" width={32} height={32} className="object-contain" />
-                    </div>
                     <h1 className="text-xl font-bold tracking-tight text-[#0f172a]">
                         <span className="text-[#0099d6]">Alt</span>Leads
                     </h1>

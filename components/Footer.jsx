@@ -9,9 +9,6 @@ export default function Footer() {
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
                     <div className="col-span-2 lg:col-span-2">
                         <div className="flex items-center gap-2 mb-6">
-                            <div className="size-8 rounded bg-primary flex items-center justify-center p-1.5">
-                                <Image src="/logo-white.png" alt="AltLeads Logo" width={24} height={24} />
-                            </div>
                             <span className="text-xl font-black text-[#0f172a]">AltLeads</span>
                         </div>
                         <p className="max-w-xs text-slate-500 font-medium leading-relaxed">

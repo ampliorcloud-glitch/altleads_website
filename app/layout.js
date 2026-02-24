@@ -14,6 +14,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "AltLeads — Outbound Execution, Intelligence & CRM for B2B Teams",
   description: "Multi-channel outbound execution, verified data intelligence, and workflow-first CRM orchestration. Email, LinkedIn, WhatsApp, and calls — in one system.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }) {
