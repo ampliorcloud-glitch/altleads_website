@@ -36,16 +36,16 @@ export default function Problem() {
         <SectionWrapper id="problem" className="bg-[#0f172a] text-white py-32">
             <div className="flex flex-col lg:flex-row gap-16 items-center">
                 <div className="lg:w-2/5">
-                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">The Reality</span>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 leading-tight">
-                        Most CRMs store data. <span className="text-slate-500">They don't run outbound.</span>
+                    <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The Reality</span>
+                    <h2 className="text-[40px] md:text-[56px] font-black headline-premium mb-8 leading-none">
+                        Most systems store data. <br /><span className="text-[#64748b]">They don't run outbound.</span>
                     </h2>
-                    <p className="text-slate-400 text-lg leading-relaxed font-medium mb-8">
-                        Most sales teams don't fail because of effort — they fail because execution is fragmented. Follow-ups slip, reporting becomes unreliable, and "AI insights" sit unused in separate dashboards.
+                    <p className="text-slate-400 text-lg md:text-xl leading-relaxed font-medium mb-12">
+                        Sales teams don't fail because of effort — they fail because execution is fragmented. Follow-ups slip, reporting is noisy, and "AI insights" sit unused in separate dashboards.
                     </p>
-                    <div className="p-6 bg-white/5 border border-slate-700 rounded-3xl">
+                    <div className="p-8 bg-white/5 border border-slate-700 rounded-[32px] backdrop-blur-sm">
                         <p className="text-sm font-bold text-slate-300 leading-relaxed">
-                            <span className="text-primary">AltLeads fixes this by being workflow-first:</span> It combines CRM, outreach cadences, and usable intelligence into one execution layer.
+                            <span className="text-primary">AltLeads is the execution layer:</span> We combine CRM discipline, multi-channel outreach, and usable intelligence into one unified system.
                         </p>
                     </div>
                 </div>

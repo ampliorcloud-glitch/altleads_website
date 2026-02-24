@@ -14,20 +14,20 @@ export default function FinalCTA() {
             </div>
 
             <div className="relative z-10 max-w-4xl mx-auto">
-                <span className="text-blue-400 font-bold tracking-widest text-xs uppercase mb-8 block">Ready to Execute?</span>
-                <h2 className="text-4xl md:text-7xl font-black tracking-tight text-white mb-8 leading-[1.05]">
-                    Turn scattered outreach <br /> into a <span className="text-slate-500">predictable pipeline.</span>
+                <span className="text-blue-400 font-black tracking-[0.2em] text-[10px] uppercase mb-10 block">The Next Step</span>
+                <h2 className="text-[42px] md:text-[80px] font-black headline-premium text-white mb-10 leading-none">
+                    Turn fragmented outreach <br /> into a <span className="text-slate-500">System of Mastery.</span>
                 </h2>
-                <p className="text-slate-400 text-xl font-medium mb-12 max-w-2xl mx-auto">
-                    Bring CRM workflow, multi-channel execution, and usable intelligence into one system your team actually uses.
+                <p className="text-slate-400 text-lg md:text-2xl font-medium mb-16 max-w-3xl mx-auto leading-relaxed">
+                    Unify your CRM, outreach, and intelligence into one execution layer that actually converts.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <a
                         href="/contact"
-                        className="w-full sm:w-auto px-10 py-5 bg-white text-[#0f172a] font-black rounded-2xl hover:bg-slate-100 transition-all shadow-2xl flex items-center justify-center gap-2 group text-center"
+                        className="w-full sm:w-auto px-12 py-5 bg-white text-[#0f172a] font-black rounded-2xl hover:bg-slate-100 transition-all shadow-2xl flex items-center justify-center gap-3 group text-center glow-on-hover"
                     >
-                        Book a Demo
+                        Book Absolute Access
                         <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                     </a>
                     <a

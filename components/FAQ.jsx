@@ -35,12 +35,12 @@ export default function FAQ() {
         <SectionWrapper id="faq" className="bg-white">
             <div className="flex flex-col lg:flex-row gap-20">
                 <div className="lg:w-1/3">
-                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Support</span>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6">
-                        Everything you <br /> <span className="text-primary">need to know.</span>
+                    <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Support & FAQs</span>
+                    <h2 className="text-[40px] md:text-[56px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
+                        Everything you <br /> <span className="text-primary italic">need to know.</span>
                     </h2>
-                    <p className="text-slate-500 text-lg font-medium mb-10">
-                        Have a different question? Our team is ready to help.
+                    <p className="text-slate-500 text-lg md:text-xl font-medium mb-12 leading-relaxed">
+                        Have a specific question about your outbound team? We're here to help.
                     </p>
                     <a
                         href="/contact"

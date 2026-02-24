@@ -34,10 +34,10 @@ const useCases = [
 export default function UseCases() {
     return (
         <SectionWrapper id="usecases" className="bg-white">
-            <div className="text-center mb-20 max-w-3xl mx-auto">
-                <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Use Cases</span>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                    Built for teams that <span className="text-primary italic">execute.</span>
+            <div className="text-center mb-24 max-w-4xl mx-auto">
+                <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Target Profiles</span>
+                <h2 className="text-[40px] md:text-[64px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
+                    Built for teams that <br /><span className="text-primary italic">choose to execute.</span>
                 </h2>
             </div>
 
@@ -49,14 +49,14 @@ export default function UseCases() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.1 }}
-                        className="p-10 bg-[#f8fafc] border border-slate-100 rounded-[40px] hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all group"
+                        className="p-12 bg-white border border-slate-100 rounded-[48px] hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-2 transition-all group"
                     >
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-6 block">{useCase.subtitle}</span>
-                        <div className={`size-14 rounded-2xl ${useCase.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                            <useCase.icon className={`size-7 ${useCase.iconColor}`} />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary mb-8 block">{useCase.subtitle}</span>
+                        <div className={`size-16 rounded-3xl ${useCase.color} flex items-center justify-center mb-10 group-hover:scale-110 transition-transform`}>
+                            <useCase.icon className={`size-8 ${useCase.iconColor}`} />
                         </div>
-                        <h3 className="text-2xl font-bold text-[#0f172a] mb-4 group-hover:text-primary transition-colors">{useCase.title}</h3>
-                        <p className="text-slate-500 leading-relaxed font-medium">
+                        <h3 className="text-2xl font-black text-[#0f172a] mb-4 group-hover:text-primary transition-colors">{useCase.title}</h3>
+                        <p className="text-slate-500 text-base leading-relaxed font-medium">
                             {useCase.desc}
                         </p>
                     </motion.div>

@@ -22,12 +22,12 @@ export default function Implementation() {
         <SectionWrapper id="integrations" className="bg-[#f8fafc]">
             <div className="flex flex-col lg:flex-row gap-20 items-start">
                 <div className="lg:w-1/2">
-                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Switch Easily</span>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                        Reduce <span className="text-primary italic">switching fear.</span>
+                    <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Zero Friction</span>
+                    <h2 className="text-[40px] md:text-[56px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
+                        Eliminate <br /><span className="text-primary italic">switching fear.</span>
                     </h2>
-                    <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">
-                        AltLeads is designed to reduce switching fear: import from CSV, connect to existing CRM workflows, and go live in days — not months.
+                    <p className="text-slate-500 text-lg md:text-xl font-medium leading-relaxed mb-12">
+                        Designed for speed. Import from CSV, connect to your existing data source, and go live in days — not months.
                     </p>
 
                     <div className="grid grid-cols-3 gap-4">

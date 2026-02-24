@@ -31,14 +31,17 @@ const steps = [
 
 export default function Workflow() {
     return (
-        <SectionWrapper id="how-it-works" className="bg-white border-b border-slate-100">
-            <div className="text-center mb-20 max-w-3xl mx-auto">
-                <span className="text-primary font-bold tracking-wider text-xs uppercase mb-3 block bg-primary-light py-1 px-3 rounded-full w-fit mx-auto">How It Works</span>
-                <h2 className="text-3xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-4">
-                    How AltLeads Works
+        <SectionWrapper id="how-it-works" className="bg-white border-b border-slate-100 relative overflow-hidden">
+            {/* Subtle Grid Pattern */}
+            <div className="absolute inset-0 bg-grid opacity-[0.2] pointer-events-none" />
+
+            <div className="text-center mb-24 max-w-4xl mx-auto relative z-10">
+                <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The OS In Action</span>
+                <h2 className="text-[40px] md:text-[64px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
+                    Execution, <span className="text-primary italic">simplified.</span>
                 </h2>
-                <p className="text-lg text-slate-500 max-w-2xl mx-auto font-medium">
-                    Keep it simple. The goal is execution consistency, not feature overload.
+                <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-medium">
+                    Built for teams that choose performance over feature-bloat. Here's how AltLeads runs your outbound engine.
                 </p>
             </div>
 
@@ -51,16 +54,16 @@ export default function Workflow() {
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.15 }}
                         className={`relative p-10 rounded-[40px] border-2 transition-all group ${step.active
-                                ? "bg-primary-light/20 border-primary/20 shadow-xl shadow-primary/5"
-                                : "bg-[#f8fafc] border-slate-100 hover:border-primary/20 hover:shadow-lg"
+                            ? "bg-primary-light/20 border-primary/20 shadow-xl shadow-primary/5"
+                            : "bg-[#f8fafc] border-slate-100 hover:border-primary/20 hover:shadow-lg"
                             }`}
                     >
                         <span className={`text-6xl font-black mb-8 block ${step.active ? "text-primary/20" : "text-slate-100"}`}>
                             {step.step}
                         </span>
                         <div className={`size-14 rounded-2xl flex items-center justify-center mb-6 transition-all ${step.active
-                                ? "bg-primary shadow-lg shadow-primary/30"
-                                : "bg-white border border-slate-100 shadow-sm group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/10"
+                            ? "bg-primary shadow-lg shadow-primary/30"
+                            : "bg-white border border-slate-100 shadow-sm group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/10"
                             }`}>
                             <step.icon className={`size-7 ${step.active ? "text-white" : "text-slate-400 group-hover:text-white"} transition-colors`} />
                         </div>
