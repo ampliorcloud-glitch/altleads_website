@@ -22,8 +22,13 @@ const solutions = [
     },
     {
         icon: BarChart3,
-        title: "Live Insights",
-        desc: "Gain instant clarity on project performance with field-first data delivered to your dashboard.",
+        title: "15-20 SQLs Monthly",
+        desc: "Drive predictable growth with a target of 15-20 Sales Qualified Leads monthly per FTE.",
+    },
+    {
+        icon: Target,
+        title: "Global Reach",
+        desc: "Deep expertise across India, UAE, Singapore, and the United States markets.",
     },
 ];
 

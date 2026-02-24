@@ -46,10 +46,24 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-lg md:text-xl text-slate-500 max-w-2xl mb-12 font-medium leading-relaxed"
+                        className="text-lg md:text-xl text-slate-500 max-w-2xl mb-8 font-medium leading-relaxed"
                     >
                         The world's first CRM engineered specifically to bridge the gap between backend lead generation and frontend sales execution.
                     </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="flex flex-wrap items-center justify-center gap-4 mb-12"
+                    >
+                        {['India', 'UAE', 'Singapore', 'USA'].map((market) => (
+                            <div key={market} className="px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                <div className="size-1.5 rounded-full bg-primary" />
+                                {market}
+                            </div>
+                        ))}
+                    </motion.div>
 
                     {/* CTAs */}
                     <motion.div

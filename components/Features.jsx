@@ -106,6 +106,19 @@ export default function Features() {
                     </div>
                 </div>
             </div>
+
+            <div className="mt-24 pt-12 border-t border-slate-200/60">
+                <div className="flex flex-col items-center gap-8">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Engineered with Precision</span>
+                    <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+                        {['Apollo', 'LinkedIn Sales Navigator', 'Lemlist', 'WhatsApp Business'].map((tech) => (
+                            <div key={tech} className="text-xl font-black text-[#0f172a] tracking-tighter">
+                                {tech}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
         </SectionWrapper>
     );
 }

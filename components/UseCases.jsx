@@ -24,12 +24,12 @@ export default function UseCases() {
         <SectionWrapper id="usecases" className="bg-white">
             <div className="flex flex-col lg:flex-row gap-16 items-center">
                 <div className="lg:w-1/2">
-                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Who it's for</span>
+                    <span className="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Industry Expertise</span>
                     <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                        Built for those who lead <br /> <span className="text-primary">from the front.</span>
+                        Powering <span className="text-primary italic">High-Stakes Sectors.</span>
                     </h2>
                     <p className="text-slate-500 text-lg leading-relaxed font-medium mb-10">
-                        Whether you're a high-growth agency or a large-scale field operation, AltLeads provides the structure you need to win.
+                        From Facility Management to Global Food Services, we design custom prospecting flows for the complex industries that drive the economy.
                     </p>
 
                     <div className="space-y-4">
