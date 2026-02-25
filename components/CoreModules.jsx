@@ -1,56 +1,49 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Database, Layers, Brain, BarChart3, MessageCircle, ArrowRight } from "lucide-react";
+import { Layout, Mail, Zap, BarChart3, MessageCircle, ArrowRight } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
 
 const modules = [
     {
-        icon: Database,
         title: "AltLeads CRM",
         desc: "Workflow-first CRM designed for outbound and backend-to-sales alignment.",
-        href: "/solutions/crm",
-        color: "text-primary",
-        bg: "bg-primary-light",
-        border: "border-primary/10",
-        span: true,
+        icon: Layout,
+        link: "/solutions/crm",
+        color: "from-blue-500/10 to-transparent",
+        iconColor: "text-blue-500",
     },
     {
-        icon: Layers,
         title: "Multi-channel Cadences",
         desc: "Email, LinkedIn, WhatsApp, and call workflows with real follow-up discipline.",
-        href: "/solutions/crm",
-        color: "text-violet-600",
-        bg: "bg-violet-50",
-        border: "border-violet-100",
+        icon: Mail,
+        link: "/solutions/data",
+        color: "from-primary/10 to-transparent",
+        iconColor: "text-primary",
     },
     {
-        icon: Brain,
         title: "Data & Intelligence",
         desc: "Verified decision-maker data plus pitch guidance reps can use immediately.",
-        href: "/solutions/data",
-        color: "text-emerald-600",
-        bg: "bg-emerald-50",
-        border: "border-emerald-100",
+        icon: Zap,
+        link: "/solutions/data",
+        color: "from-amber-500/10 to-transparent",
+        iconColor: "text-amber-500",
     },
     {
-        icon: BarChart3,
         title: "Manager Visibility & Coaching",
         desc: "Dashboards that show activity quality, outcomes, and bottlenecks.",
-        href: "/solutions/crm",
-        color: "text-orange-600",
-        bg: "bg-orange-50",
-        border: "border-orange-100",
+        icon: BarChart3,
+        link: "/solutions/crm",
+        color: "from-emerald-500/10 to-transparent",
+        iconColor: "text-emerald-500",
     },
     {
-        icon: MessageCircle,
-        title: "WhatsApp for B2B",
+        title: "WhatsApp for B2B (Professional)",
         desc: "Template-based, compliance-aware WhatsApp workflows for confirmations, reminders, re-engagement, and follow-ups.",
-        href: "/solutions/whatsapp",
-        color: "text-emerald-600",
-        bg: "bg-emerald-50",
-        border: "border-emerald-100",
-        badge: "Professional",
+        icon: MessageCircle,
+        link: "/solutions/whatsapp",
+        color: "from-primary/10 to-transparent",
+        iconColor: "text-primary",
     },
 ];
 
@@ -58,9 +51,9 @@ export default function CoreModules() {
     return (
         <SectionWrapper id="modules" className="bg-white">
             <div className="text-center mb-24 max-w-4xl mx-auto">
-                <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The Infrastructure</span>
+                <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Module Ecosystem</span>
                 <h2 className="text-[40px] md:text-[64px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
-                    One platform. <br /><span className="text-primary italic">Absolute mastery.</span>
+                    What AltLeads gives <span className="text-primary italic">your team</span>
                 </h2>
             </div>
 

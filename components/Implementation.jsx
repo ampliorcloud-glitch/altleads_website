@@ -27,7 +27,7 @@ export default function Implementation() {
                         Eliminate <br /><span className="text-primary italic">switching fear.</span>
                     </h2>
                     <p className="text-slate-500 text-lg md:text-xl font-medium leading-relaxed mb-12">
-                        Designed for speed. Import from CSV, connect to your existing data source, and go live in days — not months.
+                        AltLeads is designed to reduce switching fear: import from CSV, connect to existing CRM workflows, and go live in days — not months.
                     </p>
 
                     <div className="grid grid-cols-3 gap-4">

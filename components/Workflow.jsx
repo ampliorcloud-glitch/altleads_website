@@ -38,10 +38,10 @@ export default function Workflow() {
             <div className="text-center mb-24 max-w-4xl mx-auto relative z-10">
                 <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The OS In Action</span>
                 <h2 className="text-[40px] md:text-[64px] font-black headline-premium text-[#0f172a] mb-8 leading-none">
-                    Execution, <span className="text-primary italic">simplified.</span>
+                    How AltLeads works
                 </h2>
                 <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-medium">
-                    Built for teams that choose performance over feature-bloat. Here's how AltLeads runs your outbound engine.
+                    Keep it simple. The goal is execution consistency, not feature overload.
                 </p>
             </div>
 

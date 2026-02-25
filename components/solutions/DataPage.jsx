@@ -12,29 +12,32 @@ import { useState } from "react";
 /* ─── Hero ─── */
 function DataHero() {
     return (
-        <section className="relative pt-32 pb-20 overflow-hidden bg-white">
+        <section className="relative pt-32 pb-20 overflow-hidden bg-[#0f172a]">
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-100/40 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[140px]" />
+                <div className="absolute inset-0 bg-grid opacity-[0.2]" />
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[100%] bg-blue-500/20 rounded-full blur-[120px] animate-pulse" />
             </div>
             <div className="max-w-[1280px] mx-auto px-4 md:px-10 relative z-10">
                 <div className="flex flex-col items-center text-center">
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-8">
-                        <Brain className="size-4 text-emerald-600" />
-                        <span className="text-xs font-bold text-emerald-600 tracking-wide uppercase">Data & Intelligence</span>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-10">
+                        <Database className="size-3 text-blue-400" />
+                        <span className="text-[10px] font-black text-blue-400 tracking-[0.2em] uppercase leading-none">The Intelligence Layer</span>
                     </motion.div>
-                    <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-[36px] md:text-[64px] leading-[1.1] font-black tracking-tighter text-[#0f172a] mb-8">
-                        Targeting and intelligence <br /><span className="bg-gradient-to-r from-emerald-500 to-primary bg-clip-text text-transparent italic">reps actually use.</span>
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                        className="text-[36px] md:text-[80px] leading-[0.95] font-black headline-premium text-white mb-10 max-w-5xl"
+                    >
+                        Every lead you'll ever need. <span className="text-blue-400 italic">Fresh every 24 hours.</span>
                     </motion.h1>
-                    <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg md:text-xl text-slate-500 max-w-3xl mb-10 font-medium leading-relaxed">
-                        Most intelligence tools generate noise: irrelevant alerts, raw firmographic dumps, and generic "insights" no rep reads. AltLeads takes a different approach with verified contact data, contextual pitch guidance, and a Chrome extension that works where reps already are.
+                    <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg md:text-2xl text-slate-400 max-w-3xl mb-12 font-medium leading-relaxed">
+                        Precision data at scale. We combine web-level scraping with real-time intent signals to give your team the most accurate B2B contact data in the world.
                     </motion.p>
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row items-center gap-5">
-                        <a href="/contact" className="px-8 py-4 bg-[#0f172a] text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-2xl flex items-center gap-2 group">
-                            Book a Demo <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row items-center gap-6">
+                        <a href="/contact" className="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 flex items-center gap-3 group glow-on-hover">
+                            Scale Your Data <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                         </a>
-                        <a href="#data-outcomes" className="px-8 py-4 bg-white text-[#0f172a] font-bold rounded-2xl border border-slate-200 hover:border-emerald-300 transition-all flex items-center gap-2">
-                            <Play className="size-4 fill-emerald-500 text-emerald-500" /> See It In Action
+                        <a href="#data-app" className="px-10 py-5 bg-white/5 text-white border border-white/10 font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3">
+                            Explore Platform
                         </a>
                     </motion.div>
                 </div>
@@ -43,30 +46,24 @@ function DataHero() {
     );
 }
 
-/* ─── 3 Outcomes ─── */
-const outcomes = [
-    { icon: UserCheck, title: "Verified decision-maker contacts", desc: "Accurate email, phone, and LinkedIn data for real buyers — not generic company contacts.", color: "text-emerald-600", bg: "bg-emerald-50" },
-    { icon: Sparkles, title: "Contextual pitch angles", desc: "Suggested talking points based on company data, recent activity, and persona type — ready before the call.", color: "text-primary", bg: "bg-primary-light" },
-    { icon: TrendingUp, title: "Relevance signals", desc: "Company research, industry context, and timing indicators that help reps prioritize and personalize.", color: "text-violet-600", bg: "bg-violet-50" },
+/* ─── Outcomes / Stats ─── */
+const dataStats = [
+    { label: "Data Freshness", value: "24h", desc: "Every record updated daily." },
+    { label: "Match Rate", value: "95%", desc: "Industry-leading email accuracy." },
+    { label: "Contact Points", value: "50M+", desc: "B2B professionals in our reach." },
+    { label: "Intent Signals", value: "Real-time", desc: "Know exactly when they're buying." },
 ];
 
 function DataOutcomes() {
     return (
-        <SectionWrapper id="data-outcomes" className="bg-[#f8fafc]">
-            <div className="text-center mb-16 max-w-3xl mx-auto">
-                <span className="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-4 block">What You Get</span>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                    Three outcomes, <span className="text-emerald-600 italic">not three dashboards.</span>
-                </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {outcomes.map((o, i) => (
-                    <motion.div key={o.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="p-10 bg-white border border-slate-100 rounded-[40px] hover:shadow-xl hover:-translate-y-1 transition-all group">
-                        <div className={`size-14 rounded-2xl ${o.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                            <o.icon className={`size-7 ${o.color}`} />
-                        </div>
-                        <h3 className="text-xl font-bold text-[#0f172a] mb-3">{o.title}</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed font-medium">{o.desc}</p>
+        <SectionWrapper id="data-outcomes" className="bg-[#0f172a] text-white py-32 border-t border-white/5 relative overflow-hidden">
+            <div className="absolute inset-0 bg-grid opacity-[0.2] pointer-events-none" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
+                {dataStats.map((stat, i) => (
+                    <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center group p-8 rounded-[40px] bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all">
+                        <div className="text-4xl md:text-6xl font-black text-blue-400 mb-4 group-hover:scale-110 transition-transform tabular-nums">{stat.value}</div>
+                        <div className="text-lg font-bold text-white mb-2">{stat.label}</div>
+                        <div className="text-slate-500 text-sm font-medium">{stat.desc}</div>
                     </motion.div>
                 ))}
             </div>
@@ -77,46 +74,48 @@ function DataOutcomes() {
 /* ─── Data App ─── */
 const dataAppFeatures = [
     { icon: Search, title: "Verified mobile numbers and business emails" },
-    { icon: Building, title: "Company firmographics — size, funding stage, tech stack, recent hires" },
-    { icon: Globe, title: "Search within AltLeads or enrich existing prospect lists" },
-    { icon: Database, title: "Export clean, deduplicated contact lists to CRM or cadence workflows" },
+    { icon: Building, title: "Company firmographics — size, funding, tech stack" },
+    { icon: Globe, title: "Search within AltLeads or enrich existing lists" },
+    { icon: Database, title: "Export clean, deduplicated lists to CRM or cadences" },
 ];
 
 function DataApp() {
     return (
-        <SectionWrapper id="data-app" className="bg-white">
-            <div className="flex flex-col lg:flex-row gap-16 items-center">
+        <SectionWrapper id="data-app" className="bg-white relative overflow-hidden">
+            <div className="absolute inset-0 bg-grid opacity-[0.2] pointer-events-none" />
+            <div className="flex flex-col lg:flex-row gap-20 items-center relative z-10">
                 <div className="lg:w-1/2">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="size-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                            <Database className="size-5 text-emerald-600" />
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="size-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                            <Database className="size-6 text-blue-600" />
                         </div>
-                        <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Data App</span>
+                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Data App</span>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                        Find, verify, <span className="text-emerald-600 italic">and target.</span>
+                    <h2 className="text-4xl md:text-6xl font-black headline-premium text-[#0f172a] mb-8 leading-[0.95]">
+                        Find, verify, <span className="text-blue-600 italic">and target.</span>
                     </h2>
-                    <p className="text-slate-500 text-lg font-medium leading-relaxed mb-8">
-                        A purpose-built data application for finding verified decision-maker contacts that fit your ICP.
+                    <p className="text-slate-500 text-xl font-medium leading-relaxed mb-10">
+                        A purpose-built data application for finding verified decision-maker contacts that fit your ICP perfectly.
                     </p>
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {dataAppFeatures.map(f => (
-                            <div key={f.title} className="flex items-center gap-3 p-4 bg-[#f8fafc] rounded-2xl border border-slate-50">
-                                <div className="size-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                                    <f.icon className="size-4 text-emerald-600" />
+                            <div key={f.title} className="flex items-center gap-4 p-5 bg-[#f8fafc] rounded-3xl border border-slate-100 hover:border-blue-200 transition-colors">
+                                <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                    <f.icon className="size-5 text-blue-600" />
                                 </div>
-                                <span className="text-sm font-bold text-[#0f172a]">{f.title}</span>
+                                <span className="text-sm font-bold text-[#0f172a] leading-tight">{f.title}</span>
                             </div>
                         ))}
                     </div>
                 </div>
                 <div className="lg:w-1/2">
-                    <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="p-10 bg-gradient-to-br from-emerald-50 to-primary-light/30 rounded-[40px] border border-emerald-100">
-                        <div className="space-y-4">
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="p-12 bg-[#0f172a] rounded-[64px] border border-white/10 relative overflow-hidden shadow-2xl">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]" />
+                        <div className="relative z-10 space-y-6">
                             {["Search by ICP criteria", "Preview verified contacts", "Enrich with firmographic data", "Export to cadence or CRM"].map((step, i) => (
-                                <div key={step} className="flex items-center gap-4">
-                                    <span className="text-xs font-black text-emerald-600 bg-white size-8 rounded-full flex items-center justify-center shadow-sm">{i + 1}</span>
-                                    <span className="font-bold text-[#0f172a] text-sm">{step}</span>
+                                <div key={step} className="flex items-center gap-6 group">
+                                    <span className="text-xs font-black text-blue-400 bg-white/5 size-10 rounded-full flex items-center justify-center border border-white/10 group-hover:bg-blue-400 group-hover:text-white transition-all">{i + 1}</span>
+                                    <span className="font-bold text-white text-lg">{step}</span>
                                 </div>
                             ))}
                         </div>
@@ -130,27 +129,28 @@ function DataApp() {
 /* ─── Intelligence Layer ─── */
 function IntelligenceLayer() {
     return (
-        <SectionWrapper id="intelligence-layer" className="bg-[#0f172a] text-white py-32">
-            <div className="flex flex-col lg:flex-row gap-16 items-center">
+        <SectionWrapper id="intelligence-layer" className="bg-[#0f172a] text-white py-32 relative overflow-hidden">
+            <div className="absolute inset-0 bg-grid opacity-[0.2] pointer-events-none" />
+            <div className="flex flex-col lg:flex-row gap-20 items-center relative z-10">
                 <div className="lg:w-1/2">
-                    <span className="text-emerald-400 font-bold tracking-widest text-xs uppercase mb-4 block">Intelligence Layer</span>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 leading-tight">
-                        Not "AI magic." <span className="text-slate-500">Practical guidance.</span>
+                    <span className="text-blue-400 font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Intelligence Layer</span>
+                    <h2 className="text-4xl md:text-6xl font-black headline-premium mb-8 leading-[0.95]">
+                        Practical guidance, <span className="text-slate-500">not "AI magic."</span>
                     </h2>
-                    <p className="text-slate-400 text-lg font-medium leading-relaxed mb-8">
-                        AltLeads intelligence isn't trying to replace the rep. It provides contextual support — persona-level pitch angles, relevant triggers, and suggested messaging frameworks. The rep stays in control.
+                    <p className="text-slate-400 text-lg md:text-xl font-medium leading-relaxed">
+                        AltLeads intelligence provides contextual support — persona-level pitch angles, relevant triggers, and suggested messaging frameworks.
                     </p>
                 </div>
-                <div className="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                     {[
-                        { title: "Persona-based pitch suggestions", desc: "Tailored talking points by decision-maker type." },
+                        { title: "Persona-based pitch angles", desc: "Tailored talking points by decision-maker type." },
                         { title: "Relevant trigger events", desc: "Funding, hiring, leadership changes, product launches." },
                         { title: "Messaging frameworks", desc: "Best-practice templates adapted to your ICP." },
                         { title: "In-workflow delivery", desc: "Shows up inside the cadence — no separate tab." },
                     ].map((item, i) => (
-                        <motion.div key={item.title} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="p-6 bg-white/5 border border-slate-800 rounded-3xl hover:border-emerald-500/30 transition-all">
-                            <h4 className="font-bold text-sm mb-2">{item.title}</h4>
-                            <p className="text-slate-400 text-xs leading-relaxed">{item.desc}</p>
+                        <motion.div key={item.title} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="p-8 bg-white/5 border border-white/10 rounded-[32px] hover:border-blue-500/30 transition-all group">
+                            <h4 className="font-bold text-lg mb-2 group-hover:text-blue-400 transition-colors">{item.title}</h4>
+                            <p className="text-slate-400 text-sm leading-relaxed font-medium">{item.desc}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -163,37 +163,54 @@ function IntelligenceLayer() {
 function ChromeExtension() {
     return (
         <SectionWrapper id="chrome-extension" className="bg-white">
-            <div className="flex flex-col lg:flex-row-reverse gap-16 items-center">
+            <div className="flex flex-col lg:flex-row-reverse gap-20 items-center">
                 <div className="lg:w-1/2">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="size-10 rounded-xl bg-yellow-50 flex items-center justify-center">
-                            <Chrome className="size-5 text-yellow-600" />
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="size-12 rounded-2xl bg-slate-50 flex items-center justify-center">
+                            <Monitor className="size-6 text-slate-400" />
                         </div>
-                        <span className="text-xs font-black text-yellow-600 uppercase tracking-widest">Chrome Extension</span>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Browser Extension</span>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6 leading-tight">
-                        Intelligence where <span className="text-yellow-600 italic">you already work.</span>
+                    <h2 className="text-4xl md:text-6xl font-black headline-premium text-[#0f172a] mb-8 leading-[0.95]">
+                        Works where <span className="text-blue-600 italic">you work.</span>
                     </h2>
-                    <p className="text-slate-500 text-lg font-medium leading-relaxed mb-8">
-                        Surface contact details, company context, and pitch suggestions right inside LinkedIn and the browser — without switching tabs.
+                    <p className="text-slate-500 text-xl font-medium leading-relaxed mb-10">
+                        Enrich profiles on LinkedIn, Sales Navigator, and company websites with one click. Intelligence follows you across the web.
                     </p>
+                    <div className="space-y-4">
+                        {[
+                            "Direct LinkedIn profile enrichment",
+                            "Bulk-save prospects to AltLeads lists",
+                            "One-click verified email reveals",
+                            "Contextual intelligence in your peripheral",
+                        ].map((p) => (
+                            <div key={p} className="flex items-center gap-4">
+                                <div className="size-6 rounded-full bg-blue-50 flex items-center justify-center">
+                                    <Check className="size-4 text-blue-600" />
+                                </div>
+                                <span className="text-[#0f172a] font-bold">{p}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <div className="lg:w-1/2">
-                    <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="p-10 bg-gradient-to-br from-yellow-50 to-orange-50/30 rounded-[40px] border border-yellow-100">
-                        <div className="space-y-6">
-                            {[
-                                "View contact details on any LinkedIn profile",
-                                "Get pitch angles before connecting",
-                                "One-click save to AltLeads CRM",
-                                "See company research without leaving the page",
-                            ].map((item, i) => (
-                                <div key={item} className="flex items-start gap-3">
-                                    <CheckCircle className="size-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                                    <span className="font-bold text-[#0f172a] text-sm">{item}</span>
+                    <div className="p-12 bg-slate-50 rounded-[64px] border border-slate-100 relative group overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-indigo-500" />
+                        <div className="bg-white p-6 rounded-3xl shadow-2xl border border-slate-100 group-hover:-translate-y-2 transition-transform">
+                            <div className="flex items-center gap-4 mb-6 border-b border-slate-50 pb-6">
+                                <div className="size-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black">A</div>
+                                <div>
+                                    <div className="font-bold text-[#0f172a]">AltLeads Extension</div>
+                                    <div className="text-xs text-slate-400 font-medium">Verified & Ready</div>
                                 </div>
-                            ))}
+                            </div>
+                            <div className="space-y-4">
+                                <div className="h-4 bg-slate-100 rounded-full w-3/4 animate-pulse" />
+                                <div className="h-4 bg-slate-50 rounded-full w-1/2 animate-pulse" />
+                                <div className="h-10 bg-blue-600 rounded-xl w-full mt-6" />
+                            </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
         </SectionWrapper>
@@ -202,27 +219,30 @@ function ChromeExtension() {
 
 /* ─── How It Works ─── */
 const dataSteps = [
-    { step: "01", title: "Define ICP", desc: "Set target criteria: industry, size, role, geography." },
-    { step: "02", title: "Search & Discover", desc: "Find verified contacts matching your ideal profile." },
-    { step: "03", title: "Enrich & Research", desc: "Pull company context, triggers, and pitch angles." },
-    { step: "04", title: "Load Into Cadence", desc: "Push clean data directly into outbound workflows." },
+    { title: "Define Target", desc: "Use firmographics, technographics, or intent signals to define your ICP." },
+    { title: "Extract Contacts", desc: "Our engine pulls verified emails and mobile numbers for your target list." },
+    { title: "Enrich & Sync", desc: "Push clean data directly into your CRM or outbound OS with one click." },
 ];
 
 function DataHowItWorks() {
     return (
-        <SectionWrapper id="data-how" className="bg-[#f8fafc]">
-            <div className="text-center mb-20 max-w-3xl mx-auto">
-                <span className="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-4 block">Process</span>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6">
-                    From ICP to <span className="text-emerald-600 italic">first touch.</span>
+        <SectionWrapper id="data-how-it-works" className="bg-[#f8fafc]">
+            <div className="text-center mb-24 max-w-4xl mx-auto">
+                <span className="text-blue-600 font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The Pipeline</span>
+                <h2 className="text-4xl md:text-7xl font-black headline-premium text-[#0f172a] mb-8 leading-[0.95]">
+                    Simple, fast, <span className="text-blue-600 italic">and compliant.</span>
                 </h2>
+                <p className="text-slate-500 text-xl font-medium">From raw intent to verified contacts in minutes.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {dataSteps.map((s, i) => (
-                    <motion.div key={s.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="p-8 bg-white border border-slate-100 rounded-[40px] hover:shadow-xl hover:-translate-y-1 transition-all group text-center">
-                        <span className="text-5xl font-black text-emerald-100 mb-4 block">{s.step}</span>
-                        <h3 className="text-lg font-bold text-[#0f172a] mb-2">{s.title}</h3>
-                        <p className="text-slate-500 text-xs leading-relaxed font-medium">{s.desc}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-blue-100 hidden md:block -translate-y-1/2 z-0" />
+                {dataSteps.map((step, i) => (
+                    <motion.div key={step.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="relative z-10 text-center group">
+                        <div className="size-16 rounded-[24px] bg-white border border-blue-100 flex items-center justify-center mx-auto mb-8 text-2xl font-black text-blue-600 shadow-xl group-hover:bg-blue-600 group-hover:text-white transition-all">
+                            {i + 1}
+                        </div>
+                        <h3 className="text-2xl font-black text-[#0f172a] mb-4">{step.title}</h3>
+                        <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-[280px] mx-auto">{step.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -231,31 +251,31 @@ function DataHowItWorks() {
 }
 
 /* ─── Who It's For ─── */
-const audiences = [
-    { icon: Users, title: "Outbound SDR teams", desc: "Who need verified ICP contacts without manual research.", color: "text-primary", bg: "bg-primary-light" },
-    { icon: Eye, title: "Sales managers", desc: "Who want targeting quality insights, not just activity logs.", color: "text-violet-600", bg: "bg-violet-50" },
-    { icon: Target, title: "Revenue operations", desc: "Who need clean data flowing into CRM and cadence tools.", color: "text-emerald-600", bg: "bg-emerald-50" },
+const targetAudience = [
+    { type: "SDRs / BDRs", use: "Stop digging for numbers. Start making dials with verified data." },
+    { type: "Marketing Pros", use: "Build hyper-targeted lists for account-based advertising." },
+    { type: "Founders", use: "Scale your early outbound without a massive data budget." },
+    { type: "Sales Ops", use: "Keep your CRM clean with daily data refreshes and deduplication." },
 ];
 
 function DataWhoItsFor() {
     return (
-        <SectionWrapper id="data-who" className="bg-white">
-            <div className="text-center mb-16 max-w-3xl mx-auto">
-                <span className="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-4 block">Built For</span>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0f172a] mb-6">
-                    Who uses <span className="text-emerald-600 italic">this?</span>
-                </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {audiences.map((a, i) => (
-                    <motion.div key={a.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="p-10 bg-[#f8fafc] border border-slate-100 rounded-[40px] hover:border-emerald-200 hover:shadow-lg transition-all group">
-                        <div className={`size-14 rounded-2xl ${a.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                            <a.icon className={`size-7 ${a.color}`} />
+        <SectionWrapper id="data-who-its-for" className="bg-white">
+            <div className="flex flex-col lg:flex-row gap-20 items-end">
+                <div className="lg:w-1/2">
+                    <span className="text-blue-600 font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Targeting</span>
+                    <h2 className="text-4xl md:text-7xl font-black headline-premium text-[#0f172a] mb-8 leading-[0.95]">
+                        Data for every <span className="text-blue-600 italic">growth stage.</span>
+                    </h2>
+                </div>
+                <div className="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+                    {targetAudience.map((audience, i) => (
+                        <div key={audience.type} className="p-8 bg-[#f8fafc] border border-slate-100 rounded-[32px] hover:border-blue-200 transition-all">
+                            <h3 className="font-black text-xl text-[#0f172a] mb-3">{audience.type}</h3>
+                            <p className="text-slate-500 text-sm font-medium">{audience.use}</p>
                         </div>
-                        <h3 className="text-xl font-bold text-[#0f172a] mb-3">{a.title}</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed font-medium">{a.desc}</p>
-                    </motion.div>
-                ))}
+                    ))}
+                </div>
             </div>
         </SectionWrapper>
     );
@@ -264,27 +284,28 @@ function DataWhoItsFor() {
 /* ─── Differentiator ─── */
 function DataDifferentiator() {
     return (
-        <SectionWrapper className="bg-[#0f172a] text-white py-32">
-            <div className="flex flex-col lg:flex-row gap-16 items-center">
-                <div className="lg:w-1/2">
-                    <span className="text-emerald-400 font-bold tracking-widest text-xs uppercase mb-4 block">Different By Design</span>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 leading-tight">
-                        Intelligence that lives <span className="text-slate-500">inside the workflow.</span>
+        <SectionWrapper id="data-diff" className="bg-white pb-40">
+            <div className="p-12 md:p-24 bg-[#0f172a] rounded-[64px] relative overflow-hidden text-center border border-white/10 shadow-3xl">
+                <div className="absolute inset-0 bg-grid opacity-[0.2] pointer-events-none" />
+                <div className="relative z-10 max-w-4xl mx-auto">
+                    <h2 className="text-4xl md:text-7xl font-black headline-premium text-white mb-10 leading-[0.95]">
+                        The AltLeads <span className="text-blue-400">Data Guarantee.</span>
                     </h2>
-                    <p className="text-slate-400 text-lg font-medium leading-relaxed">
-                        Unlike standalone data tools, AltLeads intelligence is embedded in the CRM and cadence engine — so reps use it naturally, not as an afterthought.
+                    <p className="text-slate-400 text-xl font-medium leading-relaxed max-w-2xl mx-auto mb-16">
+                        We don't sell static repositories. Every record exported is cross-verified in real-time, ensuring you never waste a dial on a dead number.
                     </p>
-                </div>
-                <div className="lg:w-1/2">
-                    <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="p-10 bg-white/5 border border-slate-800 rounded-[40px]">
-                        <div className="flex items-center gap-3 mb-6">
-                            <Shield className="size-5 text-emerald-400" />
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Privacy-Safe</span>
-                        </div>
-                        <p className="text-slate-300 font-medium leading-relaxed">
-                            Designed to be privacy-safe, using contextual research and aggregated patterns — not client-confidential exposure. Clear controls for data access and usage. Your data stays yours.
-                        </p>
-                    </motion.div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[
+                            { label: "Daily Refreshes", val: "24h" },
+                            { label: "Match Accuracy", val: "95%+" },
+                            { label: "Verification", val: "Real-time" },
+                        ].map(item => (
+                            <div key={item.label} className="p-8 bg-white/5 border border-white/10 rounded-[40px]">
+                                <div className="text-3xl font-black text-blue-400 mb-2">{item.val}</div>
+                                <div className="text-xs font-black text-slate-500 uppercase tracking-widest">{item.label}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </SectionWrapper>
@@ -293,10 +314,11 @@ function DataDifferentiator() {
 
 /* ─── FAQ ─── */
 const dataFaqs = [
-    { k: "Where does the contact data come from?", v: "AltLeads aggregates and verifies data from multiple public and licensed sources, with continuous validation to maintain accuracy." },
-    { k: "How accurate is the data?", v: "We maintain high verification standards with regular re-validation cycles. Bounced or disconnected contacts are flagged automatically." },
-    { k: "Can I use my own data alongside AltLeads data?", v: "Absolutely. Import your existing lists, enrich them with AltLeads data, and use both seamlessly within cadence workflows." },
-    { k: "Is the Chrome extension free with AltLeads?", v: "Yes. The Chrome extension is included with all AltLeads plans that include the Data & Intelligence module." },
+    { k: "Where does AltLeads get its data?", v: "We combine our proprietary web-scale scraping engine with real-time intent triggers and cross-verification from multiple premium B2B data vendors." },
+    { k: "Is your data GDPR / CCPA compliant?", v: "Yes. We strictly adhere to all major data privacy regulations. We only provide professional B2B contact information." },
+    { k: "How often is the data updated?", v: "Our entire database is subjected to a rolling 24-hour verification cycle. If a contact changed jobs yesterday, we'll know today." },
+    { k: "Can I export data to my existing CRM?", v: "Directly. We have native integrations with Salesforce, HubSpot, and all major outbound OS platforms." },
+    { k: "Do you offer bulk enrichment?", v: "Yes. You can upload any existing list and we'll append missing emails, mobile numbers, and technographic data." },
 ];
 
 function DataFAQ() {
@@ -305,18 +327,18 @@ function DataFAQ() {
         <SectionWrapper id="data-faq" className="bg-[#f8fafc]">
             <div className="flex flex-col lg:flex-row gap-20">
                 <div className="lg:w-1/3">
-                    <span className="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-4 block">FAQ</span>
-                    <h2 className="text-4xl font-black tracking-tight text-[#0f172a] mb-6">Data questions, <span className="text-emerald-600">answered.</span></h2>
+                    <span className="text-blue-600 font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Support</span>
+                    <h2 className="text-4xl font-black headline-premium text-[#0f172a] mb-6 leading-none">Data <span className="text-blue-600">FAQ.</span></h2>
                 </div>
                 <div className="lg:w-2/3 flex flex-col gap-4">
                     {dataFaqs.map((faq, index) => (
-                        <div key={faq.k} className={`border rounded-3xl overflow-hidden transition-all duration-300 ${openIndex === index ? "border-emerald-400 bg-emerald-50/30 ring-1 ring-emerald-200" : "border-slate-100 bg-white hover:border-slate-300"}`}>
-                            <button onClick={() => setOpenIndex(index === openIndex ? -1 : index)} className="w-full p-6 md:p-8 flex items-center justify-between text-left group">
-                                <span className={`text-lg font-bold transition-colors ${openIndex === index ? "text-emerald-600" : "text-[#0f172a]"}`}>{faq.k}</span>
-                                <ChevronDown className={`size-5 transition-transform duration-300 flex-shrink-0 ml-4 ${openIndex === index ? "rotate-180 text-emerald-600" : "text-slate-400"}`} />
+                        <div key={faq.k} className={`border rounded-[32px] overflow-hidden transition-all duration-300 ${openIndex === index ? "border-blue-500 bg-white ring-1 ring-blue-500/20 shadow-xl shadow-blue-500/5" : "border-slate-100 bg-white hover:border-slate-300"}`}>
+                            <button onClick={() => setOpenIndex(index === openIndex ? -1 : index)} className="w-full p-8 flex items-center justify-between text-left group">
+                                <span className={`text-lg font-bold transition-colors ${openIndex === index ? "text-blue-600" : "text-[#0f172a]"}`}>{faq.k}</span>
+                                <ChevronDown className={`size-5 transition-transform duration-300 flex-shrink-0 ml-4 ${openIndex === index ? "rotate-180 text-blue-600" : "text-slate-400"}`} />
                             </button>
                             <motion.div initial={false} animate={{ height: openIndex === index ? "auto" : 0 }} className="overflow-hidden">
-                                <div className="p-6 md:p-8 pt-0 text-slate-500 font-medium leading-relaxed">{faq.v}</div>
+                                <div className="p-8 pt-0 text-slate-500 font-medium leading-relaxed">{faq.v}</div>
                             </motion.div>
                         </div>
                     ))}
@@ -329,21 +351,23 @@ function DataFAQ() {
 /* ─── Bottom CTA ─── */
 function DataBottomCTA() {
     return (
-        <SectionWrapper className="bg-[#0f172a] text-center relative overflow-hidden py-32 rounded-[60px] mx-4 md:mx-10 mb-20">
+        <SectionWrapper className="bg-[#0f172a] text-center relative overflow-hidden py-40 rounded-[64px] mx-4 md:mx-10 mb-20">
+            <div className="absolute inset-0 bg-grid opacity-[0.2] pointer-events-none" />
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-20">
-                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[100%] bg-emerald-500 rounded-full blur-[160px]" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[100%] bg-primary rounded-full blur-[140px]" />
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[100%] bg-blue-600 rounded-full blur-[160px]" />
             </div>
-            <div className="relative z-10 max-w-3xl mx-auto">
-                <h2 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-8 leading-[1.05]">
-                    Stop guessing. <span className="text-slate-500">Start targeting.</span>
+            <div className="relative z-10 max-w-4xl mx-auto">
+                <h2 className="text-4xl md:text-7xl font-black headline-premium text-white mb-10 leading-[0.95]">
+                    Build your pipeline with <span className="text-blue-400 italic">data that converts.</span>
                 </h2>
-                <p className="text-slate-400 text-xl font-medium mb-12">Get verified contacts, contextual intelligence, and practical pitch guidance your team will actually use.</p>
+                <p className="text-slate-400 text-xl md:text-2xl font-medium mb-16 max-w-2xl mx-auto">
+                    Stop wasting time on dead numbers. Get the precision data your sales team deserves.
+                </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <a href="/contact" className="px-10 py-5 bg-white text-[#0f172a] font-black rounded-2xl hover:bg-slate-100 transition-all shadow-2xl flex items-center gap-2 group">
-                        Book a Demo <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+                    <a href="/contact" className="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 flex items-center gap-3 group glow-on-hover">
+                        Get Your Data Sample <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                     </a>
-                    <a href="/contact" className="px-10 py-5 bg-transparent text-white border-2 border-slate-700 font-black rounded-2xl hover:bg-white/5 transition-all">Try Data App</a>
+                    <a href="/contact" className="px-10 py-5 bg-transparent text-white border border-white/20 font-black rounded-2xl hover:bg-white/5 transition-all">Schedule Strategy Session</a>
                 </div>
             </div>
         </SectionWrapper>
@@ -353,7 +377,7 @@ function DataBottomCTA() {
 /* ─── Page Composition ─── */
 export default function DataPage() {
     return (
-        <>
+        <main className="bg-white">
             <DataHero />
             <DataOutcomes />
             <DataApp />
@@ -364,6 +388,6 @@ export default function DataPage() {
             <DataDifferentiator />
             <DataFAQ />
             <DataBottomCTA />
-        </>
+        </main>
     );
 }

@@ -6,15 +6,15 @@ import SectionWrapper from "./SectionWrapper";
 
 const useCases = [
     {
-        title: "Outbound SDR Teams",
-        subtitle: "20–100 Seats",
+        title: "Outbound SDR teams",
+        subtitle: "20–100 seats",
         icon: Users,
         desc: "Improve follow-up discipline and meeting conversion with structured multi-channel cadences and automatic activity tracking.",
         color: "bg-primary-light",
         iconColor: "text-primary",
     },
     {
-        title: "Founder-Led Sales",
+        title: "Founder-led sales teams",
         subtitle: "Speed Without Chaos",
         icon: Rocket,
         desc: "Move fast without losing track. Run outbound, track outcomes, and iterate on messaging — all without building a complex ops stack.",
@@ -22,7 +22,7 @@ const useCases = [
         iconColor: "text-violet-600",
     },
     {
-        title: "Sales Managers",
+        title: "Sales managers",
         subtitle: "Visibility & Coaching",
         icon: Eye,
         desc: "Get visibility and coaching signals, not just activity noise. See what's actually happening in your pipeline and where reps need help.",
