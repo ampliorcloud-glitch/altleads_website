@@ -5,7 +5,7 @@ import SectionWrapper from "../SectionWrapper";
 import {
     ArrowRight, Play, Monitor, Smartphone, Database, Filter, Calendar, UserCheck, Handshake,
     RefreshCw, LayoutDashboard, Users, Bell, FileText, BarChart3, CheckCircle, Zap, Star,
-    AlertTriangle, Target, ChevronDown, Share2, School, Rocket, MapPin, Clock, Wifi
+    AlertTriangle, Target, ChevronDown, Share2, School, Rocket, MapPin, Clock, Wifi, Check
 } from "lucide-react";
 import { useState } from "react";
 

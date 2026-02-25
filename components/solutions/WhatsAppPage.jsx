@@ -6,7 +6,7 @@ import {
     ArrowRight, MessageSquare, AlertTriangle, Workflow, Share2, FastForward,
     CheckCircle, Layers, Zap, BarChart3, ChevronDown, Shield, Target,
     FileText, Bell, Timer, RefreshCw, Calendar, ThumbsUp, BrainCircuit,
-    Settings, Eye, Smartphone, Building, Star, Check
+    Settings, Eye, Smartphone, Building, Star, Check, Users, LayoutDashboard
 } from "lucide-react";
 import { useState } from "react";
 

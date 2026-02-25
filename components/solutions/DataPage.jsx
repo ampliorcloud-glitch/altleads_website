@@ -5,7 +5,7 @@ import SectionWrapper from "../SectionWrapper";
 import {
     ArrowRight, Play, Brain, Search, UserCheck, Database, Globe, Chrome,
     Target, BarChart3, Users, CheckCircle, Zap, Shield, ChevronDown,
-    Building, Mail, Sparkles, TrendingUp, Eye, Layers
+    Building, Mail, Sparkles, TrendingUp, Eye, Layers, Monitor, Check
 } from "lucide-react";
 import { useState } from "react";
 
