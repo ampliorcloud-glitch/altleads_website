@@ -8,6 +8,7 @@ import {
     Building, Mail, Sparkles, TrendingUp, Eye, Layers, Monitor, Check
 } from "lucide-react";
 import { useState } from "react";
+import SmoothScrollLink from "../SmoothScrollLink";
 
 /* ─── Hero ─── */
 function DataHero() {
@@ -27,18 +28,29 @@ function DataHero() {
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                         className="text-[36px] md:text-[80px] leading-[0.95] font-black headline-premium text-white mb-10 max-w-5xl"
                     >
-                        Every lead you'll ever need. <span className="text-blue-400 italic">Fresh every 24 hours.</span>
+                        Right Person. Right Message. <span className="text-blue-400 italic">Right Now.</span>
                     </motion.h1>
                     <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg md:text-2xl text-slate-400 max-w-3xl mb-12 font-medium leading-relaxed">
-                        Precision data at scale. We combine web-level scraping with real-time intent signals to give your team the most accurate B2B contact data in the world.
+                        Less Research. <span className="text-blue-400">More Conversations.</span> We combine web-level scraping with real-time intent signals to give your team the most accurate B2B contact data in the world.
                     </motion.p>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row items-center gap-6">
                         <a href="/contact" className="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 flex items-center gap-3 group glow-on-hover">
                             Scale Your Data <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                         </a>
-                        <a href="#data-app" className="px-10 py-5 bg-white/5 text-white border border-white/10 font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3">
+                        <SmoothScrollLink href="#data-app" className="px-10 py-5 bg-white/5 text-white border border-white/10 font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3">
                             Explore Platform
-                        </a>
+                        </SmoothScrollLink>
+                    </motion.div>
+
+                    {/* Hero Visual: Data Intel */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                        className="mt-24 relative w-full max-w-6xl rounded-[48px] overflow-hidden border border-white/10 shadow-3xl"
+                    >
+                        <img src="/assets/08_Data_CRMEnrichmentIntelligence.jpg" alt="CRM Enrichment Intelligence" className="w-full h-auto" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent opacity-40" />
                     </motion.div>
                 </div>
             </div>

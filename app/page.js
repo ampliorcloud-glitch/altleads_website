@@ -7,7 +7,7 @@ import SolutionOverview from "@/components/SolutionOverview";
 import UseCases from "@/components/UseCases";
 import Implementation from "@/components/Implementation";
 import FAQ from "@/components/FAQ";
-import FinalCTA from "@/components/FinalCTA";
+import BookDemo from "@/components/BookDemo";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -22,7 +22,7 @@ export default function Home() {
       <UseCases />
       <Implementation />
       <FAQ />
-      <FinalCTA />
+      <BookDemo />
       <Footer />
     </main>
   );

@@ -8,6 +8,7 @@ import {
     AlertTriangle, Target, ChevronDown, Share2, School, Rocket, MapPin, Clock, Wifi, Check, Settings
 } from "lucide-react";
 import { useState } from "react";
+import SmoothScrollLink from "../SmoothScrollLink";
 
 /* ─── Hero ─── */
 function CRMHero() {
@@ -30,23 +31,31 @@ function CRMHero() {
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                         className="text-[36px] md:text-[80px] leading-[0.95] font-black headline-premium text-white mb-10 max-w-5xl"
                     >
-                        A CRM designed for <span className="text-primary italic">outbound execution</span> — not just record keeping.
+                        The CRM that <span className="text-primary italic">closes the loop</span> between lead gen and sales.
                     </motion.h1>
                     <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg md:text-2xl text-slate-400 max-w-3xl mb-12 font-medium leading-relaxed">
                         AltLeads CRM is a workflow-first system built for the handoff between backend qualification and frontend sales execution. Web dashboard for ops. Mobile app for field reps.
                     </motion.p>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row items-center gap-6">
-                        <a href="/contact" className="px-12 py-5 bg-primary text-white font-black rounded-2xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 flex items-center gap-3 group glow-on-hover">
-                            Book a Demo <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
-                        </a>
-                        <a href="#crm-workflow" className="px-10 py-5 bg-white/5 text-white border border-white/10 font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3">
+                        <SmoothScrollLink href="#crm-workflow" className="px-10 py-5 bg-white/5 text-white border border-white/10 font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3">
                             <div className="size-6 rounded-full bg-white/10 flex items-center justify-center">
                                 <Play className="size-3 fill-white text-white" />
                             </div>
                             See 2-Min Tour
-                        </a>
+                        </SmoothScrollLink>
                     </motion.div>
                 </div>
+
+                {/* Primary CRM Visual */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-20 relative w-full max-w-5xl rounded-[40px] overflow-hidden border border-white/10 shadow-3xl group"
+                >
+                    <img src="/assets/04_CRM_SalesPipelineDashboard.jpg" alt="Sales Pipeline Dashboard" className="w-full h-auto grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent opacity-60" />
+                </motion.div>
             </div>
         </section>
     );
@@ -67,10 +76,10 @@ function CRMProblem() {
                 <div className="lg:w-1/2">
                     <span className="text-primary font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">The Gap</span>
                     <h2 className="text-4xl md:text-6xl font-black headline-premium text-white mb-8 leading-[0.95]">
-                        Your CRM stores data. <br /><span className="text-slate-500">It doesn't run the motion.</span>
+                        Stop tracking activity. <br /><span className="text-primary italic">Start converting conversations.</span>
                     </h2>
                     <p className="text-slate-400 text-lg md:text-xl leading-relaxed max-w-xl">
-                        Generic CRMs are generic. AltLeads is purpose-built for high-performance B2B teams where every meeting and every follow-up must be disciplined.
+                        Generic CRMs are built for managers. AltLeads is built for the sales teams that actually close.
                     </p>
                 </div>
                 <div className="lg:w-1/2 grid grid-cols-1 gap-4 w-full">
@@ -155,16 +164,22 @@ function WebCRMFeatures() {
                         Control lead management, stakeholder mapping, and questionnaire design from a unified dashboard designed for speed and visibility.
                     </p>
                 </div>
-                <div className="lg:w-3/5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {webFeatures.map((f, i) => (
-                        <motion.div key={f.title} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="p-8 bg-white border border-slate-100 rounded-[40px] hover:shadow-xl hover:border-primary/20 transition-all group">
-                            <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-                                <f.icon className="size-6 text-primary group-hover:text-white transition-colors" />
-                            </div>
-                            <h4 className="font-bold text-[#0f172a] mb-2 text-lg">{f.title}</h4>
-                            <p className="text-slate-500 text-sm leading-relaxed font-medium">{f.desc}</p>
-                        </motion.div>
-                    ))}
+                <div className="lg:w-3/5 relative">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {webFeatures.map((f, i) => (
+                            <motion.div key={f.title} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="p-8 bg-white border border-slate-100 rounded-[40px] hover:shadow-xl hover:border-primary/20 transition-all group relative z-10">
+                                <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+                                    <f.icon className="size-6 text-primary group-hover:text-white transition-colors" />
+                                </div>
+                                <h4 className="font-bold text-[#0f172a] mb-2 text-lg">{f.title}</h4>
+                                <p className="text-slate-500 text-sm leading-relaxed font-medium">{f.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                    {/* Secondary Visual: Analytics Overlay */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-5 pointer-events-none">
+                        <img src="/assets/03_CRM_AnalyticsDashboard.jpg" alt="CRM Analytics" className="object-cover w-full h-full" />
+                    </div>
                 </div>
             </div>
         </SectionWrapper>

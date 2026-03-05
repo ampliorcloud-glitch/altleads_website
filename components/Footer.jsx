@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import SmoothScrollLink from "./SmoothScrollLink";
 
 export default function Footer() {
     return (
@@ -32,7 +33,7 @@ export default function Footer() {
                     <div>
                         <h4 className="font-black text-[#0f172a] mb-6">Company</h4>
                         <ul className="space-y-4 text-sm font-bold text-slate-500">
-                            <li><a href="#top" className="hover:text-primary transition-colors">About</a></li>
+                            <li><SmoothScrollLink href="#top" className="hover:text-primary transition-colors">About</SmoothScrollLink></li>
                             <li><a href="/careers" className="hover:text-primary transition-colors">Careers</a></li>
                             <li><a href="/contact" className="hover:text-primary transition-colors">Contact</a></li>
                             <li><a href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</a></li>
@@ -50,7 +51,7 @@ export default function Footer() {
                     <p className="text-sm text-slate-400 font-medium">© 2026 AltLeads Inc. All rights reserved.</p>
                     <div className="flex gap-8 text-sm font-bold text-slate-400">
                         <a href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+                        <a href="/terms" className="hover:text-primary transition-colors">Terms of Service</a>
                     </div>
                 </div>
             </div>

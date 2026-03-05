@@ -46,7 +46,7 @@ export default function Hero() {
                         transition={{ duration: 0.6 }}
                         className="text-[44px] md:text-[80px] font-black headline-premium text-white leading-[0.95] mb-10 max-w-5xl"
                     >
-                        Outbound execution, intelligence, and <span className="text-primary italic">CRM orchestration</span> — built for B2B teams.
+                        Every Follow-Up. Every Channel. <span className="text-primary italic">One System.</span>
                     </motion.h1>
 
                     <motion.p
@@ -64,7 +64,7 @@ export default function Hero() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="flex flex-col sm:flex-row gap-6 mb-20"
                     >
-                        <a href="/contact" className="px-12 py-5 bg-primary text-white font-black rounded-2xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group glow-on-hover">
+                        <a href="/#book-demo" className="px-12 py-5 bg-primary text-white font-black rounded-2xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group glow-on-hover">
                             Book a Demo
                             <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                         </a>
@@ -72,8 +72,38 @@ export default function Hero() {
                             <div className="size-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-primary transition-colors">
                                 <Play className="size-3 fill-white text-white" />
                             </div>
-                            Start Pilot / See 2-minute Tour
+                            See 2-minute Tour
                         </a>
+                    </motion.div>
+
+                    {/* Proactive Asia context */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="mb-20 py-4 px-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm"
+                    >
+                        <p className="text-sm font-bold text-slate-400">
+                            <span className="text-primary mr-2">●</span> Built for the Way India and APAC Sell.
+                        </p>
+                    </motion.div>
+
+                    {/* Hero Visual Mockup */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="relative w-full max-w-6xl mx-auto mb-20 group"
+                    >
+                        <div className="absolute inset-0 bg-primary/20 blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                        <div className="relative rounded-[32px] overflow-hidden border border-white/10 shadow-2xl transition-transform duration-700 group-hover:scale-[1.01]">
+                            <img
+                                src="/assets/01_Hero_InsideSalesTeam.jpg"
+                                alt="AltLeads Inside Sales Team"
+                                className="w-full h-auto object-cover"
+                            />
+                            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#0f172a] to-transparent" />
+                        </div>
                     </motion.div>
 
                     <motion.div
@@ -83,15 +113,15 @@ export default function Hero() {
                         className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 border-t border-white/5 pt-16 w-full"
                     >
                         {[
-                            "Run multi-channel cadences without tool-hopping",
-                            "Track activity and outcomes automatically",
-                            "Get practical guidance inside the workflow"
+                            "More Replies",
+                            "More Meetings",
+                            "More Pipeline"
                         ].map((item) => (
                             <div key={item} className="flex items-center justify-center gap-3">
-                                <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                    <Check className="size-3 text-primary" />
+                                <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+                                    <ArrowRight className="size-3" />
                                 </div>
-                                <span className="text-sm text-slate-400 font-bold tracking-tight">{item}</span>
+                                <span className="text-lg text-white font-black tracking-tight uppercase">{item}</span>
                             </div>
                         ))}
                     </motion.div>

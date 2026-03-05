@@ -9,6 +9,7 @@ import {
     Settings, Eye, Smartphone, Building, Star, Check, Users, LayoutDashboard
 } from "lucide-react";
 import { useState } from "react";
+import SmoothScrollLink from "../SmoothScrollLink";
 
 /* ─── Hero ─── */
 function WAHero() {
@@ -31,7 +32,7 @@ function WAHero() {
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
                         className="text-[36px] md:text-[80px] font-black headline-premium text-white leading-[0.95] mb-10 max-w-5xl"
                     >
-                        Conversational outbound that <span className="text-emerald-400 italic">scales with you.</span>
+                        Where deals <span className="text-emerald-400 italic">don't go dark.</span>
                     </motion.h1>
 
                     <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="text-lg md:text-2xl font-medium text-slate-400 max-w-3xl mb-12 leading-relaxed">
@@ -42,9 +43,20 @@ function WAHero() {
                         <a href="/contact" className="px-12 py-5 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-3 group glow-on-hover">
                             Request Early Access <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
                         </a>
-                        <a href="#wa-workflows" className="px-10 py-5 bg-white/5 text-white border border-white/10 font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3">
+                        <SmoothScrollLink href="#wa-workflows" className="px-10 py-5 bg-white/5 text-white border border-white/10 font-black rounded-2xl hover:bg-white/10 transition-all flex items-center gap-3">
                             View Workflow Library
-                        </a>
+                        </SmoothScrollLink>
+                    </motion.div>
+
+                    {/* Hero Visual: WA B2B Lead Gen */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="mt-20 relative w-full max-w-4xl rounded-[48px] overflow-hidden border border-white/10 shadow-3xl group"
+                    >
+                        <img src="/assets/07_WhatsApp_B2BLeadGeneration.jpg" alt="WhatsApp B2B Lead Generation" className="w-full h-auto group-hover:scale-[1.02] transition-transform duration-700" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent opacity-40" />
                     </motion.div>
                 </div>
             </div>
@@ -130,29 +142,35 @@ function WAOrchestration() {
                 <div className="lg:w-1/2">
                     <span className="text-emerald-600 font-black tracking-[0.2em] text-[10px] uppercase mb-6 block">Unified Flow</span>
                     <h2 className="text-4xl md:text-7xl font-black headline-premium text-[#0f172a] mb-8 leading-[0.95]">
-                        Multi-channel <span className="text-emerald-600 italic">orchestration.</span>
+                        Your buyers are on WhatsApp. <span className="text-emerald-600 italic">Meet them there — with context.</span>
                     </h2>
                     <p className="text-slate-500 text-xl font-medium leading-relaxed">
                         WhatsApp works best when orchestrated alongside email and LinkedIn — not as a standalone blast tool.
                     </p>
                 </div>
                 <div className="lg:w-1/2 w-full">
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="p-12 bg-[#0f172a] rounded-[64px] border border-white/10 shadow-3xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]" />
-                        <h4 className="font-black text-xs text-emerald-400 uppercase tracking-widest mb-10 relative z-10">Sequence Example</h4>
-                        <div className="space-y-6 relative z-10">
-                            {[
-                                { day: "D1", ch: "Email", action: "Intro & Value" },
-                                { day: "D3", ch: "LinkedIn", action: "Connect & Engagement" },
-                                { day: "D5", ch: "WhatsApp", action: "Structured Nudge" },
-                                { day: "D8", ch: "Email", action: "Contextual Follow-up" },
-                            ].map((step, i) => (
-                                <div key={i} className="flex items-center gap-6 group">
-                                    <span className="text-[10px] font-black text-slate-500 w-10">{step.day}</span>
-                                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${step.ch === "WhatsApp" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-white/5 border-white/10 text-slate-400"}`}>{step.ch}</div>
-                                    <span className="text-white font-bold">{step.action}</span>
-                                </div>
-                            ))}
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative group">
+                        <div className="p-12 bg-[#0f172a] rounded-[64px] border border-white/10 shadow-3xl relative overflow-hidden z-10 transition-transform duration-700 group-hover:-translate-y-2">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]" />
+                            <h4 className="font-black text-xs text-emerald-400 uppercase tracking-widest mb-10 relative z-10">Sequence Example</h4>
+                            <div className="space-y-6 relative z-10">
+                                {[
+                                    { day: "D1", ch: "Email", action: "Intro & Value" },
+                                    { day: "D3", ch: "LinkedIn", action: "Connect & Engagement" },
+                                    { day: "D5", ch: "WhatsApp", action: "Structured Nudge" },
+                                    { day: "D8", ch: "Email", action: "Contextual Follow-up" },
+                                ].map((step, i) => (
+                                    <div key={i} className="flex items-center gap-6 group">
+                                        <span className="text-[10px] font-black text-slate-500 w-10">{step.day}</span>
+                                        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${step.ch === "WhatsApp" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-white/5 border-white/10 text-slate-400"}`}>{step.ch}</div>
+                                        <span className="text-white font-bold">{step.action}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        {/* Integration Visual Overlay */}
+                        <div className="absolute -bottom-10 -right-10 w-2/3 opacity-20 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-20">
+                            <img src="/assets/05_WhatsApp_CRMIntegration.jpg" alt="CRM Integration" className="rounded-2xl border border-white/10 shadow-3xl" />
                         </div>
                     </motion.div>
                 </div>

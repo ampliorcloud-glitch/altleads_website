@@ -5,15 +5,37 @@ import { Send, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
 export default function ContactForm() {
-    const [status, setStatus] = useState("idle"); // idle, sending, success
+    const [status, setStatus] = useState("idle"); // idle, sending, success, error
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus("sending");
-        // Simulate API call
-        setTimeout(() => {
-            setStatus("success");
-        }, 1500);
+
+        const formData = new FormData(e.target);
+        const payload = {
+            name: formData.get("name"),
+            email: formData.get("email"),
+            phone: formData.get("phone"),
+            company: formData.get("company"),
+            message: formData.get("message"),
+            formType: "contact",
+        };
+
+        try {
+            const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            if (res.ok) {
+                setStatus("success");
+            } else {
+                setStatus("error");
+            }
+        } catch {
+            setStatus("error");
+        }
     };
 
     if (status === "success") {
@@ -43,46 +65,52 @@ export default function ContactForm() {
         >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                 <div className="space-y-2">
-                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Full Name</label>
+                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Full Name *</label>
                     <input
                         required
+                        name="name"
                         type="text"
                         placeholder="John Doe"
                         className="w-full px-6 py-4 bg-[#f8fafc] border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Business Email</label>
+                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Business Email *</label>
                     <input
                         required
+                        name="email"
                         type="email"
                         placeholder="john@company.com"
                         className="w-full px-6 py-4 bg-[#f8fafc] border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Company Name</label>
+                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Phone Number *</label>
                     <input
                         required
+                        name="phone"
+                        type="tel"
+                        placeholder="+91 9876543210"
+                        className="w-full px-6 py-4 bg-[#f8fafc] border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Company Name *</label>
+                    <input
+                        required
+                        name="company"
                         type="text"
                         placeholder="Acme Corp"
                         className="w-full px-6 py-4 bg-[#f8fafc] border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                     />
                 </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">Monthly Lead Volume</label>
-                    <select className="w-full px-6 py-4 bg-[#f8fafc] border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium appearance-none">
-                        <option>100 - 500 leads</option>
-                        <option>500 - 2,000 leads</option>
-                        <option>2,000+ leads</option>
-                        <option>Enterprise / custom</option>
-                    </select>
-                </div>
             </div>
 
             <div className="space-y-2 mb-10">
-                <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">How can we help?</label>
+                <label className="text-sm font-black text-[#0f172a] uppercase tracking-tighter">How can we help? *</label>
                 <textarea
+                    required
+                    name="message"
                     placeholder="Tell us about your sales operation..."
                     rows={4}
                     className="w-full px-6 py-4 bg-[#f8fafc] border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium resize-none"
@@ -93,9 +121,15 @@ export default function ContactForm() {
                 disabled={status === "sending"}
                 className="w-full py-5 bg-[#0f172a] text-white font-black rounded-2xl hover:bg-slate-800 transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-70 group"
             >
-                {status === "sending" ? "Processing..." : "Submit Enrollment Request"}
+                {status === "sending" ? "Processing..." : status === "error" ? "Try Again" : "Submit Enrollment Request"}
                 <Send className="size-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
+
+            {status === "error" && (
+                <p className="mt-4 text-center text-red-500 text-sm font-bold">
+                    Something went wrong. Please try again.
+                </p>
+            )}
 
             <p className="mt-6 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
                 SECURE 256-BIT ENCRYPTED DATA TRANSFER

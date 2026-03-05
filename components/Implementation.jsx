@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Upload, Link2, Zap } from "lucide-react";
 import SectionWrapper from "./SectionWrapper";
+import SmoothScrollLink from "./SmoothScrollLink";
 
 const faqTeasers = [
     "Is AltLeads a CRM replacement or execution layer?",
@@ -54,18 +55,21 @@ export default function Implementation() {
                     <h3 className="text-2xl font-black text-[#0f172a] mb-8">Frequently Asked</h3>
                     <div className="space-y-4">
                         {faqTeasers.map((faq, index) => (
-                            <motion.a
+                            <motion.div
                                 key={faq}
-                                href="#faq"
                                 initial={{ opacity: 0, x: 10 }}
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.08 }}
-                                className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-2xl hover:border-primary/20 hover:shadow-md transition-all group"
                             >
-                                <span className="font-bold text-[#0f172a] group-hover:text-primary transition-colors text-sm">{faq}</span>
-                                <ArrowRight className="size-4 text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 ml-4" />
-                            </motion.a>
+                                <SmoothScrollLink
+                                    href="#faq"
+                                    className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-2xl hover:border-primary/20 hover:shadow-md transition-all group"
+                                >
+                                    <span className="font-bold text-[#0f172a] group-hover:text-primary transition-colors text-sm">{faq}</span>
+                                    <ArrowRight className="size-4 text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 ml-4" />
+                                </SmoothScrollLink>
+                            </motion.div>
                         ))}
                     </div>
                 </div>

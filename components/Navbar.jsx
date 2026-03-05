@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, Monitor, Brain, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
@@ -22,19 +22,6 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [showSolutions, setShowSolutions] = useState(false);
     const dropdownRef = useRef(null);
-    const { scrollY } = useScroll();
-
-    const backgroundColor = useTransform(
-        scrollY,
-        [0, 100],
-        ["rgba(248, 250, 252, 0)", "rgba(255, 255, 255, 0.8)"]
-    );
-
-    const borderColor = useTransform(
-        scrollY,
-        [0, 100],
-        ["rgba(226, 232, 240, 0)", "rgba(226, 232, 240, 0.8)"]
-    );
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -47,16 +34,20 @@ export default function Navbar() {
     }, []);
 
     return (
-        <motion.header
-            style={{ backgroundColor, borderBottom: `1px solid ${borderColor}`, backdropFilter: "blur(12px)" }}
-            className="fixed top-0 z-50 w-full px-4 md:px-10 py-4 transition-all"
+        <header
+            className="fixed top-0 z-50 w-full px-4 md:px-10 py-3 bg-[#0f2440] border-b border-[#1a3555] shadow-lg"
         >
             <div className="max-w-[1280px] mx-auto flex items-center justify-between">
                 {/* Logo */}
                 <a href="/" className="flex items-center gap-3 group">
-                    <h1 className="text-xl font-bold tracking-tight text-[#0f172a]">
-                        <span className="text-[#0099d6]">Alt</span>Leads
-                    </h1>
+                    <Image
+                        src="/logo.png"
+                        alt="AltLeads"
+                        width={144}
+                        height={38}
+                        className="h-10 w-auto"
+                        priority
+                    />
                 </a>
 
                 {/* Desktop Nav */}
@@ -65,7 +56,7 @@ export default function Navbar() {
                     <div className="relative" ref={dropdownRef}>
                         <button
                             onClick={() => setShowSolutions(!showSolutions)}
-                            className="flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
+                            className="flex items-center gap-1 text-sm font-semibold text-white/90 hover:text-white transition-colors"
                         >
                             Solutions
                             <ChevronDown className={`size-3.5 transition-transform duration-200 ${showSolutions ? "rotate-180" : ""}`} />
@@ -105,7 +96,7 @@ export default function Navbar() {
                         <a
                             key={item.name}
                             href={item.href}
-                            className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
+                            className="text-sm font-semibold text-white/90 hover:text-white transition-colors"
                         >
                             {item.name}
                         </a>
@@ -114,19 +105,19 @@ export default function Navbar() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-4">
-                    <a href="#" className="hidden sm:block text-sm font-bold text-slate-600 hover:text-primary transition-colors">
+                    <a href="https://app.altleads.com" target="_blank" rel="noopener noreferrer" className="hidden sm:block text-sm font-bold text-white/80 hover:text-white transition-colors">
                         Login
                     </a>
                     <a
-                        href="/contact"
-                        className="hidden sm:flex items-center justify-center rounded-lg bg-[#0f172a] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 shadow-md"
+                        href="/#book-demo"
+                        className="hidden sm:flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-[#0f2440] transition-all hover:bg-slate-100 shadow-md"
                     >
                         Book a Demo
                     </a>
 
                     {/* Mobile Toggle */}
                     <button
-                        className="md:hidden p-2 text-slate-600"
+                        className="md:hidden p-2 text-white"
                         onClick={() => setIsOpen(!isOpen)}
                     >
                         {isOpen ? <X className="size-6" /> : <Menu className="size-6" />}
@@ -167,7 +158,7 @@ export default function Navbar() {
                         </a>
                     ))}
                     <a
-                        href="/contact"
+                        href="/#book-demo"
                         onClick={() => setIsOpen(false)}
                         className="w-full py-4 bg-primary text-white font-bold text-center rounded-xl mt-4"
                     >
@@ -175,6 +166,6 @@ export default function Navbar() {
                     </a>
                 </motion.div>
             )}
-        </motion.header>
+        </header>
     );
 }
