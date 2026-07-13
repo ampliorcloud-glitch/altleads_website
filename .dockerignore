@@ -1,0 +1,4 @@
+node_modules/
+.git/
+altleads_website-main/node_modules/
+altleads_website-main/.next/
