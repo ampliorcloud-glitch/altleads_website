@@ -10,7 +10,7 @@ export default function SectionWrapper({ children, className = "", id = "", ...p
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className={`py-24 px-4 md:px-10 scroll-mt-32 ${className}`}
+            className={`py-24 px-6 md:px-12 lg:px-20 scroll-mt-32 ${className}`}
             {...props}
         >
             <div className="max-w-[1280px] mx-auto">

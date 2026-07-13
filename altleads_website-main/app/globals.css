@@ -167,12 +167,24 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px var(--space-3xl);
+  padding: 20px 24px;
   background: var(--color-bg);
   opacity: 0.9;
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
   transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .navbar {
+    padding: 20px 48px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .navbar {
+    padding: 20px 80px;
+  }
 }
 
 .navbar-logo {
