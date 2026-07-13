@@ -100,7 +100,7 @@ export default function BookDemo() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
-            className="flex flex-col gap-6 p-8 md:p-10 rounded-3xl bg-white/60 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 backdrop-blur-sm"
+            className="flex flex-col gap-6 p-8 md:p-10 rounded-3xl"
           >
             <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">What to expect</p>
             <div className="flex flex-col gap-7">
@@ -127,7 +127,7 @@ export default function BookDemo() {
 
           {/* Right — form */}
           <motion.div
-            className="demo-form p-8 md:p-10 rounded-3xl bg-white/60 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 backdrop-blur-sm"
+            className="demo-form p-8 md:p-10 rounded-3xl"
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}

@@ -83,19 +83,24 @@ export async function POST(request) {
             </div>
         </div>`;
 
+        // ── Send internal team notification ──────────────────────────
+        await resend.emails.send({
+            from: "AltLeads <noreply@altleads.com>",
+            to: ["hemalb@amplior.com"],
+            subject: internalSubject,
+            html: internalHtml,
+        });
+
         // ── Send user email ────────────────────────────────────────
-        // TO: form filler | BCC: ankit.s@amplior.com
+        // TO: form filler
         // CC: contact@altleads.com (disabled for testing — uncomment for production)
         await resend.emails.send({
             from: "AltLeads <noreply@altleads.com>",
             to: [email],
             // cc: ["contact@altleads.com"],   // ← uncomment for production
-            bcc: ["ankit.s@amplior.com"],
             subject: userSubject,
             html: userHtml,
         });
-
-        // Internal team already receives via BCC on the user email above
 
         return NextResponse.json({ success: true });
     } catch (error) {
