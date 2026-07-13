@@ -5,7 +5,7 @@ import SmoothScrollLink from "./SmoothScrollLink";
 
 export default function Footer() {
     return (
-        <footer className="bg-transparent border-t border-white/10 pt-20 pb-10 px-4 md:px-10 relative z-10">
+        <footer data-section="footer" className="bg-transparent border-t border-white/10 pt-20 pb-10 px-4 md:px-10 relative z-10">
             <div className="max-w-[1280px] mx-auto">
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
                     <div className="col-span-2 lg:col-span-2">

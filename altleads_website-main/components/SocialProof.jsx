@@ -66,7 +66,7 @@ export default function SocialProof() {
               {[...logos, ...logos, ...logos].map((name, i) => (
                 <span 
                   key={`${name}-${i}`} 
-                  className="mx-10 text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-300 uppercase tracking-tighter hover:text-blue-600 transition-colors duration-300 cursor-default drop-shadow-sm"
+                  className="logo-item mx-10 text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-300 uppercase tracking-tighter hover:text-blue-600 transition-colors duration-300 cursor-default drop-shadow-sm"
                 >
                   {name}
                 </span>

@@ -174,7 +174,7 @@ export default function BookDemo() {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-base rounded-full transition-all shadow-[0_0_40px_rgba(37,99,235,0.25)] hover:shadow-[0_0_50px_rgba(37,99,235,0.35)] disabled:opacity-60 group"
+                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 !bg-blue-600 hover:!bg-blue-700 !text-white font-bold text-base rounded-full transition-all shadow-[0_0_40px_rgba(37,99,235,0.25)] hover:shadow-[0_0_50px_rgba(37,99,235,0.35)] disabled:opacity-60 group"
                 >
                   {status === "sending" ? "Sending…" : status === "error" ? "Try Again" : "Book My Demo"}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

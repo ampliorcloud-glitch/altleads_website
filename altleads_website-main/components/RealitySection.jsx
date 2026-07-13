@@ -79,7 +79,7 @@ export default function RealitySection() {
   }, [])
 
   return (
-    <section className="section py-32 md:py-48 bg-transparent" ref={sectionRef}>
+    <section data-section="reality" className="section py-32 md:py-48 bg-transparent" ref={sectionRef}>
       <div className="section-inner">
         <div className="reality-header text-center mb-32 max-w-5xl mx-auto">
           <h2 className="text-[3rem] md:text-[5rem] font-black tracking-tight leading-[1.05] text-slate-900 dark:text-white mb-8">

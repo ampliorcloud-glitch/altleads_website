@@ -15,15 +15,27 @@ export async function POST(request) {
         }
 
         // Configure Nodemailer transporter
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT || 587,
-            secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        });
+        const isGmail = process.env.SMTP_HOST?.includes("gmail.com");
+        
+        const transporter = nodemailer.createTransport(
+            isGmail 
+            ? {
+                service: "gmail",
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            }
+            : {
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT || 587,
+                secure: process.env.SMTP_PORT == 465,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            }
+        );
 
         // The from email address
         const fromEmail = process.env.SMTP_FROM_EMAIL || '"AltLeads" <noreply@altleads.com>';

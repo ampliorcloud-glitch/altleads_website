@@ -87,7 +87,7 @@ export default function ModuleEcosystem() {
   }, []);
 
   return (
-    <section className="py-32 md:py-48 bg-transparent" ref={containerRef}>
+    <section data-section="modules" className="py-32 md:py-48 bg-transparent" ref={containerRef}>
       <div className="max-w-[1200px] mx-auto px-6 md:px-12 lg:flex lg:gap-32 relative">
         
         {/* Left Side: Pinned Headline */}
@@ -116,7 +116,7 @@ export default function ModuleEcosystem() {
                 transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
                 onMouseEnter={() => setHovered(mod.id)}
                 onMouseLeave={() => setHovered(null)}
-                className="group border-b border-black/10 dark:border-white/10 py-10 cursor-pointer overflow-hidden"
+                className="module-card group border-b border-black/10 dark:border-white/10 py-10 cursor-pointer overflow-hidden"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-8">
