@@ -1,0 +1,1352 @@
+[
+  {
+    "ref": "PD-001",
+    "title": "feature_flag table + useFlag() hook + kill-switch convention",
+    "domain": "Engineering/Anti-fragility",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "Enables daily-safe shipping: every layer ships dark, rollback = flip a row",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-002",
+    "title": "Typed contracts (zod/OpenAPI) at web<->notify-service<->DB seams",
+    "domain": "Engineering/Anti-fragility",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "Directly answers 'one change cannot silently crash dependents'",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-003",
+    "title": "Shared validator module used by both client and write path",
+    "domain": "Engineering/Anti-fragility",
+    "severity": "HIGH",
+    "phase": "foundation",
+    "northStar": "Single source of truth so validation can't disagree across tiers",
+    "dependsOn": "Typed contracts at seams",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-004",
+    "title": "Generalize interaction into append-only event table (spine)",
+    "domain": "Activities/Event Spine",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "The ONE place every conversation lands; foundation of all intelligence",
+    "dependsOn": "feature_flag table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-005",
+    "title": "Dual-write trigger interaction->event + event_compat VIEW + backfill",
+    "domain": "Activities/Event Spine",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "Non-breaking, reversible migration of the spine",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-006",
+    "title": "Repoint activityTimeline.ts and globalSearch.ts to event behind flag",
+    "domain": "Activities/Event Spine",
+    "severity": "HIGH",
+    "phase": "foundation",
+    "northStar": "Reads flow through the unified spine",
+    "dependsOn": "Dual-write trigger + backfill",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-007",
+    "title": "object_def / field_def / picklist registry seeded from current interfaces",
+    "domain": "Objects/Metadata Registry",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "Fields become data, not code; ends migration-per-field",
+    "dependsOn": "feature_flag table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-008",
+    "title": "field_value EAV table + merged-record accessor",
+    "domain": "Objects/Metadata Registry",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "New fields without migration or deploy",
+    "dependsOn": "field_def registry",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-009",
+    "title": "Fold dropdown_option into picklist provider",
+    "domain": "Objects/Metadata Registry",
+    "severity": "MEDIUM",
+    "phase": "foundation",
+    "northStar": "Reuse proven metadata-as-data pattern",
+    "dependsOn": "object_def registry",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-010",
+    "title": "Transactional outbox table + AFTER-INSERT trigger on event",
+    "domain": "Automation/Outbox",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "Durable, retryable, decoupled action queue under automation+webhooks",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-011",
+    "title": "Outbox worker (SKIP LOCKED, retries/backoff, DLQ, depth counter)",
+    "domain": "Automation/Outbox",
+    "severity": "CRITICAL",
+    "phase": "foundation",
+    "northStar": "Exactly-once-ish actions; cascade containment",
+    "dependsOn": "outbox table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-012",
+    "title": "Replace ad-hoc cron with durable outbox worker",
+    "domain": "Engineering/Jobs",
+    "severity": "HIGH",
+    "phase": "foundation",
+    "northStar": "Real queue for automation/sequences/enrichment/transcription",
+    "dependsOn": "Outbox worker",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-013",
+    "title": "Observability: structured logs + error tracking + uptime",
+    "domain": "Engineering/Observability",
+    "severity": "HIGH",
+    "phase": "foundation",
+    "northStar": "Can't run 'daily usable' without knowing when it's down",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-014",
+    "title": "CI gate: contract + regression tests",
+    "domain": "Engineering/Testing",
+    "severity": "HIGH",
+    "phase": "foundation",
+    "northStar": "Daily increments without silent breakage",
+    "dependsOn": "Typed contracts at seams",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-015",
+    "title": "Idempotent verifying-migration applier as official ship unit",
+    "domain": "Engineering/Migrations",
+    "severity": "MEDIUM",
+    "phase": "foundation",
+    "northStar": "Reversible, re-runnable daily-shipping unit",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-016",
+    "title": "Expand-contract migration discipline (additive/dual-write/backfill/deprecate)",
+    "domain": "Engineering/Migrations",
+    "severity": "HIGH",
+    "phase": "foundation",
+    "northStar": "Schema changes never break dependents in place",
+    "dependsOn": "Idempotent applier",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-017",
+    "title": "Dependency-graph / impact-analysis (what breaks if I change X)",
+    "domain": "Engineering/Anti-fragility",
+    "severity": "MEDIUM",
+    "phase": "foundation",
+    "northStar": "Literal stated fear; tooling to see blast radius",
+    "dependsOn": "object_def registry",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-018",
+    "title": "Apply staged call_log + dual-write to event",
+    "domain": "Telephony/Calls",
+    "severity": "CRITICAL",
+    "phase": "daily-launch",
+    "northStar": "Captures the team's core motion as events",
+    "dependsOn": "Dual-write trigger interaction->event",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-019",
+    "title": "Wire Kanban drag-to-stage -> status_change event (ALT-292)",
+    "domain": "Module/Page Builder",
+    "severity": "HIGH",
+    "phase": "daily-launch",
+    "northStar": "Stage moves become captured events",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-020",
+    "title": "'My Day' unified work-queue screen",
+    "domain": "Daily-usability/Adoption",
+    "severity": "CRITICAL",
+    "phase": "daily-launch",
+    "northStar": "Adoption depends on ONE screen, not 27 pages",
+    "dependsOn": "Apply staged call_log",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-021",
+    "title": "First custom field end-to-end through field_value",
+    "domain": "Field/Property Editor",
+    "severity": "HIGH",
+    "phase": "daily-launch",
+    "northStar": "Proves fields-are-data path before building the editor",
+    "dependsOn": "field_value EAV table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-022",
+    "title": "One automation via outbox: FOLLOW_UP disposition -> follow-up task (disabled-first)",
+    "domain": "Automation/Workflow",
+    "severity": "HIGH",
+    "phase": "daily-launch",
+    "northStar": "Proves engine without cascade risk",
+    "dependsOn": "Outbox worker",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-023",
+    "title": "Read API v1: /api/v1/events (API-key, versioned)",
+    "domain": "API/Developer Platform",
+    "severity": "CRITICAL",
+    "phase": "daily-launch",
+    "northStar": "Stable external contract before anyone depends on internals",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-024",
+    "title": "api_key table (hashed, scoped, per-key rate limit)",
+    "domain": "API/Developer Platform",
+    "severity": "HIGH",
+    "phase": "daily-launch",
+    "northStar": "Closes per-IP-only gap; auth for the public surface",
+    "dependsOn": "Read API v1",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-025",
+    "title": "First outbound webhook on new events (HMAC + retries + delivery log)",
+    "domain": "Webhooks & Events",
+    "severity": "CRITICAL",
+    "phase": "daily-launch",
+    "northStar": "Dependents subscribe to events, not tables (anti-fragility)",
+    "dependsOn": "Outbox worker",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-026",
+    "title": "Read/access audit log (not just write-only attribution)",
+    "domain": "Permissions/Security",
+    "severity": "HIGH",
+    "phase": "daily-launch",
+    "northStar": "Governance + AI-access auditability; security debt in strongest area",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-027",
+    "title": "Close cross-project master-data (company/contact) leakage",
+    "domain": "Permissions/Security",
+    "severity": "HIGH",
+    "phase": "daily-launch",
+    "northStar": "Leads are project-scoped but master rows globally visible",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-028",
+    "title": "Validate recipient/privilege on /notify + user-create endpoints",
+    "domain": "Permissions/Security",
+    "severity": "HIGH",
+    "phase": "daily-launch",
+    "northStar": "Prevent privilege escalation / arbitrary send",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-029",
+    "title": "Per-user rate limiting + token revocation",
+    "domain": "Permissions/Security",
+    "severity": "MEDIUM",
+    "phase": "daily-launch",
+    "northStar": "Currently per-IP only",
+    "dependsOn": "api_key table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-030",
+    "title": "Write-path ownership: agents edit ASSIGNED records (not created_by)",
+    "domain": "Permissions/Security",
+    "severity": "CRITICAL",
+    "phase": "daily-launch",
+    "northStar": "Known launch-stopper for bulk-migrated data",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-031",
+    "title": "Recycle bin / restore / undo UI over existing soft-delete",
+    "domain": "Data Import/Quality",
+    "severity": "MEDIUM",
+    "phase": "daily-launch",
+    "northStar": "Operator safety as data volume grows",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-032",
+    "title": "Write-time exact-match dedup on create",
+    "domain": "Data Import/Quality",
+    "severity": "MEDIUM",
+    "phase": "daily-launch",
+    "northStar": "Prevent dupes at the source",
+    "dependsOn": "",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-033",
+    "title": "Field/Property Editor: ~12 field types",
+    "domain": "Field/Property Editor",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "No-code field creation = real platform",
+    "dependsOn": "field_value EAV table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-034",
+    "title": "Validation engine (required/unique/regex/range/date)",
+    "domain": "Field/Property Editor",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Data quality without code",
+    "dependsOn": "Field/Property Editor field types",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-035",
+    "title": "Conditional visibility + dependent picklists",
+    "domain": "Field/Property Editor",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Dynamic forms without code",
+    "dependsOn": "Validation engine",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-036",
+    "title": "Formula/rollup/computed + lookup/relationship + file + rich-text + encrypted-PII field types",
+    "domain": "Field/Property Editor",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Completes the field-type catalog",
+    "dependsOn": "Field/Property Editor field types",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-037",
+    "title": "Per-field history / audit trail",
+    "domain": "Field/Property Editor",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Governance + intelligence signal",
+    "dependsOn": "Field/Property Editor field types",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-038",
+    "title": "Field-level security beyond contact masking",
+    "domain": "Permissions/Security",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Per-role field editability/visibility",
+    "dependsOn": "Field/Property Editor field types",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-039",
+    "title": "Page-layout / module builder (dynamic forms, related lists, buttons, record-type layouts)",
+    "domain": "Module/Page Builder",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Configurable record pages",
+    "dependsOn": "Field/Property Editor field types",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-040",
+    "title": "Custom objects with associations (1:m, m:m junctions)",
+    "domain": "Objects/Metadata Registry",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Platform claim: model anything",
+    "dependsOn": "object_def registry",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-041",
+    "title": "Configurable pipeline/stage objects (replace free-text stage)",
+    "domain": "Deals/Pipelines",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "Real pipeline vs uncontrolled strings",
+    "dependsOn": "object_def registry",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-042",
+    "title": "Deal/opportunity object + probability + forecast categories + multiple pipelines",
+    "domain": "Deals/Pipelines",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "Sales-CRM table-stakes",
+    "dependsOn": "Configurable pipeline/stage objects",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-043",
+    "title": "Win-loss + reason codes; line items/quotes (later)",
+    "domain": "Deals/Pipelines",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Forecast + revenue tracking",
+    "dependsOn": "Deal/opportunity object",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-044",
+    "title": "Forecast dashboards (forecast-vs-target, quota/goals)",
+    "domain": "Deals/Pipelines",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Manager visibility",
+    "dependsOn": "Deal/opportunity object",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-045",
+    "title": "Automation Engine: trigger/condition/action library + branching + delays + schedules",
+    "domain": "Automation/Workflow",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "Table-stakes; all rides the outbox",
+    "dependsOn": "Outbox worker",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-046",
+    "title": "Approval-matrix config (replace hardcoded stage approvals)",
+    "domain": "Automation/Workflow",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Configurable approvals",
+    "dependsOn": "Automation Engine",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-047",
+    "title": "Lead-routing / round-robin / assignment-rules engine",
+    "domain": "Automation/Workflow",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Distribute work automatically",
+    "dependsOn": "Automation Engine",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-048",
+    "title": "Sequences & cadences (multi-step, multi-channel, auto-enroll/unenroll)",
+    "domain": "Sequences/Cadences",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "The outreach team's core motion has no engine",
+    "dependsOn": "Automation Engine",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-049",
+    "title": "Sequence analytics (reply/meeting/open rates) + suppression",
+    "domain": "Sequences/Cadences",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Measure outreach effectiveness",
+    "dependsOn": "Sequences & cadences",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-050",
+    "title": "Email engine: native send + templates + personalization tokens",
+    "domain": "Email Engine",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "Send from CRM, not Gmail",
+    "dependsOn": "Automation Engine",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-051",
+    "title": "Inbound email two-way thread capture (IMAP/Gmail/Graph) into event",
+    "domain": "Email Engine",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "Half the north star: capture real conversations",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-052",
+    "title": "Email tracking + bounce classification + suppression/unsubscribe (CAN-SPAM/GDPR)",
+    "domain": "Email Engine",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Deliverability + compliance",
+    "dependsOn": "Email engine native send",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-053",
+    "title": "Email deliverability: SPF/DKIM/DMARC + warmup",
+    "domain": "Email Engine",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Inbox placement",
+    "dependsOn": "Email engine native send",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-054",
+    "title": "Calendar two-way sync (Google/Outlook) + booking links + reminders/no-show",
+    "domain": "Meetings/Scheduling",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Scheduling automation + meeting capture",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-055",
+    "title": "Fathom meeting transcripts -> event.body_text connector",
+    "domain": "Meetings/Scheduling",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Capture meeting conversations",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-056",
+    "title": "WhatsApp / SMS capture into the spine",
+    "domain": "Integrations/Capture",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Dominant Indian B2B channel, currently uncaptured",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-057",
+    "title": "Identity-resolution / entity-resolution engine across channels",
+    "domain": "Capture/Identity Resolution",
+    "severity": "CRITICAL",
+    "phase": "platform",
+    "northStar": "Keystone of 'ONE place' - same person/company across channels",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-058",
+    "title": "Segmentation: dynamic/static lists, AND/OR/nested filters, suppression, list-as-trigger",
+    "domain": "Lists/Segmentation",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Blocks targeting/campaigns",
+    "dependsOn": "Automation Engine",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-059",
+    "title": "Reporting/dashboard builder (no-code, pivots, cross-object, scheduled)",
+    "domain": "Reporting/Analytics",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Self-serve reporting vs fixed dashboard",
+    "dependsOn": "object_def registry",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-060",
+    "title": "Shared metrics/semantic layer (reporting and AI agree)",
+    "domain": "Reporting/Analytics",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Prevent diverging numbers between BI and AI",
+    "dependsOn": "Reporting/dashboard builder",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-061",
+    "title": "Import wizard + field mapping + validation-on-import",
+    "domain": "Data Import/Quality",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Operator-facing bulk data ops",
+    "dependsOn": "Field/Property Editor field types",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-062",
+    "title": "Fuzzy/semantic dedup + bulk merge UI + record-merge model",
+    "domain": "Data Import/Quality",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Unavoidable in a capture-everything system",
+    "dependsOn": "Identity-resolution engine",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-063",
+    "title": "Integration OAuth/secrets/token-refresh framework",
+    "domain": "Integrations",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Lifecycle for all connectors",
+    "dependsOn": "api_key table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-064",
+    "title": "LinkedIn capture beyond extension (Sales Nav / message capture)",
+    "domain": "Integrations",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Central B2B intent channel",
+    "dependsOn": "Integration OAuth framework",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-065",
+    "title": "Inbound webhook / form-capture / website-visitor tracking",
+    "domain": "Webhooks & Events",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Intent from web behavior; inbound events",
+    "dependsOn": "Outbox worker",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-066",
+    "title": "Webhook subscription management UI + signature verify + replay",
+    "domain": "Webhooks & Events",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Manageable event subscriptions",
+    "dependsOn": "First outbound webhook",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-067",
+    "title": "Compliance: DPDP/GDPR recording-consent + retention/purge/RTBF for transcripts",
+    "domain": "Governance/Compliance",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "Recording every conversation is a legal landmine",
+    "dependsOn": "Apply staged call_log",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-068",
+    "title": "Field-level PII encryption-at-rest + data-classification labels + data-residency",
+    "domain": "Governance/Compliance",
+    "severity": "HIGH",
+    "phase": "platform",
+    "northStar": "System-level PII vs ad-hoc masking; Indian localization",
+    "dependsOn": "Read/access audit log",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-069",
+    "title": "RLS-decoupling: access layer independent of business logic",
+    "domain": "Permissions/Security",
+    "severity": "MEDIUM",
+    "phase": "platform",
+    "northStar": "Permission change can't crash a query path",
+    "dependsOn": "Typed contracts at seams",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-070",
+    "title": "Reverse-ETL / data-warehouse / BI export path",
+    "domain": "Integrations",
+    "severity": "LOW",
+    "phase": "platform",
+    "northStar": "Captured data flows out for analytics",
+    "dependsOn": "Read API v1",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-071",
+    "title": "Enable pgvector + event_embedding pipeline (embed body_text from outbox)",
+    "domain": "Intelligence/AI",
+    "severity": "CRITICAL",
+    "phase": "intelligence",
+    "northStar": "Unblocks semantic search/RAG over all captured conversations",
+    "dependsOn": "Inbound email two-way thread capture into event",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-072",
+    "title": "Semantic search/RAG replaces in-memory keyword search",
+    "domain": "Intelligence/AI",
+    "severity": "HIGH",
+    "phase": "intelligence",
+    "northStar": "Find anything across captured conversations",
+    "dependsOn": "pgvector + event_embedding pipeline",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-073",
+    "title": "Explainability/citation primitive + interaction-provenance tagging",
+    "domain": "Intelligence/AI",
+    "severity": "HIGH",
+    "phase": "intelligence",
+    "northStar": "Every AI claim links to source; trust is prerequisite to adoption",
+    "dependsOn": "event table",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-074",
+    "title": "Owned transcription/diarization pipeline (calls + meetings) -> body_text",
+    "domain": "Intelligence/AI",
+    "severity": "HIGH",
+    "phase": "intelligence",
+    "northStar": "Richest signal (the actual conversation) into the spine",
+    "dependsOn": "Apply staged call_log",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-075",
+    "title": "First-party intent scoring (reply sentiment, cadence, buying-signal phrases) -> intent_signal events",
+    "domain": "Intelligence/Intent",
+    "severity": "CRITICAL",
+    "phase": "intelligence",
+    "northStar": "The defining differentiator: intent from OUR data",
+    "dependsOn": "pgvector + event_embedding pipeline",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-076",
+    "title": "Scoring framework: separate fit / engagement / intent scores as field_value",
+    "domain": "Intelligence/Intent",
+    "severity": "HIGH",
+    "phase": "intelligence",
+    "northStar": "Explainable, surfaced in lists/Kanban for free",
+    "dependsOn": "First-party intent scoring",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-077",
+    "title": "Conversation intelligence: summarization + objection/competitor taxonomy",
+    "domain": "Intelligence/AI",
+    "severity": "HIGH",
+    "phase": "intelligence",
+    "northStar": "Structured intelligence from calls/emails",
+    "dependsOn": "Owned transcription pipeline",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-078",
+    "title": "Deal-risk / stalled / sentiment-trend detection from conversation cadence",
+    "domain": "Intelligence/AI",
+    "severity": "MEDIUM",
+    "phase": "intelligence",
+    "northStar": "Proactive pipeline health",
+    "dependsOn": "Deal/opportunity object",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-079",
+    "title": "Buying-committee / stakeholder mapping (champion/blocker/economic buyer)",
+    "domain": "Intelligence/AI",
+    "severity": "MEDIUM",
+    "phase": "intelligence",
+    "northStar": "Core B2B intelligence from conversations",
+    "dependsOn": "Conversation intelligence",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-080",
+    "title": "Next-best-action + manager digests + momentum/similar-accounts",
+    "domain": "Intelligence/AI",
+    "severity": "MEDIUM",
+    "phase": "intelligence",
+    "northStar": "Turns intelligence into daily action",
+    "dependsOn": "Scoring framework",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-081",
+    "title": "Model-quality loop: drift/precision monitoring + human-correction capture",
+    "domain": "Intelligence/AI",
+    "severity": "MEDIUM",
+    "phase": "intelligence",
+    "northStar": "Trust + retraining; AI outputs must be measured",
+    "dependsOn": "First-party intent scoring",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-082",
+    "title": "AI-access audit log (which model read which conversations)",
+    "domain": "Governance/Compliance",
+    "severity": "MEDIUM",
+    "phase": "intelligence",
+    "northStar": "Governance for AI over sensitive conversations",
+    "dependsOn": "Read/access audit log",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-083",
+    "title": "MCP server (wrapper over /api/v1 + event stream) + semantic data dictionary",
+    "domain": "MCP/Agent Interface",
+    "severity": "HIGH",
+    "phase": "intelligence",
+    "northStar": "Agents query intent/intelligence, not raw tables",
+    "dependsOn": "Read API v1",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "PD-084",
+    "title": "Platform write-safety: agent dry-run/approval + action-audit + reversibility",
+    "domain": "MCP/Agent Interface",
+    "severity": "HIGH",
+    "phase": "intelligence",
+    "northStar": "Make per-skill dry-run a platform primitive for all agents",
+    "dependsOn": "MCP server",
+    "source": "platform-discovery"
+  },
+  {
+    "ref": "DO-085",
+    "title": "Safe reversible import/export with one-button UNDO + REDO + persisted history log",
+    "domain": "admin",
+    "severity": "P0",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-086",
+    "title": "CSV/Excel import + re-import engine (create / update-only / upsert, keyed on Record ID)",
+    "domain": "admin",
+    "severity": "P0",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-087",
+    "title": "Import rollback (undo a specific import batch)",
+    "domain": "admin",
+    "severity": "P0",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-088",
+    "title": "Column-to-field mapping screen with auto-match + row preview",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-089",
+    "title": "Import dry-run diff + staged commit (preview create/update/skip/error counts)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-090",
+    "title": "Don't-overwrite-with-blank / skip-empty guard on update imports",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-091",
+    "title": "Partial-success import with downloadable error-rows file",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-092",
+    "title": "Field-type / format normalization + validation at import",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-093",
+    "title": "In-flight dedup at import time (match preview, not post-hoc)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-094",
+    "title": "Recycle bin: list + restore soft-deleted records",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-095",
+    "title": "Single + bulk delete/archive from the UI (soft-delete, typed-count confirm)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-096",
+    "title": "Hard-delete / purge + recycle-bin retention window",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-097",
+    "title": "Make merge reachable + atomic (wire MergeDuplicatesModal, transactional merge)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-098",
+    "title": "Merge survivorship rules + association re-parenting + de-merge",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-099",
+    "title": "Generalized bulk field-edit (any field, all entities incl. Leads)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-100",
+    "title": "Undo for mass-update / bulk field-edit",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-101",
+    "title": "Bulk-action audit receipt + history (batch X changed N rows, by whom, when)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-102",
+    "title": "Partial-failure surfacing + retry-failed-subset for bulk operations",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-103",
+    "title": "Progress bar + cancel on bulk operations",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-104",
+    "title": "Duplicate prevention at write time (unique constraints + create-time alert)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-105",
+    "title": "Controlled-dropdown / enum enforcement on status fields (DB-level)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-106",
+    "title": "Edit-form validation + DB-level required-field enforcement",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-107",
+    "title": "CSV/Excel formula-injection hardening on export",
+    "domain": "both",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-108",
+    "title": "Export audit log + permissioned PII export (who exported what PII, when)",
+    "domain": "both",
+    "severity": "P1",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-109",
+    "title": "Server-streamed full-dataset export + reconciliation count",
+    "domain": "analyst",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-110",
+    "title": "PII export gating (mask/restrict sensitive columns by role)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-111",
+    "title": "Replay / re-run a saved export configuration",
+    "domain": "analyst",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-112",
+    "title": "Named saved filters / dynamic + static segments",
+    "domain": "both",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-113",
+    "title": "No-code custom report / pivot builder",
+    "domain": "analyst",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-114",
+    "title": "Calculated / derived fields (Days Since Last Update, Size Tier)",
+    "domain": "analyst",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-115",
+    "title": "Customizable dashboards (choose KPIs, add report tiles, filters)",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-116",
+    "title": "Funnel / conversion-rate analytics (stage-to-stage, time-in-stage)",
+    "domain": "analyst",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-117",
+    "title": "Field-level change history (old to new value, who, when, source)",
+    "domain": "both",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-118",
+    "title": "Data-quality command center (duplicates, missing-data, formatting health)",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-119",
+    "title": "Consent / Do-Not-Call (DNC) / opt-out fields enforced at calling + export",
+    "domain": "both",
+    "severity": "P1",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-120",
+    "title": "Mandatory reason / justification on sensitive ops (mass edit, delete, PII export, merge)",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-121",
+    "title": "Contact-to-company enrichment auto-fill (domain, industry, size)",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-122",
+    "title": "GDPR/DPDP right-to-erasure + subject-access (DSAR) workflow",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-123",
+    "title": "Cascade-impact / orphan-prevention preview before parent delete or reassign",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-124",
+    "title": "Standardize audit columns (FK-typed actor, add updated_by everywhere)",
+    "domain": "both",
+    "severity": "P1",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-125",
+    "title": "Record source / creation provenance flags (import vs manual vs API)",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-126",
+    "title": "Data lineage on every record (first-seen source, batch id, last-modified source)",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-127",
+    "title": "Unify the fragmented activity timeline into one queryable event stream",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-128",
+    "title": "Referential integrity for polymorphic associations (interaction/call_log/task)",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-129",
+    "title": "Audit-table growth control / retention policy",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-130",
+    "title": "Data backup + point-in-time restore (app-level)",
+    "domain": "admin",
+    "severity": "P1",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-131",
+    "title": "Scheduled / recurring exports emailed on a cadence",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-132",
+    "title": "Job/scheduler infrastructure for background data jobs",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-133",
+    "title": "Read-only analyst API / webhook access for BI",
+    "domain": "analyst",
+    "severity": "P2",
+    "phase": "platform",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-134",
+    "title": "Large-data performance: indexes + server pagination ceiling on list/export",
+    "domain": "both",
+    "severity": "P2",
+    "phase": "buildable-now",
+    "northStar": "",
+    "dependsOn": "",
+    "source": "data-ops-audit"
+  },
+  {
+    "ref": "DO-135",
+    "title": "Bulk reassign hardening (cascade warning, progress, cancel)",
+    "domain": "admin",
+    "severity": "P2",
+    "phase": "blocked-on-ownership",
+    "northStar": "",
+    "dependsOn": "DEC-03",
+    "source": "data-ops-audit"
+  }
+]

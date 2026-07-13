@@ -1,0 +1,31 @@
+﻿FK Constraints Skipped During Migration
+Date: 2026-06-12 17:39:45
+========================================
+
+The following constraints could not be applied due to existing data integrity violations.
+Each entry shows the constraint name and the database error (orphaned rows exist in the child table
+that have no matching row in the referenced parent table).
+
+1. fk_mtg_resch_meeting
+   Table: meeting_reschedule -> meeting_master (meeting_id)
+   Error: Key (meeting_id)=(188) is not present in table "meeting_master".
+   Action needed: Delete or fix orphaned rows in meeting_reschedule where meeting_id=188 has no matching entry in meeting_master.
+
+2. fk_psa_report
+   Table: pre_sales_answer -> lead_report (report_id)
+   Error: Key (report_id)=(185) is not present in table "lead_report".
+   Action needed: Delete or fix orphaned rows in pre_sales_answer where report_id=185 has no matching entry in lead_report.
+
+3. fk_rbac_use_case
+   Table: rbac_master -> use_cases (use_case_id)
+   Error: Key (use_case_id)=(23) is not present in table "use_cases".
+   Action needed: Delete or fix orphaned rows in rbac_master where use_case_id=23 has no matching entry in use_cases.
+
+4. fk_user_role_user
+   Table: user_role -> user_master (user_id)
+   Error: Key (user_id)=(2) is not present in table "user_master".
+   Action needed: Delete or fix orphaned rows in user_role where user_id=2 has no matching entry in user_master.
+
+========================================
+Total applied:  60 / 64
+Total skipped:   4 / 64

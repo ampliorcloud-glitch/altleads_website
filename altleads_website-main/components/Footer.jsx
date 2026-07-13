@@ -1,0 +1,60 @@
+"use client";
+
+import Image from "next/image";
+import SmoothScrollLink from "./SmoothScrollLink";
+
+export default function Footer() {
+    return (
+        <footer className="bg-transparent border-t border-white/10 pt-20 pb-10 px-4 md:px-10 relative z-10">
+            <div className="max-w-[1280px] mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
+                    <div className="col-span-2 lg:col-span-2">
+                        <div className="flex items-center gap-2 mb-6">
+                            <span className="text-xl font-black text-white">AltLeads</span>
+                        </div>
+                        <p className="max-w-xs text-slate-400 font-medium leading-relaxed">
+                            Multi-channel outbound execution, intelligence, and CRM orchestration — built for B2B teams that care about outcomes.
+                        </p>
+                        <div className="pt-4 text-xs font-bold text-slate-400">
+                            © 2026 AltLeads. All rights reserved.
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="font-black text-white mb-6">Solutions</h4>
+                        <ul className="space-y-4 text-sm font-bold text-slate-400">
+                            <li><a href="/solutions/crm" className="hover:text-blue-400 transition-colors">CRM Solution</a></li>
+                            <li><a href="/solutions/data" className="hover:text-blue-400 transition-colors">Data & Intelligence</a></li>
+                            <li><a href="/solutions/whatsapp" className="hover:text-blue-400 transition-colors">WhatsApp SDR</a></li>
+                            <li><a href="/#faq" className="hover:text-blue-400 transition-colors">FAQ</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="font-black text-white mb-6">Company</h4>
+                        <ul className="space-y-4 text-sm font-bold text-slate-400">
+                            <li><SmoothScrollLink href="#top" className="hover:text-blue-400 transition-colors">About</SmoothScrollLink></li>
+                            <li><a href="/careers" className="hover:text-blue-400 transition-colors">Careers</a></li>
+                            <li><a href="/contact" className="hover:text-blue-400 transition-colors">Contact</a></li>
+                            <li><a href="/privacy-policy" className="hover:text-blue-400 transition-colors">Privacy Policy</a></li>
+                            <li className="pt-4">
+                                <span className="block text-white mb-1">Headquarters:</span>
+                                Global Tech Park, Tower D,<br />
+                                Bellandur, Bengaluru,<br />
+                                India 560103
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p className="text-sm text-slate-400 font-medium">© 2026 AltLeads Inc. All rights reserved.</p>
+                    <div className="flex gap-8 text-sm font-bold text-slate-400">
+                        <a href="/privacy-policy" className="hover:text-blue-400 transition-colors">Privacy Policy</a>
+                        <a href="/terms" className="hover:text-blue-400 transition-colors">Terms of Service</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
+}

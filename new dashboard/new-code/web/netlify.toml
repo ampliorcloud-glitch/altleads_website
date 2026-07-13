@@ -1,0 +1,24 @@
+# Netlify build config for the Amplior CRM web app.
+# In Netlify site settings, set "Base directory" = new-code/web (so this file + package.json are found).
+# Set these environment variables in Netlify (Site settings -> Environment variables):
+#   VITE_SUPABASE_URL       = https://puvozfhypqbwbmbhrhcr.supabase.co
+#   VITE_SUPABASE_ANON_KEY  = <the Supabase anon/public key>  (NOT the service_role key)
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback: every route serves index.html so client-side react-router deep links
+# (e.g. /leads/123, /approvals) resolve instead of 404ing on the host.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Basic security headers.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

@@ -1,0 +1,76 @@
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Generated build stamp (written at build time by gen-build-info.cjs)
+new-code/notify-service/build-info.json
+
+# Java / Backend
+**/target/
+**/bin/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.metadata/
+*.tmp
+*.bak
+*~
+.settings/
+.project
+.classpath
+.factorypath
+
+# Node / Frontend
+**/node_modules/
+**/dist/
+**/build/
+.npm/
+.eslintcache
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and Secrets
+.credentials/
+temp_db_creds/
+docs/figma-png/
+.env
+.env.local
+.env.*.local
+*.xlsx
+*.docx
+*.pdf
+*.zip
+*.sql
+
+# Temporary/Backup files
+temp_docx_content/
+cr_doc_content/
+cr_est_content/
+insert_dev_user.sql
+populate_sample_data.sql
+amplior_backup.sql
+test_db_connection.js
+
+# Local MCP config (contains API token)
+.mcp.json
+
+# Durable conversation archive (regenerated locally; old chats contain pasted secrets)
+docs/CONVERSATION-LOG.md
+
+# Open-source CRM/ERP reference codebases (READ-ONLY study refs; large, not our code).
+# The folder convention + how to use it is tracked via reference/README.md only.
+reference/*
+!reference/README.md

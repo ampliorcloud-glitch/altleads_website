@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Feedback Models — Current (3 different) vs Proposed (1 unified) — D2 decision</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F6F8FB; color: #111827; padding: 40px; }
+  h1 { font-size: 26px; margin-bottom: 6px; }
+  .sub { color: #6B7280; font-size: 14px; margin-bottom: 30px; }
+  h2 { font-size: 18px; margin: 34px 0 14px; }
+  .row { display: flex; gap: 18px; flex-wrap: wrap; }
+  .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; padding: 18px; width: 320px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .card h3 { font-size: 14px; margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 10px; margin-bottom: 10px; }
+  .bad { background: #FEF2F2; color: #B91C1C; }
+  .good { background: #ECFDF5; color: #047857; }
+  .mock { border: 1px dashed #D1D5DB; border-radius: 8px; padding: 12px; font-size: 12.5px; background: #FAFAFA; }
+  .mock .q { margin: 6px 0; }
+  .pill { display: inline-block; border: 1px solid #D1D5DB; border-radius: 12px; padding: 2px 10px; margin: 2px 3px 2px 0; font-size: 11.5px; background: #fff; }
+  .pill.on { background: #1A7EE8; color: #fff; border-color: #1A7EE8; }
+  .yn { display: inline-block; width: 34px; text-align: center; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 11px; padding: 1px 0; margin-left: 6px; background: #fff; }
+  .yn.on { background: #047857; color: #fff; border-color: #047857; }
+  textarea.mockta { width: 100%; height: 44px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 11.5px; padding: 6px; resize: none; background: #fff; }
+  .why { font-size: 12px; color: #6B7280; margin-top: 10px; line-height: 1.5; }
+  .arrow { font-size: 34px; color: #1A7EE8; align-self: center; }
+  .life { display: flex; gap: 0; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .stage { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px 16px; font-size: 12.5px; text-align: center; }
+  .stage b { display: block; font-size: 13px; }
+  .conn { width: 34px; height: 2px; background: #93C5FD; position: relative; }
+  .conn::after { content: '▶'; color: #93C5FD; position: absolute; right: -7px; top: -9px; font-size: 12px; }
+  table { border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
+  th, td { border: 1px solid #E5E7EB; padding: 8px 14px; text-align: left; }
+  th { background: #F3F4F6; }
+  .foot { margin-top: 30px; font-size: 13px; color: #374151; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 14px 16px; border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Meeting Feedback — what exists today vs the proposed single model</h1>
+<div class="sub">D2 decision aid · 2026-07-02 · open this file in a browser. TL;DR: three different feedback forms exist for the SAME meeting; the proposal is one shared model everywhere.</div>
+
+<h2>❌ TODAY — three different models for the same meeting</h2>
+<div class="row">
+  <div class="card">
+    <h3>1 · CRM (spec / partially built)</h3>
+    <span class="tag bad">server-driven Yes/No questions</span>
+    <div class="mock">
+      <div style="font-weight:600; margin-bottom:6px;">Meeting outcome</div>
+      <span class="pill on">Successful</span><span class="pill">Reschedule</span><span class="pill">Cancel</span>
+      <div class="q">Was the decision-maker present? <span class="yn on">Yes</span><span class="yn">No</span></div>
+      <div class="q">Budget discussed? <span class="yn">Yes</span><span class="yn on">No</span></div>
+      <div class="q">Next step agreed? <span class="yn on">Yes</span><span class="yn">No</span></div>
+    </div>
+    <div class="why">Questions come from <code>feedback_question_master</code> — admin-editable per project. Structured = reportable.</div>
+  </div>
+
+  <div class="card">
+    <h3>2 · Client portal (already shipped)</h3>
+    <span class="tag bad">free-text + 3 options — DIFFERENT shape</span>
+    <div class="mock">
+      <div style="font-weight:600; margin-bottom:6px;">How did the meeting go?</div>
+      <span class="pill on">Good fit</span><span class="pill">Not a fit</span><span class="pill">Follow up</span>
+      <textarea class="mockta">Client seemed interested but wants pricing first...</textarea>
+    </div>
+    <div class="why">Free text can't be counted, filtered, or fed into the monthly "Amplior gave vs Sales filled" remarks report. Also silently resets after submit — no read-back, no lock.</div>
+  </div>
+
+  <div class="card">
+    <h3>3 · Sales portal (stub)</h3>
+    <span class="tag bad">"Coming soon" — nothing</span>
+    <div class="mock" style="display:flex;align-items:center;justify-content:center;height:120px;color:#9CA3AF;">
+      Feedback page — coming soon
+    </div>
+    <div class="why">Sales people (the ones whose feedback you most need) currently have no form at all.</div>
+  </div>
+</div>
+
+<h2 style="text-align:center; margin-top:26px;"><span class="arrow">⬇</span></h2>
+
+<h2>✅ PROPOSED — one model, rendered in all three places</h2>
+<div class="row">
+  <div class="card" style="width:480px;">
+    <h3>The ONE feedback form (same everywhere: CRM · client portal · sales portal)</h3>
+    <span class="tag good">structured questions + ONE optional remark</span>
+    <div class="mock">
+      <div style="font-weight:600; margin-bottom:6px;">Meeting outcome</div>
+      <span class="pill on">Successful</span><span class="pill">Reschedule</span><span class="pill">Cancel</span><span class="pill">Drop</span>
+      <div class="q">Was the decision-maker present? <span class="yn on">Yes</span><span class="yn">No</span></div>
+      <div class="q">Budget discussed? <span class="yn">Yes</span><span class="yn on">No</span></div>
+      <div class="q">Next step agreed? <span class="yn on">Yes</span><span class="yn">No</span></div>
+      <div class="q" style="margin-top:8px;">Optional remark
+        <textarea class="mockta">Wants pricing before committing to a pilot.</textarea>
+      </div>
+    </div>
+    <div class="why">Questions still admin-editable per project (<code>feedback_question_master</code>). The single optional remark keeps the human nuance WITHOUT losing the countable answers. Answers land in <code>feedback_answer</code> (1,435 rows already) — the remarks report keeps working.</div>
+  </div>
+
+  <div class="card" style="width:480px;">
+    <h3>Lifecycle (who can change it, when)</h3>
+    <div class="life">
+      <div class="stage"><b>Draft</b>owner fills</div>
+      <div class="conn"></div>
+      <div class="stage"><b>Submitted</b>read-only view<br>owner may still edit</div>
+      <div class="conn"></div>
+      <div class="stage"><b>Meeting closed</b>🔒 LOCKED<br>admin-only override</div>
+    </div>
+    <div class="why">Fixes today's silent-reset bug (portal form wipes itself, no proof anything saved). Every edit is visible; after the meeting closes the record is evidence, not a draft. Notifications follow your Q5 matrix (TL gets "successful + feedback given").</div>
+    <table>
+      <tr><th>Surface</th><th>Today</th><th>After</th></tr>
+      <tr><td>CRM meeting page</td><td>model #1 (partial)</td><td>the ONE form</td></tr>
+      <tr><td>Client portal</td><td>model #2 (free text)</td><td>the ONE form</td></tr>
+      <tr><td>Sales portal</td><td>stub</td><td>the ONE form</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="foot">
+  <b>Decision needed (D2):</b> adopt the unified model above? Variant B = same thing but the free-remark box removed entirely (pure structured). Everything else (who sees what, when it locks) is as drawn. Say "D2 yes" / "D2 yes, no remark box" / or mark up what to change.
+</div>
+
+</body>
+</html>

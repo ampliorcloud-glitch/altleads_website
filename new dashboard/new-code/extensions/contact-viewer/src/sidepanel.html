@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AltLeads CRM</title>
+    <style>
+      /* ---- Base reset ---- */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 13px;
+        color: #1a1a1a;
+        background: #f8f9fa;
+        width: 100%;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ---- Top bar ---- */
+      #topbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        background: #0a2540;
+        color: #fff;
+      }
+      #topbar .logo {
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.02em;
+        flex: 1;
+      }
+      #topbar .logo span { color: #5b9cf6; }
+
+      /* ---- Project selector ---- */
+      #project-selector {
+        font-size: 12px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.08);
+        color: #fff;
+        cursor: pointer;
+      }
+      #project-selector option { color: #1a1a1a; background: #fff; }
+
+      /* ---- Auth indicator ---- */
+      #auth-status {
+        font-size: 11px;
+        color: rgba(255,255,255,0.7);
+        white-space: nowrap;
+      }
+      #signout-btn {
+        font-size: 11px;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.5);
+        cursor: pointer;
+        padding: 0 4px;
+        text-decoration: underline;
+      }
+      #signout-btn:hover { color: #fff; }
+
+      /* ---- Main content area ---- */
+      #content {
+        padding: 12px;
+      }
+
+      /* ---- Login form ---- */
+      #login-form {
+        margin-top: 24px;
+      }
+      .form-group {
+        margin-bottom: 10px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 3px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid #d0d5dd;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #1a1a1a;
+        outline: none;
+      }
+      .form-group input:focus { border-color: #0a2540; }
+
+      .btn-primary {
+        width: 100%;
+        padding: 8px;
+        background: #0a2540;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 4px;
+      }
+      .btn-primary:hover { background: #153d6b; }
+      .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+      /* ---- Error / info messages ---- */
+      .msg-error {
+        padding: 8px 10px;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        border-radius: 6px;
+        color: #b91c1c;
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      .msg-info {
+        padding: 8px 10px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        color: #1d4ed8;
+        font-size: 12px;
+        margin-top: 8px;
+      }
+
+      /* ---- Loading / idle states ---- */
+      #idle-state, #loading-state, #no-match-state {
+        text-align: center;
+        padding: 32px 12px;
+        color: #888;
+      }
+      #idle-state .icon, #loading-state .icon, #no-match-state .icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+      #idle-state p, #loading-state p, #no-match-state p {
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      /* ---- Contact card ---- */
+      .contact-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .contact-card .name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 2px;
+      }
+      .contact-card .designation {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      .contact-card .company {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0a2540;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 9999px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-left: 6px;
+      }
+      .badge-green { background: #dcfce7; color: #16a34a; }
+      .badge-orange { background: #ffedd5; color: #c2410c; }
+      .badge-red { background: #fee2e2; color: #b91c1c; }
+      .badge-gray { background: #f3f4f6; color: #6b7280; }
+      .badge-blue { background: #dbeafe; color: #1d4ed8; }
+
+      /* ---- Section heading ---- */
+      .section-title {
+        font-size: 10px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin: 12px 0 6px;
+      }
+
+      /* ---- Field row ---- */
+      .field-row {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        margin-bottom: 5px;
+        font-size: 12px;
+      }
+      .field-row .label {
+        color: #6b7280;
+        width: 68px;
+        flex-shrink: 0;
+        font-size: 11px;
+      }
+      .field-row .value { color: #1a1a1a; word-break: break-all; }
+      .field-row .value.masked { color: #6b7280; font-style: italic; }
+      .field-row .value.hidden { color: #6b7280; font-style: italic; }
+
+      /* ---- Activity list ---- */
+      .activity-item {
+        border-left: 2px solid #e5e7eb;
+        padding-left: 8px;
+        margin-bottom: 6px;
+        font-size: 11px;
+        color: #4b5563;
+      }
+      .activity-item .type { font-weight: 600; color: #374151; }
+      .activity-item .time { color: #6b7280; margin-left: 4px; }
+      .activity-item .note { margin-top: 2px; color: #6b7280; }
+
+      /* ---- Masked / empty field states ---- */
+      .field-row .value.masked {
+        color: #6b7280;
+        font-style: italic;
+        cursor: pointer;
+        text-decoration: underline dotted;
+      }
+      .field-row .value.masked:hover { color: #374151; }
+      .field-row .value.empty { color: #6b7280; }
+      .field-row .value.hidden-notice { color: #6b7280; font-style: italic; }
+
+      /* ---- Request section (non-owned card) ---- */
+      .request-section {
+        margin-top: 14px;
+        padding: 10px 12px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+      }
+      .btn-request {
+        width: 100%;
+        padding: 7px;
+        background: #6b7280;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+      .request-note {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #6b7280;
+        line-height: 1.4;
+      }
+
+      /* ---- Research request section (owned card) ---- */
+      .research-request-box {
+        margin-top: 2px;
+        padding: 10px 12px;
+        background: #f0f7ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .rr-missing {
+        font-size: 11px;
+        color: #1d4ed8;
+        margin-bottom: 6px;
+      }
+      .rr-status {
+        font-size: 11px;
+        color: #374151;
+        margin-bottom: 4px;
+      }
+      .rr-fields {
+        font-size: 10px;
+        color: #6b7280;
+        margin-bottom: 6px;
+      }
+      .rr-note {
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+      .rr-muted { color: #6b7280; font-style: italic; }
+      .rr-success {
+        font-size: 11px;
+        color: #16a34a;
+        margin-top: 4px;
+        font-weight: 600;
+      }
+      /* Status badges inside the research section */
+      .rr-badge {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 9999px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .rr-badge-pending    { background: #fef9c3; color: #854d0e; }
+      .rr-badge-in_progress { background: #dbeafe; color: #1d4ed8; }
+      .rr-badge-done       { background: #dcfce7; color: #16a34a; }
+      /* Request / re-request buttons */
+      .btn-rr-primary {
+        width: 100%;
+        padding: 7px;
+        background: #1d4ed8;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-rr-primary:hover    { background: #1e40af; }
+      .btn-rr-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+      .btn-rr-secondary {
+        width: 100%;
+        padding: 6px;
+        background: #fff;
+        color: #1d4ed8;
+        border: 1px solid #93c5fd;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 4px;
+      }
+      .btn-rr-secondary:hover    { background: #eff6ff; }
+      .btn-rr-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
+      .rr-feedback {
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      .rr-feedback-error   { color: #b91c1c; }
+      .rr-feedback-success { color: #16a34a; }
+
+      /* ---- More note (leads overflow) ---- */
+      .more-note {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 4px;
+      }
+
+      /* ---- Empty section placeholder ---- */
+      .empty-section {
+        font-size: 11px;
+        color: #9ca3af;
+        font-style: italic;
+        margin-bottom: 4px;
+      }
+
+      /* ---- Activity timeline date group ---- */
+      .activity-date-group {
+        font-size: 10px;
+        font-weight: 700;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 8px 0 4px;
+        padding-bottom: 2px;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .activity-header {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+
+      /* ---- CRM link ---- */
+      .crm-link {
+        margin-top: 14px;
+        text-align: center;
+      }
+      .crm-link a {
+        font-size: 11px;
+        color: #1d4ed8;
+        text-decoration: underline;
+      }
+
+      /* ---- Spinner ---- */
+      .spinner {
+        width: 20px; height: 20px;
+        border: 2px solid #e5e7eb;
+        border-top-color: #0a2540;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* ---- Skeleton loading lines ---- */
+      .skeleton-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .skeleton-line {
+        background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+        border-radius: 4px;
+        margin-bottom: 8px;
+      }
+      .skeleton-line.title  { height: 14px; width: 60%; }
+      .skeleton-line.sub    { height: 11px; width: 40%; }
+      .skeleton-line.field  { height: 10px; width: 80%; }
+      .skeleton-line.field-short { height: 10px; width: 50%; }
+      @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* ---- Password toggle ---- */
+      .password-wrapper {
+        position: relative;
+      }
+      .password-wrapper input {
+        padding-right: 34px;
+      }
+      .pw-toggle {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px;
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1;
+      }
+      .pw-toggle:hover { color: #374151; }
+
+      /* ---- Forgot password link ---- */
+      .forgot-link {
+        display: block;
+        font-size: 11px;
+        color: #1d4ed8;
+        text-align: right;
+        margin-top: 4px;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .forgot-link:hover { color: #1e40af; }
+
+      /* Hidden utility */
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <!-- Top bar -->
+    <div id="topbar">
+      <div class="logo">Alt<span>Leads</span> CRM</div>
+      <select id="project-selector" class="hidden">
+        <option value="">Select project...</option>
+      </select>
+      <span id="auth-status"></span>
+      <button id="signout-btn" class="hidden">Sign out</button>
+    </div>
+
+    <!-- Main content -->
+    <div id="content">
+      <!-- LOGIN FORM (shown when not authenticated) -->
+      <div id="login-form">
+        <div class="msg-info">Sign in to see CRM contacts while you browse LinkedIn.</div>
+        <br/>
+        <div class="form-group">
+          <label for="email-input">Email</label>
+          <input type="email" id="email-input" placeholder="you@amplior.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="password-input">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="password-input" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" id="pw-toggle" class="pw-toggle" aria-label="Show/hide password">👁</button>
+          </div>
+          <a id="forgot-link" class="forgot-link" href="https://crm.altleads.com/forgot-password" target="_blank">Forgot password?</a>
+        </div>
+        <div id="login-error" class="hidden msg-error"></div>
+        <button id="login-btn" class="btn-primary">Sign in</button>
+      </div>
+
+      <!-- IDLE STATE (authenticated, not on a LinkedIn /in/ profile) -->
+      <div id="idle-state" class="hidden">
+        <div class="icon">🔍</div>
+        <p>Navigate to a LinkedIn profile (<strong>/in/…</strong>) to look up the contact in AltLeads CRM.</p>
+      </div>
+
+      <!-- LOADING STATE -->
+      <div id="loading-state" class="hidden">
+        <div class="skeleton-card">
+          <div class="skeleton-line title"></div>
+          <div class="skeleton-line sub"></div>
+          <div class="skeleton-line sub" style="width:30%;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton-line field"></div>
+          <div class="skeleton-line field-short"></div>
+          <div class="skeleton-line field"></div>
+          <div class="skeleton-line field-short"></div>
+        </div>
+      </div>
+
+      <!-- NO MATCH STATE -->
+      <div id="no-match-state" class="hidden">
+        <div class="icon">📭</div>
+        <p>No CRM contact found for this LinkedIn profile.</p>
+        <p style="margin-top:8px;font-size:11px;color:#aaa;">The profile may not be in the CRM yet, or the LinkedIn URL is not saved against any contact.</p>
+      </div>
+
+      <!-- CONTACT CARD (populated by sidepanel.ts) -->
+      <div id="contact-card" class="hidden"></div>
+
+      <!-- ERROR STATE -->
+      <div id="error-state" class="hidden msg-error"></div>
+    </div>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

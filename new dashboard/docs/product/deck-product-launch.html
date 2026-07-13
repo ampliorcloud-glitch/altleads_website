@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AltLeads CRM — Product & Launch</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --soft:#f1f5f9;
+    --brand:#1A7EE8; --brand-dk:#0b1f54; --brand2:#0ea5e9;
+    --red:#dc2626; --amber:#d97706; --green:#16a34a; --purple:#7c3aed; --bg:#ffffff;
+  }
+  body { font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); }
+  .slide{ width:1280px; height:720px; padding:50px 64px; page-break-after:always; position:relative;
+          background:var(--bg); display:flex; flex-direction:column; overflow:hidden; }
+  .slide:last-child{ page-break-after:auto; }
+  .kicker{ font-size:13px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--brand); }
+  h2.title{ font-size:34px; font-weight:800; margin:6px 0 4px; letter-spacing:-.01em; }
+  .lead{ font-size:16px; color:var(--muted); margin-bottom:20px; max-width:1000px; line-height:1.5; }
+  .footer{ position:absolute; left:64px; right:64px; bottom:22px; display:flex; justify-content:space-between;
+           font-size:11.5px; color:var(--muted); border-top:1px solid var(--line); padding-top:9px; }
+  .pageno{ font-variant-numeric:tabular-nums; }
+  .brandmark{ position:absolute; top:26px; right:64px; font-size:18px; font-weight:800; letter-spacing:-.02em; color:var(--brand-dk); z-index:5; }
+  .brandmark span{ color:var(--brand); }
+  .cover .brandmark{ color:#fff; } .cover .brandmark span{ color:#bfe0ff; }
+
+  /* Cover */
+  .cover{ justify-content:center; background:linear-gradient(135deg,#0b1f54 0%,#1A7EE8 58%,#0ea5e9 100%); color:#fff; }
+  .cover .kicker{ color:#cfe0ff; }
+  .cover h1{ font-size:60px; line-height:1.04; font-weight:800; margin:16px 0 16px; max-width:1000px; letter-spacing:-.02em; }
+  .cover .sub{ font-size:23px; color:#e6f0ff; max-width:880px; line-height:1.4; }
+  .cover .meta{ margin-top:40px; font-size:15px; color:#bfdbfe; display:flex; gap:30px; }
+  .cover .meta b{ color:#fff; }
+  .pill{ display:inline-block; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3);
+         padding:7px 16px; border-radius:999px; font-size:14px; font-weight:600; margin-top:26px; }
+
+  /* Metrics */
+  .metrics{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+  .metric{ border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:linear-gradient(135deg,#f8fafc,#eef4ff); }
+  .metric .num{ font-size:34px; font-weight:800; color:var(--brand); line-height:1; }
+  .metric .lbl{ font-size:12px; color:var(--muted); margin-top:6px; text-transform:uppercase; letter-spacing:.05em; }
+
+  /* Generic panels */
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; flex:1; align-content:start; }
+  .three{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; flex:1; align-content:start; }
+  .panel{ border:1px solid var(--line); border-radius:12px; padding:16px 20px; background:#fff; }
+  .panel.b{ border-left:5px solid var(--brand); }
+  .panel.g{ border-left:5px solid var(--green); }
+  .panel.a{ border-left:5px solid var(--amber); }
+  .panel.r{ border-left:5px solid var(--red); }
+  .panel.p{ border-left:5px solid var(--purple); }
+  .panel h3{ font-size:16px; font-weight:700; margin-bottom:9px; }
+  .panel ul{ padding-left:18px; } .panel li{ font-size:14.5px; line-height:1.5; margin:5px 0; }
+  .panel p{ font-size:14.5px; line-height:1.5; }
+
+  .tag{ display:inline-block; font-size:10.5px; font-weight:700; padding:2px 9px; border-radius:999px; margin-left:6px; vertical-align:middle; }
+  .tag.now{ background:#dcfce7; color:#166534; } .tag.soon{ background:#dbeafe; color:#1e40ab; } .tag.next{ background:#ede9fe; color:#5b21b6; }
+
+  /* Vision ecosystem */
+  .eco{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:6px 0 14px; }
+  .node{ border:2px solid var(--brand); border-radius:14px; padding:16px 18px; background:#f5f9ff; }
+  .node.dim{ border-color:#cbd5e1; background:#f8fafc; }
+  .node .t{ font-size:17px; font-weight:800; color:var(--brand-dk); }
+  .node .d{ font-size:13px; color:var(--muted); margin-top:6px; line-height:1.45; }
+  .corebar{ border-radius:14px; padding:16px 22px; color:#fff; background:linear-gradient(135deg,#0b1f54,#1A7EE8); }
+  .corebar .t{ font-size:16px; font-weight:800; } .corebar .d{ font-size:14px; color:#dbeafe; margin-top:4px; }
+
+  /* Roadmap */
+  .road{ display:grid; grid-template-columns:repeat(5,1fr); gap:0; flex:1; align-content:center; }
+  .step{ position:relative; padding:0 12px; }
+  .step .dot{ width:30px; height:30px; border-radius:999px; background:var(--brand); color:#fff; font-weight:800;
+              font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .step.future .dot{ background:#94a3b8; }
+  .step .ln{ position:absolute; top:15px; left:50%; right:-50%; height:3px; background:var(--line); z-index:-1; }
+  .step h4{ font-size:15px; font-weight:800; margin:12px 0 6px; }
+  .step p{ font-size:12.5px; color:var(--muted); line-height:1.45; }
+  .step .when{ font-size:11px; font-weight:700; color:var(--brand); text-transform:uppercase; letter-spacing:.04em; }
+
+  /* Feature cards */
+  .fgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:13px; flex:1; align-content:start; }
+  .fc{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fff; }
+  .fc .ico{ font-size:20px; } .fc h4{ font-size:15px; font-weight:700; margin:6px 0 5px; }
+  .fc p{ font-size:13px; color:var(--muted); line-height:1.45; }
+
+  .big{ font-size:26px; font-weight:800; line-height:1.3; max-width:1040px; letter-spacing:-.01em; }
+  .quote{ border-left:5px solid var(--brand); background:var(--soft); padding:16px 22px; border-radius:0 10px 10px 0;
+          font-size:17px; line-height:1.5; margin:8px 0 16px; }
+  .gate{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  .gate .gx{ border:1px solid var(--line); border-radius:10px; padding:12px 14px; text-align:center; background:#f8fafc; }
+  .gate .gx .n{ font-size:13px; font-weight:800; color:var(--brand); }
+  .gate .gx .l{ font-size:13px; margin-top:4px; }
+  .riskbox{ border:2px solid var(--amber); background:#fffbeb; border-radius:12px; padding:14px 20px; margin-top:6px; }
+  .riskbox h3{ font-size:16px; color:#92400e; margin-bottom:6px; }
+  .riskbox p{ font-size:14px; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<!-- 1 · COVER -->
+<section class="slide cover">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Product Vision · Impact · Launch Plan</div>
+  <h1>AltLeads CRM — built, live, and ready to launch</h1>
+  <div class="sub">Our own outreach engine — replacing the vendor's system. One place where every call, contact and company lives, and the data becomes a competitive advantage.</div>
+  <div class="pill">An ecosystem: CRM web app · Chrome extension · Mobile · AI on top</div>
+  <div class="meta"><span><b>Prepared for</b>&nbsp; Senior leadership</span><span><b>Date</b>&nbsp; 18 June 2026</span><span><b>Owner</b>&nbsp; Mohit Sharma</span></div>
+</section>
+
+<!-- 2 · THE NORTH STAR -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">The North Star</div>
+  <h2 class="title">One ecosystem that captures everything — and turns it into a superpower</h2>
+  <div class="lead">Every interaction is recorded as it happens. That growing, organised memory becomes the fuel for an AI that tells us <b>who to call, when, and what to say</b> — insight no one else has, because only we recorded it.</div>
+  <div class="corebar"><div class="t">⚡ The data moat</div><div class="d">All past activity → embedded on the go → a fast retrieval (RAG) base for AI. The more we use it, the smarter and more valuable it gets.</div></div>
+  <div class="eco" style="margin-top:16px;">
+    <div class="node"><div class="t">CRM — web app</div><div class="d">The system of record. Outreach team updates records as they call & email. <b>Live today.</b></div></div>
+    <div class="node"><div class="t">Chrome extension</div><div class="d">Contact details on an open LinkedIn profile + edit CRM data inline — changes reflect instantly.</div></div>
+    <div class="node dim"><div class="t">Mobile app</div><div class="d">On-the-go access for the field team. Lowest priority — same backend, added later.</div></div>
+  </div>
+  <div class="panel p"><h3>The superpower we're building toward</h3><p>Pick any contact → get suggested talking points & next actions drawn from <i>our</i> history (e.g. "never picks up 11am–2pm, always answers after 3pm"). Ask "which companies to target this month?" → get 100 sites whose contracts renew next month, with the pitch.</p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">2 / 10</span></div>
+</section>
+
+<!-- 3 · WHERE WE ARE -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Status</div>
+  <h2 class="title">Where we are now — built and live</h2>
+  <div class="lead">The expensive, risky engineering is done and running in production at <b>crm.altleads.com</b>. What's left to go live for the team is small.</div>
+  <div class="metrics">
+    <div class="metric"><div class="num">525</div><div class="lbl">Companies loaded</div></div>
+    <div class="metric"><div class="num">600+</div><div class="lbl">Contacts</div></div>
+    <div class="metric"><div class="num">600+</div><div class="lbl">Leads</div></div>
+    <div class="metric"><div class="num">610</div><div class="lbl">Meetings</div></div>
+  </div>
+  <div class="two">
+    <div class="panel g"><h3>✅ Done & live</h3><ul>
+      <li>Deployed — one app (web + email + admin), auto-deploys from GitHub.</li>
+      <li>All data migrated off the vendor's MySQL.</li>
+      <li>Every module: Leads, Companies, Contacts, Meetings, Wishlist, Approvals, Notifications, Admin.</li>
+      <li>Security: per-row access + contact-detail masking, applied in the live DB.</li>
+      <li>Update flows (status, call outcome, notes) with full history.</li>
+    </ul></div>
+    <div class="panel b"><h3>🔜 Remaining to go live (small)</h3><ul>
+      <li>Role posture — hide "create" from the outreach team.</li>
+      <li>Provision logins for the team (~110 users, 1 has a login today).</li>
+      <li>Validate access with real (non-admin) logins.</li>
+      <li>Email wording sign-off + sender check.</li>
+      <li><b>+ clear one ownership risk</b> (next slide but one).</li>
+    </ul></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">3 / 10</span></div>
+</section>
+
+<!-- 4 · IMPACT -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Product Impact</div>
+  <h2 class="title">Why this changes the game for us</h2>
+  <div class="three">
+    <div class="panel b"><h3>Ours, not the vendor's</h3><p>We change it ourselves, same-day — no vendor dependency, no per-seat fees, no waiting.</p></div>
+    <div class="panel b"><h3>One source of truth</h3><p>Companies, contacts, leads & meetings all linked (HubSpot-style associations). Nothing scattered.</p></div>
+    <div class="panel b"><h3>Outreach-first</h3><p>The team spends time <i>talking to prospects</i> and recording outcomes — not doing data entry.</p></div>
+    <div class="panel g"><h3>Clean data, no busywork</h3><p>Admin maintains data in bulk; the team just keeps statuses & notes current as they connect.</p></div>
+    <div class="panel g"><h3>Visibility & control</h3><p>Managers see their teams; privacy & access are enforced by the system, per project.</p></div>
+    <div class="panel p"><h3>A compounding data moat</h3><p>Every logged call makes the future AI smarter. Competitors can't buy this — we record it.</p></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">4 / 10</span></div>
+</section>
+
+<!-- 5 · BEST FEATURES TODAY -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">What's working today</div>
+  <h2 class="title">Best features — already built</h2>
+  <div class="fgrid">
+    <div class="fc"><div class="ico">🔗</div><h4>HubSpot-style records</h4><p>Company ↔ Contact ↔ Lead associations; create or jump to a lead from inside any record.</p></div>
+    <div class="fc"><div class="ico">📞</div><h4>Call logging & status</h4><p>Per-project call disposition, contact/account status, notes — with a full activity timeline.</p></div>
+    <div class="fc"><div class="ico">🔒</div><h4>Privacy by design</h4><p>Everyone sees names/city/notes; phone/email/LinkedIn only for the owner, manager & admin.</p></div>
+    <div class="fc"><div class="ico">📧</div><h4>Automatic notifications</h4><p>Email + in-app on assign/reassign, meeting changes, and approvals.</p></div>
+    <div class="fc"><div class="ico">✅</div><h4>Approvals workflow</h4><p>Agents submit lead reports; managers approve or send back with feedback.</p></div>
+    <div class="fc"><div class="ico">⚙️</div><h4>Admin self-service</h4><p>Add users/logins, manage option-lists, projects, clients, per-project access — no vendor.</p></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">5 / 10</span></div>
+</section>
+
+<!-- 6 · UPCOMING FEATURES -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">What's next</div>
+  <h2 class="title">Upcoming features</h2>
+  <div class="fgrid">
+    <div class="fc"><div class="ico">🗓️</div><h4>Task Manager <span class="tag soon">soon</span></h4><p>Schedule tasks; each becomes a ticket/record (HubSpot/Zoho-style), linked to the contact/company/lead — and you can attach more records from other modules. When the reminder fires, you know exactly what to do and where.</p></div>
+    <div class="fc"><div class="ico">▦</div><h4>Inline grid editing <span class="tag soon">soon</span></h4><p>Update status, notes & call outcome straight from the list — spreadsheet-fast, no opening each record.</p></div>
+    <div class="fc"><div class="ico">⤓⤒</div><h4>Bulk export → edit → import <span class="tag soon">soon</span></h4><p>Admin updates hundreds of companies in Excel and re-imports — matched by ID, no duplicates, preview first.</p></div>
+    <div class="fc"><div class="ico">🧩</div><h4>Chrome extension <span class="tag next">next</span></h4><p>On an open LinkedIn profile: see CRM contact details and edit them inline — changes reflect in the CRM live.</p></div>
+    <div class="fc"><div class="ico">🗺️</div><h4>Market-mapping data <span class="tag next">next</span></h4><p>City-by-city company & site data that enriches the base and feeds targeting.</p></div>
+    <div class="fc"><div class="ico">🤖</div><h4>AI on the data (RAG) <span class="tag next">next</span></h4><p>"Who do I call, when, and what do I say?" and "which 100 companies to target this month?" — fast answers from our own history.</p></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">6 / 10</span></div>
+</section>
+
+<!-- 7 · THE SUPERPOWER -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">The Superpower</div>
+  <h2 class="title">Capture everything now → an AI advantage later</h2>
+  <div class="quote">"All call logs between 11am–2pm are unanswered, but after 3pm always picked — even small details are captured. Pick a contact and it gives me suggestions, action items, and content to reach out with."</div>
+  <div class="two">
+    <div class="panel b"><h3>How it works</h3><ul>
+      <li>Every call, email & note is logged <b>with time, outcome & context</b>.</li>
+      <li>That data is organised and embedded on the go.</li>
+      <li>An AI retrieves it instantly (RAG) to answer questions and suggest the next move.</li>
+    </ul></div>
+    <div class="panel p"><h3>What it unlocks</h3><ul>
+      <li>Per-contact: best time to call, what worked before, tailored talking points.</li>
+      <li>Per-month: "100 companies whose contracts renew next month — reach out now."</li>
+      <li>Insight <b>no competitor has</b>, because only we recorded it.</li>
+    </ul></div>
+  </div>
+  <div class="riskbox" style="border-color:var(--brand); background:#f5f9ff;"><h3 style="color:var(--brand-dk);">⚠️ The one thing we must get right from day one</h3><p>The AI is only as good as the data we capture. <b>Rich, structured logging of every interaction has to start at launch</b> — it can't be back-filled later. This is the single most important "can't change later" decision.</p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">7 / 10</span></div>
+</section>
+
+<!-- 8 · PATH TO LAUNCH -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Path to internal launch</div>
+  <h2 class="title">Four gates + one risk → go live in ~2–3 build sessions</h2>
+  <div class="lead">After your decisions land, the go-live track is short — the heavy systems are already done.</div>
+  <div class="gate">
+    <div class="gx"><div class="n">Gate 1</div><div class="l">Role posture — hide "create" for the team</div></div>
+    <div class="gx"><div class="n">Gate 2</div><div class="l">Logins for the team (bulk-provisioned)</div></div>
+    <div class="gx"><div class="n">Gate 3</div><div class="l">Validate access with real logins</div></div>
+    <div class="gx"><div class="n">Gate 4</div><div class="l">Email wording sign-off + sender</div></div>
+  </div>
+  <div class="riskbox"><h3>⚠️ Risk to clear before go-live — the ownership/write-path</h3><p>Today a person can edit a record only if they <b>created</b> it. But our data was bulk-imported, so the "creator" isn't the assigned agent. <b>Unfixed, an agent gets "you can only edit records you own" on their whole call-list.</b> Fix: agents edit records <i>assigned</i> to them (a focused change), validated with a real agent login before launch. <b>This is a business decision (how is "assigned" defined?) more than an engineering one.</b></p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">8 / 10</span></div>
+</section>
+
+<!-- 9 · ROADMAP -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Rollout sequence (your priority)</div>
+  <h2 class="title">The roadmap</h2>
+  <div class="road">
+    <div class="step"><div class="ln"></div><div class="dot">1</div><div class="when">Now → launch</div><h4>Internal reachout</h4><p>Team updates records as they call/email. Everything captured on the go.</p></div>
+    <div class="step"><div class="ln"></div><div class="dot">2</div><div class="when">Next</div><h4>Client portal</h4><p>Clients see only what's scheduled / succeeded post-scheduling, plus a dashboard.</p></div>
+    <div class="step"><div class="ln"></div><div class="dot">3</div><div class="when">Then</div><h4>Chrome extension</h4><p>LinkedIn contact details + live CRM edits from the extension.</p></div>
+    <div class="step future"><div class="ln"></div><div class="dot">4</div><div class="when">Later</div><h4>Market mapping</h4><p>City-wise company/site data enriching the base.</p></div>
+    <div class="step future"><div class="dot">5</div><div class="when">Later</div><h4>AI, gradually</h4><p>Small AI first, growing into the full suggestion engine.</p></div>
+  </div>
+  <div class="panel a" style="margin-top:8px;"><h3>Foundations we lock in now (can't change cheaply later)</h3><p>① Rich interaction capture (every call/outcome/time) · ② the ownership/assignment model · ③ one shared backend serving web + extension + mobile · ④ consistent IDs & associations across modules. Everything else — UI, AI, extension, dashboards — layers on top without breaking these.</p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">9 / 10</span></div>
+</section>
+
+<!-- 10 · ASK -->
+<section class="slide cover" style="background:linear-gradient(135deg,#0b1f54 0%,#1A7EE8 60%,#0ea5e9 100%);">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker" style="color:#cfe0ff;">Decisions we need to launch</div>
+  <h1 style="font-size:40px; max-width:1040px;">Six decisions unlock the internal launch</h1>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 34px; max-width:1060px; margin-top:18px; font-size:16px; color:#eaf2ff; line-height:1.5;">
+    <div>① <b>Launch users</b> — 15–20 names + emails + each role</div>
+    <div>② <b>Role posture</b> — Admin/TL create; Agents update-only</div>
+    <div>③ <b>"Assigned" model</b> — how agents are tied to their records</div>
+    <div>④ <b>Manager visibility</b> — do TLs see team's masked details?</div>
+    <div>⑤ <b>Email wording</b> — approve the 8 templates</div>
+    <div>⑥ <b>Deploy posture</b> — manual deploys during launch week</div>
+  </div>
+  <div class="pill" style="margin-top:30px;">Answer these → internal go-live in ~2–3 focused build sessions</div>
+</section>
+
+</body>
+</html>

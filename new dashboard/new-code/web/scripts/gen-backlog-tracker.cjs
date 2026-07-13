@@ -1,0 +1,3127 @@
+/**
+ * gen-backlog-tracker.cjs
+ * ========================
+ * Generates (or refreshes) docs/AltLeads-Backlog-Tracker.xlsx
+ * Re-run any time to merge new tickets while preserving manually-edited Notes/Status/Created.
+ *
+ * Usage:
+ *   cd new-code/web && node scripts/gen-backlog-tracker.cjs
+ */
+
+'use strict';
+
+const XLSX   = require('xlsx');
+const path   = require('path');
+const fs     = require('fs');
+
+// ─── OUTPUT PATH ───────────────────────────────────────────────────────────────
+const OUT_PATH = path.resolve(
+  __dirname,
+  '../../../docs/AltLeads-Backlog-Tracker.xlsx'
+);
+
+// ─── DATE HELPERS ─────────────────────────────────────────────────────────────
+const d = (y, m, day) => y + '-' + String(m).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+const TODAY = d(2026, 6, 21);
+
+// ─── UX AUDIT TICKETS (2026-06-21) ───────────────────────────────────────────
+// Generated from the 26-agent UX/UI/feature-gap audit (718 raw -> 170 deduped).
+// Full report: docs/product/UX-AUDIT.md. Epic ALT-177; Top-30 ALT-178..207;
+// missing-capability bundles ALT-208..214; quick-wins batch ALT-215.
+function uxAuditTickets() {
+  const AD = d(2026, 6, 21);
+  const mk = (id, title, type, module, priority, notes) => ({
+    id, title, type, module, wave: 'UX audit', priority, status: 'Planned',
+    created: AD, updated: AD, finished: null, owner: 'Claude', notes,
+  });
+  const out = [];
+  out.push(mk('ALT-177', 'UX/UI/feature-gap audit — 26-agent swarm (718→170 findings)', 'Docs', 'UX', 'P1',
+    'Full report: docs/product/UX-AUDIT.md. 26 agents (15 screen + 9 dimension + synthesis + critic). 718 raw → 170 deduped findings · 13 themes · 14 quick wins · Top-30 (ALT-178..207) · 27 missing capabilities (ALT-208..214) · quick-wins batch (ALT-215). Owner to REVIEW and pick the launch-with items before any build.'));
+
+  // [title, module, severity, effort, priority, detail]
+  const top = [
+    ['Bulk-action bars on all lists (multiselect only Exports today)', 'UX', 'High', 'L', 'P2', 'Shared SelectionActionBar when sel>0: bulk status/stage change, reassign, approve, login-provision. Needs new batch endpoints (data layer is single-record today).'],
+    ['One global toast + confirmation system', 'UX', 'High', 'M', 'P1', 'No app-wide toast; only one window.confirm in whole app. ToastProvider (auto-dismiss, success/error/info, aria-live) + branded ConfirmDialog routed through all write paths. Unlocks dozens of downstream findings.'],
+    ['Confirm every destructive / irreversible action', 'UX', 'High', 'M', 'P1', 'Clinch, confirm/cancel meeting, request-approval, approve, disable user/project, unassign, convert all fire on one click with no guard/undo. SHIP WITH LAUNCH.'],
+    ['Restore a visible keyboard focus indicator app-wide', 'UX', 'High', 'S', 'P2', 'index.css strips outline from every control — WCAG 2.4.7 fail. Add global :focus-visible ring + brand ring on form controls.'],
+    ['Make table rows + sortable headers keyboard-operable', 'UX', 'High', 'M', 'P2', 'Rows are onClick on non-focusable <tr>; headers no role/aria-sort. NotificationsPage already does it right — replicate.'],
+    ['Searchable multi-select filters (replace single-select dropdowns)', 'UX', 'High', 'M', 'P2', 'Every facet is a native single <select> over hundreds of options. SearchSelect combobox already exists but used in zero filters. Multi-select + chips + set.has() predicates.'],
+    ['Advanced / per-column filtering + missing core facets', 'UX', 'High', 'L', 'P2', 'No contains/is-empty/AND-OR; customizer-added columns un-filterable. Missing facets: Account Status/Demo/Size/Owner/date on Companies; Contact Status; Meeting Mode+Confirmed; Wishlist Unassigned.'],
+    ['Saved views capturing filters+sort+density (multiple, named)', 'UX', 'High', 'M', 'P2', 'user_view_pref has a name column but saveView persists only columns + one anonymous slot. Extend to {columns,filters,sorting,pageSize,density} + view picker (save-as/rename/delete).'],
+    ['Persist list/detail state (filters, sort, page, tab) in the URL', 'UX', 'High', 'M', 'P2', 'All state is React-only; refresh/back/share resets the worklist. Serialize to query params; sync active tab + projectId on detail pages.'],
+    ['"Select all N matching" across pages (not just current page)', 'UX', 'Medium', 'M', 'P3', 'Header checkbox toggles only the visible page; partial off-page selection silently scopes Export. Add "Select all N matching" banner.'],
+    ['Global search / Cmd-K command palette', 'UX', 'High', 'L', 'P2', 'No global search anywhere. Cmd/Ctrl-K across leads/companies/contacts/meetings by name/number/phone with deep-link navigation.'],
+    ['Converge on one DataTable engine (migrate Contacts + Approvals)', 'UX', 'High', 'L', 'P2', 'Contacts + Approvals are hand-rolled; others use TanStack — divergent headers/row-heights/sort-glyphs and every fix built 3×. One <DataTable> + shared spec.'],
+    ['Dirty-state navigation guard on all forms/modals', 'UX', 'High', 'M', 'P2', 'No form tracks dirty; Cancel/back/tab-switch/backdrop silently discards edits. Track isDirty + useBlocker + beforeunload + modal-close guard. Worst for ReportTab (~20 fields).'],
+    ['Move filter/sort/paginate server-side (stop loading whole datasets)', 'Data', 'High', 'L', 'P2', 'Every list downloads the full dataset + lookups on mount; Contacts capped at 1000. Push to Supabase range+filters or cache; remove the 1000 cap.'],
+    ['Role-aware, actionable dashboard ("what do I do today")', 'UX', 'High', 'L', 'P2', 'Dashboard never calls useAuth; same org-wide all-time totals for everyone. Scope to current user, add "my meetings today / follow-ups due / leads needing first contact", TL/ADMIN rollups.'],
+    ['Clickable dashboard drill-downs (cards/bars/activity rows)', 'UX', 'High', 'M', 'P2', 'All stat cards, stage bars, activity rows are static (some even fake a hover). Wire each to the filtered list / record.'],
+    ['Masked email/phone → distinct masked + click-to-reveal treatment', 'Security', 'High', 'M', 'P2', 'Masked values render identical to genuinely empty ("—"); the locked partial-mask+click-reveal decision (ADR-22) has no UI. Lock/dotted treatment + Reveal + copy. Pairs with ALT-173.'],
+    ['Sticky table headers + frozen identity column', 'UX', 'Medium', 'S', 'P3', 'No thead is sticky; with 100 rows/page headers scroll away. Sticky header + freeze select+name column + scroll-shadow cue.'],
+    ['Top-level React ErrorBoundary (+ per-route fallback)', 'UX', 'High', 'M', 'P2', 'Any uncaught render error white-screens the whole SPA. Add top-level ErrorBoundary + per-route fallbacks + logging.'],
+    ['Forgot-password + show/hide toggle; reauth on password change', 'Security', 'High', 'M', 'P2', '~110/111 users freshly provisioned will mistype initial passwords. Add reset flow + eye toggle + mailto help-desk; require current password before change in Settings.'],
+    ['Constrain header stage-select + meeting workflow transitions', 'Leads', 'High', 'M', 'P2', 'Stage dropdown lists every stage so an agent can jump to "Meeting Successful" bypassing report/approval; closed leads still mutable. Constrain to valid next steps / make read-only.'],
+    ['Form validation (email/phone/URL/required/dirty) + on-blur feedback', 'UX', 'Medium', 'M', 'P3', 'Phone accepts any text; email/URL validated inconsistently; required name can save empty; submit-only single error. Shared validators + on-blur inline errors.'],
+    ['Skeleton rows/cards instead of a single centered spinner', 'UX', 'Medium', 'M', 'P3', 'Loading collapses the table to one spinner row → layout jump on every navigation. Skeleton rows matching columns + role=status.'],
+    ['Collapsible filter panels + active-filter chips + per-filter clear', 'UX', 'Medium', 'M', 'P3', '8–11 filters in an always-open panel push the table below the fold; only all-or-nothing Clear. Collapsible "Filters" + active-count badge + removable chips.'],
+    ['Fix Companies Account-Status column (load full set; sort/filter/export)', 'Companies', 'High', 'M', 'P2', 'Status batch-fetched per page only → can\'t sort/filter, flickers on project change, export blanks unscrolled pages. Merge into row data + per-project cache.'],
+    ['Proper ARIA dialog semantics + focus trap on modals', 'UX', 'High', 'M', 'P2', 'Only AssignModal sets role=dialog. Centralize Esc-to-close, focus trap, initial focus, focus-restore, aria-labelledby in one Modal shell.'],
+    ['Approvals queue: age/SLA, sort, search, filters, pagination, in-modal approve', 'Leads', 'Medium', 'M', 'P3', 'No search/filters/sort/pagination/age/history/in-preview approve; sidebar badge lags 60s. Add SLA aging + Pending|Approved|Rejected + immediate badge refresh.'],
+    ['Inline-edit + quick row/hover actions across lists & detail panels', 'UX', 'Medium', 'M', 'P3', 'Editing one field needs a full page nav. Inline status/notes edit, per-field detail edit, hover quick-actions (copy email/phone, quick status). Core to update-only outreach.'],
+    ['Make the Sales Portal a first-class shell (not the internal grid reskinned)', 'Sales Portal', 'Medium', 'M', 'P3', '/sales reuses internal LeadsPage verbatim (unscoped, internal chrome, dead pencil link). Add sales dashboard/notifications/settings, gate internal controls, portal switcher.'],
+    ['Standardize shared primitives (Button/Badge/Avatar/Input/Modal/Pagination/EmptyState)', 'UX', 'Medium', 'M', 'P3', '3 button systems, 5 badge styles, 5 avatar copies, 4 input/pagination copies, hardcoded hex vs CSS tokens. Extract one component per atom; kill drift; enable theming.'],
+  ];
+  top.forEach((row, i) => {
+    const [title, module, sev, eff, pri, detail] = row;
+    out.push(mk('ALT-' + (178 + i), title, 'Feature', module, pri,
+      sev + ' severity · effort ' + eff + ' · UX-AUDIT Top-30 #' + (i + 1) + '. ' + detail));
+  });
+
+  // Missing-capability bundles (critic gaps — capabilities that don't exist yet)
+  const missing = [
+    ['Calling loop — single-screen queue→dial→log→auto-advance + click-to-call + call logging', 'Tasks', 'P2', 'Critic gap. Core to high-volume outreach speed; the recorded call history also feeds the AI "superpower" (RAG).'],
+    ['Task manager — follow-up reminders, callback scheduling, snooze/defer, to-dos', 'Tasks', 'P2', 'Owner-requested task manager. "Call back tomorrow 3pm" set on a record and surfaced when due; snooze pushes a lead out of today and brings it back.'],
+    ['Today work-queue / prioritized worklist (overdue, untouched, fresh assignments)', 'Tasks', 'P2', 'Turns the passive dashboard into a driver of next actions; the single screen a caller lives in.'],
+    ['Duplicate detection & merge (leads / contacts / companies)', 'Data', 'P2', 'Known risk after the bulk migration. Detect + merge dup records.'],
+    ['Data trust layer — freshness (days-since-touch), SLA/aging cues, per-record audit history', 'Data', 'P2', 'Helps agents prioritize + trust data, lets TLs manage the floor, and feeds AI. "Who changed what, when" surfaced consistently.'],
+    ['Quick-access — global quick-search, inline row quick-edit, recently-viewed/pinned, undo', 'UX', 'P2', 'Speed for users who live in lists all day. Overlaps Top-30 #11/#28; undo-toast for status/disposition/bulk edits.'],
+    ['Compliance & comfort — Do-Not-Call/opt-out, timezone-aware scheduling, density/compact mode, dark mode, per-user notif prefs, first-run onboarding, autosave of notes', 'UX', 'P3', 'Bundle of critic gaps: compliance flag + warning, caller-vs-prospect TZ, compact rows, theme, notification preferences, onboarding for the 110 first-login users, and autosave so a dropped session keeps call notes.'],
+  ];
+  missing.forEach((row, i) => {
+    const [title, module, pri, detail] = row;
+    out.push(mk('ALT-' + (208 + i), title, 'Feature', module, pri,
+      'Missing capability (UX-AUDIT §5, completeness critic). ' + detail));
+  });
+
+  // ── Progress (2026-06-21 launch-safety bundle, commit aa9375e) ──────────────
+  // Mark what shipped locally so the board reflects reality.
+  const PROGRESS = {
+    'ALT-179': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: ToastProvider/useToast + ConfirmProvider/useConfirm built and mounted at App root (src/components/ui/Toast.tsx + ConfirmDialog.tsx). Now used by the launch-safety wiring; remaining pages migrate to it incrementally.' },
+    'ALT-180': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: confirm wired on cancel-meeting, approve-report (Approvals + inline ReportTab), request-approval (locks form), disable-user, disable-project, remove-member, convert-to-lead, and now clinch/close (mark-successful). Irreversible actions guarded by the branded ConfirmDialog + toast feedback.' },
+    'ALT-181': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: global :focus-visible brand ring restored in index.css (was stripping outline from every control).' },
+    'ALT-182': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: all 5 lists — data rows keyboard-operable (role=link, tabIndex, Enter/Space opens) and sortable headers get role=button + aria-sort + Enter/Space-to-sort.' },
+    'ALT-186': { status: 'In Progress', finished: null, extra: ' 🔧 IN PROGRESS 2026-06-21: useUrlState/useUrlString/useUrlNumber/useUrlStringArray hooks built (src/lib/useUrlState.ts, on react-router useSearchParams); dashboard drill-downs already deep-link /leads?stage=. Remaining: wire list filters/sort/page/tab to the URL.' },
+    'ALT-188': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: global Cmd/Ctrl-K CommandPalette across leads/companies/contacts (keyboard nav + deep-link) + TopBar Search button. Index reuses existing RLS-safe fetchers, cached, cleared on logout.' },
+    'ALT-193': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: dashboard stat cards, stage bars, and recent-activity rows are keyboard-operable drill-downs (cards→list, bars→/leads?stage=, rows→/leads/:id) + personalized header.' },
+    'ALT-196': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: top-level ErrorBoundary at app root (Reload / Go to dashboard fallback; DEV-only stack). RouteErrorBoundary helper available for per-route use.' },
+    'ALT-197': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: ForgotPasswordPage + ResetPasswordPage (+ routes), LoginPage show/hide toggle + Forgot link. OWNER OPS: add <origin>/reset-password to Supabase Auth Redirect URLs for prod.' },
+    'ALT-199': { status: 'In Progress', finished: null, extra: ' 🔧 IN PROGRESS 2026-06-21: shared pure validators built (src/lib/validators.ts: isEmail/isPhone/isUrl/isRequired + validateField/validateForm). Remaining: wire on-blur inline errors into Contact/Company/Lead forms.' },
+    'ALT-200': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: Skeleton/SkeletonText/SkeletonTable/SkeletonCards built; all 5 lists render column-aligned skeleton rows on load instead of one spinner (no layout jump).' },
+    'ALT-204': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: Approvals queue gained an SLA age badge (escalating colour), search, sort (oldest-first SLA / name), no-match state, and in-modal Approve/Reject. Pagination deferred (low value at current volume).' },
+    'ALT-213': { status: 'In Progress', finished: null, extra: ' 🔧 IN PROGRESS: global quick-search via Cmd-K palette (ALT-188) + NOW an ALWAYS-VISIBLE top-bar search bar (2026-06-22, parallel subagent) — components/ui/GlobalSearchBar.tsx in TopBar, reuses the same globalSearch index + palette grouping/nav, debounced inline grouped dropdown, Cmd-K + clear-on-logout (ALT-220) untouched. Remaining: inline row quick-edit, recently-viewed/pinned, undo-toast.' },
+    'ALT-183': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21 (owner #1 ask): reusable MultiSelectFilter (searchable popover + checkboxes + chip count, OR-within-facet, empty=all) now on ALL FIVE lists — Leads (Agent/Project/City/Source/Industry/Stage), Contacts (Company/City), Companies (Industry/City), Meetings (Agent/Industry/City/Salesperson/Status), Wishlist (Status/Agent/TeamLead/Industry/City). Separate follow-up: per-column/advanced operators (Top#7, ALT-184).' },
+    'ALT-203': { status: 'Done',        finished: AD, extra: ' ✅ DONE 2026-06-21: shared admin Modal + global ConfirmDialog now have role=dialog/aria-modal/aria-label, Escape-to-close, initial focus, focus-restore, AND a real focus-trap (useFocusTrap — Tab/Shift+Tab cycle inside). Bespoke meeting/approval modals can adopt the hook as touched.' },
+    'ALT-190': { status: 'In Progress', finished: null, extra: ' 🔧 IN PROGRESS 2026-06-21: useUnsavedChanges hook (localStorage draft cache + restore + beforeunload warn) wired into the New/Edit Lead, Contact and Company forms with Cancel-confirm; drafts cleared on save + on logout. Remaining: detail-page edit modes + modals + (optional) in-app route blocker (needs data-router).' },
+    'ALT-215': { status: 'In Progress', finished: null, extra: ' 🔧 IN PROGRESS 2026-06-21: shipped #1 (truncation tooltips), #2 (removed dev "read-only preview" banners on Leads/Wishlist/Dashboard), #3 (bell → /notifications + unread badge), #4 (hide create from non-admins), #5 (focus ring, see ALT-181), #6 (search-clear ×), #7 (copy-to-clipboard + mailto/tel via CopyButton), #9 (surface swallowed errors), #11 (no-data vs no-match empty states + inline Clear-filters on Leads/Contacts/Companies), #13 (Contacts 1000-row cap), #14 (modal Esc). NOW ALSO #8 (checkbox aria-labels on all 5 lists) + #12 (Retry on load error on all 5 lists). Remaining: #10 (persist filters/tab to URL — hook built, see ALT-186).' },
+  };
+
+  out.push(mk('ALT-215', 'UX quick-wins batch — 14 small, high-payoff fixes', 'Task', 'UX', 'P1',
+    'All effort-S (hours each), UX-AUDIT §3: (1) tooltips on truncated cells (2) remove dev "read-only preview" banners (3) wire bell→/notifications + unread badge (4) hide create buttons from outreach roles (5) global focus ring (6) search clear (×) (7) mailto/tel + copy-to-clipboard (8) checkbox/bell aria-labels (9) SURFACE swallowed inline status/stage/toggle errors (10) persist tab/banner state (11) "no data" vs "no match" empty states (12) Retry on load errors (13) fix Contacts 1000-row cap (14) modal Esc + dirty-backdrop guard. Items 4, 9, 13 + Top-30 #3 = SHIP WITH LAUNCH (they hide failure / data loss).'));
+
+  for (const t of out) {
+    const p = PROGRESS[t.id];
+    if (p) { t.status = p.status; t.finished = p.finished; t.notes += p.extra; }
+  }
+  return out;
+}
+
+// ─── TICKET DATA ──────────────────────────────────────────────────────────────
+// Columns: ID, Title, Type, Module, Wave/Epic, Priority, Status,
+//          Created, LastUpdated, Finished, Owner, Notes
+//
+// Type:     Feature | Bug | Task | Chore | Security | Docs
+// Module:   Deploy/Infra | Notifications | Contacts | Companies | Leads |
+//           Meetings | Wishlist | Admin | Security | AI | Docs | Data
+// Priority: P0 | P1 | P2 | P3
+// Status:   Done | In Progress | Planned | Blocked
+// Owner:    Claude | Ankit (PM) | Mohit (CEO) | Sub-agent
+
+const TICKETS = [
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Foundation & Repo
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-001', title:'Lock tech stack (Supabase + React/Vite + repaired RN)',
+    type:'Task', module:'Deploy/Infra', wave:'Foundation',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,11), finished: d(2026,6,11),
+    owner:'Ankit',
+    notes:'Owner-approved 2026-06-11. No Java, no MySQL, no droplet.'
+  },
+  {
+    id:'ALT-002', title:'Archive vendor code to old-code/ and clean repo',
+    type:'Chore', module:'Deploy/Infra', wave:'Foundation',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,11), finished: d(2026,6,11),
+    owner:'Claude',
+    notes:'Clean commit e10f4c1. Secrets to .credentials/ (gitignored).'
+  },
+  {
+    id:'ALT-003', title:'Create GitHub repo with clean history (AltLeads-CRM)',
+    type:'Chore', module:'Deploy/Infra', wave:'Deploy',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Claude',
+    notes:'New clean repo; old-code/figma/secrets excluded. Git auto-deploy to Hostinger wired.'
+  },
+  {
+    id:'ALT-004', title:'Verify & store Supabase / Netlify / DO access tokens',
+    type:'Task', module:'Deploy/Infra', wave:'Foundation',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,11), finished: d(2026,6,11),
+    owner:'Ankit',
+    notes:'Tokens in .credentials/ (gitignored). DO API token verified.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Data Migration
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-005', title:'Create Supabase project (amplior-crm, Mumbai)',
+    type:'Task', module:'Data', wave:'Migration',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Claude',
+    notes:'IDs/keys in .credentials/. Region ap-south-1.'
+  },
+  {
+    id:'ALT-006', title:'Recreate full 65-table schema in Supabase',
+    type:'Task', module:'Data', wave:'Migration',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Vendor added 21 audit tables post-Jan; drift captured in schema-drift.sql.'
+  },
+  {
+    id:'ALT-007', title:'Fork DO MySQL cluster and copy ~108k rows to Supabase',
+    type:'Task', module:'Data', wave:'Migration',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'65/65 tables row-count match. Production never touched. Migration report in new-code/migration/.'
+  },
+  {
+    id:'ALT-008', title:'Apply foreign keys (60/64; 4 skipped for orphan rows)',
+    type:'Task', module:'Data', wave:'Migration',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'fk-skipped.txt lists 4 vendor data-quality issues; nothing deleted.'
+  },
+  {
+    id:'ALT-009', title:'Reset all Postgres identity sequences after explicit-PK migration',
+    type:'Bug', module:'Data', wave:'Migration',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Claude',
+    notes:'CRITICAL: sequences were at 1 causing PK collisions on all inserts. Fixed via setval DO-block on all 65 tables.'
+  },
+  {
+    id:'ALT-010', title:'Remove dead placeholder code (mockLeads.ts, PlaceholderPage.tsx)',
+    type:'Chore', module:'Data', wave:'Foundation',
+    priority:'P2', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'Verified 2026-06-21: mockLeads.ts + PlaceholderPage.tsx no longer exist (removed in an earlier cleanup). Only the actively-used SalesPlaceholderPage remains.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Auth & Security
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-011', title:'Supabase Auth login (email + password)',
+    type:'Feature', module:'Security', wave:'Auth',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Verified: mohit@amplior.com → role ADMIN. profiles table links auth.users → user_master + role.'
+  },
+  {
+    id:'ALT-012', title:'Auto-onboard trigger (on_auth_user_created) matching by email',
+    type:'Feature', module:'Security', wave:'Auth',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Trigger auto-builds profiles row with role from user_role → role_master.'
+  },
+  {
+    id:'ALT-013', title:'Route protection (block pages when logged out / wrong role)',
+    type:'Feature', module:'Security', wave:'Auth',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Admin nav gated to ADMIN role. 6 roles in DB: ADMIN, TEAM_LEAD, SALES_HEAD, SALES_PERSON, AGENT, QC.'
+  },
+  {
+    id:'ALT-014', title:'Decide: do not migrate old plaintext passwords',
+    type:'Task', module:'Security', wave:'Auth',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Ankit',
+    notes:'At go-live each user gets a one-time set-your-password email.'
+  },
+  {
+    id:'ALT-015', title:'RLS baseline — enable RLS on all 70 tables, block anon, block self-promote',
+    type:'Security', module:'Security', wave:'Security audit',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'70/70 tables; authenticated full access on 68; profiles SELECT-only; anon denied; adversarially verified. SQL: rls-policies.sql.'
+  },
+  {
+    id:'ALT-016', title:'Hide legacy plaintext password column from API',
+    type:'Security', module:'Security', wave:'Security audit',
+    priority:'P0', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Claude',
+    notes:'REVOKE SELECT/INSERT/UPDATE on user_master + user_master_audit for anon+authenticated. Script: hide-password-column.js.'
+  },
+  {
+    id:'ALT-017', title:'Fine-grained per-role RLS (agent sees own leads via created_by)',
+    type:'Security', module:'Security', wave:'Security audit',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Access RLS v1: lead row-isolation + write-locks + owner/manager/admin logging rules. v1b: contact masking view + column revoke + find_contact_dup RPC. v2: project_visibility_setting dials + Project Access admin UI. Proven with throwaway logins.'
+  },
+  {
+    id:'ALT-018', title:'Full IDOR/RLS security audit (sub-agent pass, all modules)',
+    type:'Security', module:'Security', wave:'Security audit',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Multi-agent security audit -> docs/SECURITY-AUDIT.md. 29 findings, 14 High/Critical. All critical issues addressed in hardening pass same day.'
+  },
+  {
+    id:'ALT-019', title:'Fix xlsx CVE (swap xlsx@0.18.5 → SheetJS 0.20.3)',
+    type:'Security', module:'Security', wave:'Security audit',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Claude',
+    notes:'CDN tarball, same import/API, drop-in. Build passes. 313kB gzip.'
+  },
+  {
+    id:'ALT-020', title:'Set one-time password-set emails to all users at go-live',
+    type:'Task', module:'Security', wave:'Security audit',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,12), updated: d(2026,6,17), finished: null,
+    owner:'Claude',
+    notes:'Batch-send script needed. Email service is live.'
+  },
+  {
+    id:'ALT-021', title:'Prune DO DB firewall IPs (~14 old vendor devs) at cutover',
+    type:'Task', module:'Security', wave:'Security audit',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,11), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Prune at cutover, not before — one may be owner office IP.'
+  },
+  {
+    id:'ALT-022', title:'Refine manager access to true team-scope RLS',
+    type:'Security', module:'Security', wave:'Security audit',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Start with managers-see-all; tighten to team-scope after launch.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Leads
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-023', title:'Leads list page on real data (605 leads, pagination)',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Pagination added after first owner review. PostgREST 1000-row cap handled with .range().'
+  },
+  {
+    id:'ALT-024', title:'Fix data accuracy: joins used wrong columns (agent_id/company_id vs created_by/client_assoc_id)',
+    type:'Bug', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Root cause: company = client_association.client_name via client_assoc_id; owner = created_by. Now 18 owners, 0 null companies.'
+  },
+  {
+    id:'ALT-025', title:'7 Leads filters (vendor CR scope ₹96k)',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Sales Person filter dropped — no such field in vendor schema.'
+  },
+  {
+    id:'ALT-026', title:'Excel export of Leads (multi-select + export)',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Part of the ₹96k CR scope.'
+  },
+  {
+    id:'ALT-027', title:'Add Lead (/leads/new) with ALT#### number generation',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,14), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Unique number generator scans global max. Retry on 23505 unique-violation.'
+  },
+  {
+    id:'ALT-028', title:'Fix lead number duplicate key bug (generateLeadNumber scanned only last 50)',
+    type:'Bug', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Claude',
+    notes:'Fix: scan ALL lead_numbers for global max; insertLeadWithUniqueNumber retries on 23505.'
+  },
+  {
+    id:'ALT-029', title:'Edit Lead (/leads/:id/edit)',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Was broken at first owner review; since fixed.'
+  },
+  {
+    id:'ALT-030', title:'Lead Detail page (header, all fields, related meetings, stage history)',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'/leads/:id. Clickable contacts, activity timeline, stage changer.'
+  },
+  {
+    id:'ALT-031', title:'Lead workspace: HubSpot-style 3 tabs (Activity/Lead Report/Meeting) + right info panel',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'src/components/lead/ + src/data/leadWorkspace.ts. Meeting tab scoped to current lead only.'
+  },
+  {
+    id:'ALT-032', title:'Approval flow (request → TL/Admin queue → approve/reject + notifications)',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'/approvals page (gated ADMIN/TL) + sidebar badge + ReportTab inline + email+in-app at each step. Stage IDs verified.'
+  },
+  {
+    id:'ALT-033', title:'Pick existing contact when creating a lead (SearchSelect combobox)',
+    type:'Feature', module:'Leads', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'lead_master.contact_id new column added. SearchSelect.tsx combobox (dependency-free).'
+  },
+  {
+    id:'ALT-034', title:'Fix inline create-new-company placeholder values (NOT NULL cols)',
+    type:'Bug', module:'Leads', wave:'6 fixes',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,12), updated: d(2026,6,17), finished: null,
+    owner:'Claude',
+    notes:'Creates placeholder values into address_id, country_code_id, domain_id, industry_id. Needs refinement.'
+  },
+  {
+    id:'ALT-035', title:'Per-user saved column views on Leads list',
+    type:'Feature', module:'Leads', wave:'Per-project status',
+    priority:'P2', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'user_view_pref table + UI built. Wave F complete.'
+  },
+  {
+    id:'ALT-036', title:'Full stage-change workflow with approval + auto meeting creation',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,12), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Current stage change is simple only. Deferred — full workflow with auto-meeting creation.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Meetings
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-037', title:'Meetings list on real data (610 rows, 7 filters, pagination)',
+    type:'Feature', module:'Meetings', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'610 meetings; 593 lead-linked. Correct column: meeting_status (not empty `status`).'
+  },
+  {
+    id:'ALT-038', title:'Meeting detail page (FRS-parity)',
+    type:'Feature', module:'Meetings', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:''
+  },
+  {
+    id:'ALT-039', title:'Excel export of Meetings (18-field)',
+    type:'Feature', module:'Meetings', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Part of ₹96k CR scope.'
+  },
+  {
+    id:'ALT-040', title:'Create / schedule a meeting (linked to lead)',
+    type:'Feature', module:'Meetings', wave:'Web core',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:''
+  },
+  {
+    id:'ALT-041', title:'Reschedule / cancel a meeting (UpdateMeetingModal)',
+    type:'Feature', module:'Meetings', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'Fires email+in-app on reschedule/cancel.'
+  },
+  {
+    id:'ALT-042', title:'Email + in-app notification on meeting scheduled / rescheduled / cancelled',
+    type:'Feature', module:'Notifications', wave:'6 fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'Templates in email-templates.js. Fires via Gmail SMTP.'
+  },
+  {
+    id:'ALT-043', title:'Fix Meeting tab: scope to current lead only (not whole calendar)',
+    type:'Bug', module:'Meetings', wave:'Web core',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'fetchLeadMeetings replaces fetchMyMeetings — feedback no longer leaks across leads.'
+  },
+  {
+    id:'ALT-044', title:'Per-user saved views on Meetings list',
+    type:'Feature', module:'Meetings', wave:'Per-project status',
+    priority:'P2', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Wave F complete. user_view_pref table + UI built.'
+  },
+  {
+    id:'ALT-045', title:'Meeting status workflow for QC role',
+    type:'Feature', module:'Meetings', wave:'Web core',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,12), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'QC role interaction with meetings not yet specified. Needs owner decision.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Wishlist
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-046', title:'Wishlist list on real data (54 rows, filters, export)',
+    type:'Feature', module:'Wishlist', wave:'Web core',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'wishlist.ts reads company_name + lead_name + assign_agent/assign_tl direct.'
+  },
+  {
+    id:'ALT-047', title:'Add to wishlist + edit wishlist item',
+    type:'Feature', module:'Wishlist', wave:'Web core',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:''
+  },
+  {
+    id:'ALT-048', title:'Assign wishlist item — email + in-app notification',
+    type:'Feature', module:'Wishlist', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'wishlist.ts + WishlistDetailPage.tsx wired to notify service.'
+  },
+  {
+    id:'ALT-049', title:'Convert wishlist item → lead',
+    type:'Feature', module:'Wishlist', wave:'Web core',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'convertWishlistToLead uses shared insertLeadWithUniqueNumber helper.'
+  },
+  {
+    id:'ALT-050', title:'Per-user saved views on Wishlist list',
+    type:'Feature', module:'Wishlist', wave:'Per-project status',
+    priority:'P2', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Wave F complete. user_view_pref table + UI built.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Notifications & Email Service
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-051', title:'Build email + notification service (Node/Express + nodemailer, branded templates)',
+    type:'Feature', module:'Notifications', wave:'6 fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'new-code/notify-service. Gmail SMTP from amplior.ankits@gmail.com. /notify + /health, port 8787. Smoke test: real email delivered.'
+  },
+  {
+    id:'ALT-052', title:'Email + in-app on lead assigned / reassigned',
+    type:'Feature', module:'Notifications', wave:'6 fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,16), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'createLead/updateLead wired. Recipient = salesperson (lead_report.user_id). Test recipient: ankit.s@amplior.com.'
+  },
+  {
+    id:'ALT-053', title:'Email + in-app on approval requested / approved / rejected',
+    type:'Feature', module:'Notifications', wave:'6 fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Fires at each step of approval flow.'
+  },
+  {
+    id:'ALT-054', title:'Live unread-count bell badge in sidebar (60s poll)',
+    type:'Feature', module:'Notifications', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'fetchUnreadNotifCount in account.ts. Mirrors Approvals badge pattern.'
+  },
+  {
+    id:'ALT-055', title:'Mark-as-read / unread state on Notifications page',
+    type:'Feature', module:'Notifications', wave:'Per-project status',
+    priority:'P2', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'Verified 2026-06-21: NotificationsPage already has per-row Mark-read, Mark-all-as-read, optimistic+revert, all/unread tabs, mark-on-open — backed by markNotificationSeen/markAllNotificationsSeen.'
+  },
+  {
+    id:'ALT-056', title:'Tune notification recipients per action (owner to specify each event)',
+    type:'Task', module:'Notifications', wave:'Per-project status',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,16), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Currently recipient = salesperson. Each action has a single TODO-commented spot in code.'
+  },
+  {
+    id:'ALT-057', title:'Add meeting_rescheduled + meeting_cancelled email templates',
+    type:'Feature', module:'Notifications', wave:'6 fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Claude',
+    notes:'email-templates.js. Both templates added and verified firing.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Admin
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-058', title:'Admin panel built — Users / Projects / Clients / Reference tabs, ADMIN-gated',
+    type:'Feature', module:'Admin', wave:'Web core',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,14), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'Real edits work. Figma-matched (vertical sub-nav, role chips, toggles, modals).'
+  },
+  {
+    id:'ALT-059', title:'Add User: backend POST /api/users/create using service role key',
+    type:'Feature', module:'Admin', wave:'6 fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'Creates user_master row + user_role + Supabase Auth account. Temp password returned. Verified end-to-end locally. Needs SUPABASE_SERVICE_ROLE_KEY on Hostinger.'
+  },
+  {
+    id:'ALT-060', title:'Reset any user password (admin): POST /api/users/reset-password',
+    type:'Feature', module:'Admin', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Claude',
+    notes:'auth.admin.updateUserById. Verified live (404 on bogus id). Prod needs SUPABASE_SERVICE_ROLE_KEY on Hostinger.'
+  },
+  {
+    id:'ALT-061', title:'Admin-editable dropdown option lists UI (Wave B)',
+    type:'Feature', module:'Admin', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'dropdown_option table seeded + admin UI management screen built. Wave B complete.'
+  },
+  {
+    id:'ALT-062', title:'Manage roles / change a user\'s role',
+    type:'Feature', module:'Admin', wave:'Per-project status',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Confirm role change updates profiles + takes effect immediately.'
+  },
+  {
+    id:'ALT-063', title:'Set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY env vars on Hostinger',
+    type:'Task', module:'Admin', wave:'Deploy',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,16), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Hard gate: add-user and reset-password return 503 until this is done in production.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Companies & Contacts
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-064', title:'Create contact_master table and migrate 607 contacts from lead_master',
+    type:'Task', module:'Data', wave:'Companies & Contacts',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'607 contacts migrated; 130 initially company-linked. DDL in companies-contacts.sql.'
+  },
+  {
+    id:'ALT-065', title:'Add company_master.domain_clean + is_demo columns',
+    type:'Task', module:'Data', wave:'Companies & Contacts',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'525 companies updated with domain_clean.'
+  },
+  {
+    id:'ALT-066', title:'Email-domain sync: link contacts to companies by work-email domain',
+    type:'Feature', module:'Contacts', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'286 contacts linked (417/608 total now have company_id). Script: backfill-apply.js. 159 contacts with unmatched work domains = candidate for auto-create.'
+  },
+  {
+    id:'ALT-067', title:'interaction table for call-disposition / activity log',
+    type:'Task', module:'Data', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'RLS on.'
+  },
+  {
+    id:'ALT-068', title:'Companies list page (525 companies, search, filters, export, pagination)',
+    type:'Feature', module:'Companies', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Industry + city filters.'
+  },
+  {
+    id:'ALT-069', title:'Company detail page (HubSpot layout, contacts-by-city, project selector)',
+    type:'Feature', module:'Companies', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Project selector display-only.'
+  },
+  {
+    id:'ALT-070', title:'New company with dedup (clean domain OR CIN)',
+    type:'Feature', module:'Companies', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Surfaces existing record if match found; blocks duplicate. is_demo=false default.'
+  },
+  {
+    id:'ALT-071', title:'Link existing contact into a company (modal → sets contact.company_id)',
+    type:'Feature', module:'Companies', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'"Link existing contact" modal on company detail. Uses SearchSelect combobox.'
+  },
+  {
+    id:'ALT-072', title:'Contacts list page (607 contacts, search, filters, export, pagination)',
+    type:'Feature', module:'Contacts', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Default columns per spec.'
+  },
+  {
+    id:'ALT-073', title:'Contact detail full edit (all fields + call/disposition panel)',
+    type:'Feature', module:'Contacts', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'All fields editable; call & disposition panel writes to interaction table.'
+  },
+  {
+    id:'ALT-074', title:'Change / clear a contact\'s company (pencil icon on contact detail)',
+    type:'Feature', module:'Contacts', wave:'6 fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Sub-agent',
+    notes:'updateContactCompany in contacts.ts.'
+  },
+  {
+    id:'ALT-075', title:'New contact with dedup (email → LinkedIn → phone)',
+    type:'Feature', module:'Contacts', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Demo mode DEFAULT-ON (skips dedup, is_demo=true).'
+  },
+  {
+    id:'ALT-076', title:'Per-project contact status / description / comments on contact detail (Wave C)',
+    type:'Feature', module:'Contacts', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'contact_project_status table + UI display + edit built. Wave C complete.'
+  },
+  {
+    id:'ALT-077', title:'Company detail: account status / feasibility / decision power / desc / comments (Wave E)',
+    type:'Feature', module:'Companies', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'company_project_status table + UI (account_status, is_feasible, decision_power, desc, comments) built. Wave E complete.'
+  },
+  {
+    id:'ALT-078', title:'Contact Status column in Contacts list (Wave C)',
+    type:'Feature', module:'Contacts', wave:'Per-project status',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Reads contact_project_status.status per active project.'
+  },
+  {
+    id:'ALT-079', title:'Multi-select + export on Contacts list',
+    type:'Feature', module:'Contacts', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Wave C complete.'
+  },
+  {
+    id:'ALT-080', title:'Multi-select + export on Companies list',
+    type:'Feature', module:'Companies', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Wave F complete.'
+  },
+  {
+    id:'ALT-081', title:'Per-user saved column views on Contacts and Companies',
+    type:'Feature', module:'Contacts', wave:'Per-project status',
+    priority:'P2', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'user_view_pref table + UI built for Contacts and Companies. Wave C/E complete.'
+  },
+  {
+    id:'ALT-082', title:'Per-project ownership: company_project_owner table + assign UI',
+    type:'Feature', module:'Companies', wave:'Per-project status',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Companies currently show "Unassigned". 1 owner per company PER PROJECT.'
+  },
+  {
+    id:'ALT-083', title:'Masked visibility (names+city to all; details to owner+downline)',
+    type:'Feature', module:'Contacts', wave:'Per-project status',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Depends on per-project ownership + user_master.manager_id hierarchy column.'
+  },
+  {
+    id:'ALT-084', title:'Auto-create companies for 159 contacts with unmatched work domains',
+    type:'Task', module:'Data', wave:'Companies & Contacts',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,16), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:''
+  },
+  {
+    id:'ALT-085', title:'Company detail: LinkedIn field display',
+    type:'Feature', module:'Companies', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'Done 2026-06-21: LinkedIn shown in the company "About" grid (CompanyDetailPage), alongside revenue/employees/website/email/CIN.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Per-Project Status Model (Wave A DB done, UI waves B-E)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-086', title:'dropdown_option table + seed starter values (Wave A DB)',
+    type:'Task', module:'Data', wave:'Per-project status',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'contact_status ×6, call_disposition ×8, account_status ×7, decision_power ×3, feasibility ×3. SQL: feature-status-schema.sql.'
+  },
+  {
+    id:'ALT-087', title:'contact_project_status table (unique contact+project, status/desc/comments)',
+    type:'Task', module:'Data', wave:'Per-project status',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'RLS on (authenticated baseline).'
+  },
+  {
+    id:'ALT-088', title:'company_project_status table (account_status, is_feasible, decision_power, desc, comments)',
+    type:'Task', module:'Data', wave:'Per-project status',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Per project per company. RLS on.'
+  },
+  {
+    id:'ALT-089', title:'user_view_pref table (per-user column layout preferences)',
+    type:'Task', module:'Data', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Schema only; UI not built yet.'
+  },
+  {
+    id:'ALT-090', title:'Surface pre-sales questions in lead workspace per domain (Wave B)',
+    type:'Feature', module:'Leads', wave:'Per-project status',
+    priority:'P2', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Pre-sales questions surfaced per domain_master in lead workspace. Wave B complete.'
+  },
+  {
+    id:'ALT-091', title:'Call Disposition UI in Contact detail + Company contact rows',
+    type:'Feature', module:'Contacts', wave:'Per-project status',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Writes to interaction table.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Deploy / Hosting
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-092', title:'Combine web app + email service into one Node process for Hostinger',
+    type:'Feature', module:'Deploy/Infra', wave:'Deploy',
+    priority:'P0', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Claude',
+    notes:'Root package.json + server.js → new-code/notify-service/server.js. Node 22.x.'
+  },
+  {
+    id:'ALT-093', title:'Deploy live at crm.altleads.com (Hostinger, git auto-deploy from AltLeads-CRM)',
+    type:'Task', module:'Deploy/Infra', wave:'Deploy',
+    priority:'P0', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Claude',
+    notes:'HTTP 200, /health OK, email delivery verified. Git auto-deploy from clean AltLeads-CRM repo.'
+  },
+  {
+    id:'ALT-094', title:'Verify email delivery on live Hostinger deploy',
+    type:'Task', module:'Deploy/Infra', wave:'Deploy',
+    priority:'P0', status:'Done',
+    created: d(2026,6,16), updated: d(2026,6,16), finished: d(2026,6,16),
+    owner:'Claude',
+    notes:'Live POST /notify → {ok:true}. Gmail SMTP not blocked. Test recipient: ankit.s@amplior.com.'
+  },
+  {
+    id:'ALT-095', title:'Parallel run: team uses new + old system together for 1-2 weeks',
+    type:'Task', module:'Deploy/Infra', wave:'Deploy',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'1-2 weeks of owner-led testing. Very little AI work. Old system runs untouched.'
+  },
+  {
+    id:'ALT-096', title:'Cutover — switch fully to new system and retire DigitalOcean',
+    type:'Task', module:'Deploy/Infra', wave:'Deploy',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'After parallel run passes. Retire DO droplet + MySQL.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Design Polish
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-097', title:'Set base UI style (Attio/Linear, Inter font, white sidebar)',
+    type:'Feature', module:'Deploy/Infra', wave:'Design',
+    priority:'P1', status:'Done',
+    created: d(2026,6,11), updated: d(2026,6,14), finished: d(2026,6,11),
+    owner:'Sub-agent',
+    notes:'Done after owner "AI generated" feedback.'
+  },
+  {
+    id:'ALT-098', title:'Export Figma frames as reference PNGs (web + mobile)',
+    type:'Task', module:'Docs', wave:'Design',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Web (29) + mobile (23) exported. Admin (35) hit Figma API rate limit (~73h quota).'
+  },
+  {
+    id:'ALT-099', title:'Apply brand design system: blue #1A7EE8 palette, tokens, primitives',
+    type:'Feature', module:'Deploy/Infra', wave:'Design',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'index.css tokens, Sidebar/TopBar/AppShell/LoginPage/Badge restyle. docs/DESIGN-SYSTEM.md written.'
+  },
+  {
+    id:'ALT-100', title:'Design-match pass: web app vs Figma "New UI" (29 frames)',
+    type:'Feature', module:'Deploy/Infra', wave:'Design',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Split login, lead-detail stepper, leads avatars, breadcrumbs, all modules unified.'
+  },
+  {
+    id:'ALT-101', title:'Design-match pass: Admin panel (from design system, Figma admin unavailable)',
+    type:'Feature', module:'Admin', wave:'Design',
+    priority:'P2', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Styled from design system. Figma admin frames hit rate limit (~73h; stop retrying).'
+  },
+  {
+    id:'ALT-102', title:'AltLeads logo: "AltLeads" wordmark (Alt=brand blue, Leads=near-black)',
+    type:'Feature', module:'Deploy/Infra', wave:'Design',
+    priority:'P2', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'src/components/ui/Logo.tsx. Wired into Sidebar + LoginPage. Per owner request.'
+  },
+  {
+    id:'ALT-103', title:'AltLeads bear-head logo SVG asset from owner / Figma zip',
+    type:'Task', module:'Deploy/Infra', wave:'Design',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Currently wordmark only. Owner to provide SVG or extract from Figma zip.'
+  },
+  {
+    id:'ALT-104', title:'Design-match pass: Mobile vs Figma "Mobile UI" (23 frames)',
+    type:'Feature', module:'Deploy/Infra', wave:'Design',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Phase 6.'
+  },
+  {
+    id:'ALT-105', title:'Empty states, loading states, error states polish',
+    type:'Feature', module:'Deploy/Infra', wave:'Design',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:''
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Mobile (Phase 6)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-106', title:'Recreate 2 missing mobile config files (environment_urls, httpMethod)',
+    type:'Task', module:'Deploy/Infra', wave:'Mobile',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,11), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Vendor withheld them; RN app can\'t build without them.'
+  },
+  {
+    id:'ALT-107', title:'Rewire mobile RN app to Supabase (new backend, ~57 files)',
+    type:'Feature', module:'Deploy/Infra', wave:'Mobile',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,11), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'App is API-driven (RN 0.78). Replace all API endpoint refs with Supabase client calls.'
+  },
+  {
+    id:'ALT-108', title:'New Android signing keystore',
+    type:'Task', module:'Deploy/Infra', wave:'Mobile',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,11), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Release keystore not in repo. Fine for new listing. Existing Play listing needs vendor key or Google reset.'
+  },
+  {
+    id:'ALT-109', title:'iOS build via GitHub Actions macOS runner',
+    type:'Task', module:'Deploy/Infra', wave:'Mobile',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,11), updated: d(2026,6,17), finished: null,
+    owner:'Claude',
+    notes:'Owner on Windows. Can also borrow 2020 MacBook.'
+  },
+  {
+    id:'ALT-110', title:'Apple Developer + Google Play access recovery',
+    type:'Task', module:'Deploy/Infra', wave:'Mobile',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,11), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Vendor may ghost (unpaid invoice) — have Apple/Google support recovery route.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Dashboard
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-111', title:'Dashboard on real data (lead/meeting stat cards)',
+    type:'Feature', module:'Leads', wave:'Web core',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'604 leads, meetings this week, 333 successful. Owner chose stat cards over calendar view.'
+  },
+  {
+    id:'ALT-112', title:'Role-aware dashboard (admin vs agent see different numbers)',
+    type:'Feature', module:'Leads', wave:'Per-project status',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,12), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Depends on fine-grained RLS (A-06).'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: QA Audit & Bug Fixes
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-113', title:'Wave 1 QA audit (11-agent, all modules vs code+live DB)',
+    type:'Task', module:'Deploy/Infra', wave:'QA & Bugfix',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'docs/QA-AUDIT.md: 3 critical, 9 high, 13 med, 16 low issues found.'
+  },
+  {
+    id:'ALT-114', title:'Wave 2 fix swarm (6 disjoint file lanes): fix all confirmed QA bugs',
+    type:'Bug', module:'Deploy/Infra', wave:'QA & Bugfix',
+    priority:'P0', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'All 6 lanes fixed; build passes clean. Fixed: inline company cols, created_by=user_id, resubmit flow, decision rehydrate, meetings company col, mark-confirmed stage, wishlist dropdown, admin role-edit, notification rendering.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: AI / pgvector (Future Phase)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-115', title:'Design AI/pgvector plan for semantic search over activity log',
+    type:'Task', module:'AI', wave:'AI',
+    priority:'P3', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'HubSpot access-model research + AI/pgvector design completed by sub-agent. Findings in docs/product/ACCESS-CONTROL-MODEL.md.'
+  },
+  {
+    id:'ALT-116', title:'Enable pgvector extension in Supabase',
+    type:'Task', module:'AI', wave:'AI',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Depends on AI plan.'
+  },
+  {
+    id:'ALT-117', title:'Embed and index interaction/activity logs for vector search',
+    type:'Feature', module:'AI', wave:'AI',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Depends on pgvector enabled.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Docs & Product Spec
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-118', title:'Write USER-STORIES-AND-FLOWS.md from FRS + old code + CR doc',
+    type:'Docs', module:'Docs', wave:'Docs',
+    priority:'P0', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:'13-stage lifecycle, approval flow, all modules, 20 ❓open questions, CR Delta section.'
+  },
+  {
+    id:'ALT-119', title:'Write full product docs suite (PRD, BACKLOG, ROADMAP, ROLES, DATA-DICTIONARY, UAT, RISK, DECISIONS, GLOSSARY)',
+    type:'Docs', module:'Docs', wave:'Docs',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'docs/product/ suite: 10 docs + INDEX.md. Root README rewritten.'
+  },
+  {
+    id:'ALT-120', title:'Write COMPANIES-CONTACTS-BLUEPRINT.md (per-project ownership + dedup rules)',
+    type:'Docs', module:'Docs', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,14), updated: d(2026,6,14), finished: d(2026,6,14),
+    owner:'Sub-agent',
+    notes:'Dedup keys: contact = email → LinkedIn → phone; company = domain → CIN.'
+  },
+  {
+    id:'ALT-121', title:'Owner reviews user-stories doc and answers the open-question gaps',
+    type:'Task', module:'Docs', wave:'Docs',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,12), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'20 ❓ questions in USER-STORIES-AND-FLOWS.md. Reconcile backlog after review.'
+  },
+  {
+    id:'ALT-122', title:'REBUILD_LOG.md session log — keep up to date every session',
+    type:'Docs', module:'Docs', wave:'Docs',
+    priority:'P1', status:'In Progress',
+    created: d(2026,6,11), updated: d(2026,6,17), finished: null,
+    owner:'Claude',
+    notes:'Append every session. Living log.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: This Backlog Tracker
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-123', title:'Build Jira-style Excel backlog tracker (this file)',
+    type:'Docs', module:'Docs', wave:'Docs',
+    priority:'P2', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Claude',
+    notes:'Generator: new-code/web/scripts/gen-backlog-tracker.cjs. Re-run to refresh. Merge by ID preserves Created dates.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Settings
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-124', title:'Editable profile (Settings page)',
+    type:'Feature', module:'Admin', wave:'Web core',
+    priority:'P2', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:''
+  },
+  {
+    id:'ALT-125', title:'Change password (Settings, via Supabase Auth)',
+    type:'Feature', module:'Admin', wave:'Web core',
+    priority:'P1', status:'Done',
+    created: d(2026,6,12), updated: d(2026,6,12), finished: d(2026,6,12),
+    owner:'Sub-agent',
+    notes:''
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Security Hardening (2026-06-17)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-126', title:'Security audit (multi-agent) → docs/SECURITY-AUDIT.md',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'29 findings, 14 High/Critical. Headline: data protected client-side only; admin endpoints unauthenticated; open email relay. All critical issues addressed same day.'
+  },
+  {
+    id:'ALT-127', title:'Auth-gate /api/users/create + /reset-password (requireAdmin middleware)',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Claude',
+    notes:'JWT + role check (requireAdmin). Was zero-credential admin takeover. 401 verified without token.'
+  },
+  {
+    id:'ALT-128', title:'Auth + rate-limit + single-recipient guard on /notify (open relay fix)',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Claude',
+    notes:'requireAuth + single-email validation (blocks injected recipients) + express-rate-limit on /notify endpoint.'
+  },
+  {
+    id:'ALT-129', title:'helmet security headers + 32 KB body limit on notify-service',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Claude',
+    notes:'helmet() for CSP/HSTS/etc. express.json({ limit: "32kb" }). Deps added to notify-service + root package.json.'
+  },
+  {
+    id:'ALT-130', title:'Disable public Supabase signup (Management API, disable_signup=true)',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Claude',
+    notes:'Prevents self-registration on the public Supabase Auth endpoint. Verified via Management API.'
+  },
+  {
+    id:'ALT-131', title:'Lock permission-table writes: user_role/rbac_master/dropdown_option/user_master/user_view_pref + is_admin()/current_user_id() helpers',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'user_role/rbac_master/dropdown_option = admin-only; user_master = admin-or-self; user_view_pref = own row. Helpers is_admin() + current_user_id() in DB. Frontend admin.ts + notify.ts send Authorization bearer.'
+  },
+  {
+    id:'ALT-132', title:'Access RLS v1: lead row-isolation + write-locks + owner/manager/admin logging rules',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Lead row-isolation via created_by. Write-locks on company/contact/status/interaction. Status+interaction writes = owner+manager+admin only. Proven with throwaway rep+manager logins.'
+  },
+  {
+    id:'ALT-133', title:'Access RLS v1b: contact-detail masking view + column revoke + find_contact_dup RPC + frontend routing',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Secured DB view masks phone/email/linkedin to non-owner. Column revoke on base table. find_contact_dup RPC. Frontend routed through masked view. Friendly RLS errors. Proven with logins.'
+  },
+  {
+    id:'ALT-134', title:'Access RLS v2: project_visibility_setting dials (additive) + Project Access admin UI',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Configurable per-project view/edit dials. Admin UI to manage project access settings. Additive visibility model (owner+manager+admin base; dials can open up). Proven.'
+  },
+  {
+    id:'ALT-135', title:'HubSpot access-model research + design → docs/product/ACCESS-CONTROL-MODEL.md',
+    type:'Docs', module:'Docs', wave:'Security hardening',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'Owner decisions recorded: companies/contacts = PUBLIC rows + per-project masked details; leads = CLOSED; managers = project leads; QC reads all; Admin overrides all + sets dials.'
+  },
+  {
+    id:'ALT-136', title:'Doc refresh: PRD/BACKLOG/ROADMAP/DECISIONS/DATA-DICTIONARY + ARCHITECTURE/USER-STORIES/QA/DESIGN-SYSTEM updated',
+    type:'Docs', module:'Docs', wave:'Security hardening',
+    priority:'P1', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Sub-agent',
+    notes:'All major product and technical docs refreshed to reflect 2026-06-17 security + access-control work.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Security Follow-ups (Planned)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-137', title:'Rotate Gmail app password at go-live',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Rotate amplior.ankits@gmail.com app password used by notify-service SMTP. Owner-gated (requires Google account access).'
+  },
+  {
+    id:'ALT-138', title:'Manager-edit default dial tuning (decide whether managers can edit leads by default)',
+    type:'Task', module:'Security', wave:'Security hardening',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Ankit',
+    notes:'Access v2 dials are set; default for manager-edit needs owner decision before go-live.'
+  },
+  {
+    id:'ALT-139', title:'Per-user / per-record sharing (Access v3)',
+    type:'Feature', module:'Security', wave:'Security hardening',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'Share a specific lead/contact with a specific user outside normal access rules. Deferred post-launch.'
+  },
+  {
+    id:'ALT-140', title:'App-layer friendly-error coverage audit (RLS-denied writes show human message)',
+    type:'Task', module:'Security', wave:'Security hardening',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: null,
+    owner:'Sub-agent',
+    notes:'v1b added friendly errors for contact masking. Full audit across all modules not done.'
+  },
+  {
+    id:'ALT-141', title:'First production deploy / push to live (owner-gated)',
+    type:'Task', module:'Deploy/Infra', wave:'Deploy',
+    priority:'P0', status:'Done',
+    created: d(2026,6,17), updated: d(2026,6,17), finished: d(2026,6,17),
+    owner:'Ankit',
+    notes:'Pushed commit 3c0c2ba on 2026-06-17 → Hostinger auto-deploy. Owner must add SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY env vars for email/add-user to work.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Post-deploy fixes & HubSpot-style associations (2026-06-18)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-142', title:'Fix: user edit/reset failed with "No login found"',
+    type:'Bug', module:'Admin', wave:'Post-deploy fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'110/111 users had no auth login (only 1 profiles row). Reset now resolves auth account by email, AUTO-CREATES a login when none exists, and self-heals the profiles id↔user_id link. Create-user now upserts profiles explicitly (no longer relies on the email trigger).'
+  },
+  {
+    id:'ALT-143', title:'Fix: Pre-Sales Questions tab broken (missing is_active column)',
+    type:'Bug', module:'Admin', wave:'Post-deploy fixes',
+    priority:'P0', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'pre_sales_question.is_active never existed (42703 → empty tab, no edits). Added column via fix-questions-domains.sql + admin-only write RLS (everyone reads).'
+  },
+  {
+    id:'ALT-144', title:'Fix: Domain reference data add/edit not wired',
+    type:'Bug', module:'Admin', wave:'Post-deploy fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'Domain table was read-only and edit pencil was a no-op. Added addDomain/updateDomain (+ updateSource/updateDesignation) and wired ReferenceDataTab add+edit modal; admin-only write RLS on domain_master.'
+  },
+  {
+    id:'ALT-145', title:'Company detail: rename "Deals" tab → "Leads" + New Lead action',
+    type:'Feature', module:'Companies', wave:'HubSpot associations',
+    priority:'P1', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'Owner: "those deals in contact are same of our leads." Tab key+label now Leads; empty/placeholder copy updated; added "New lead" button (prefills company).'
+  },
+  {
+    id:'ALT-146', title:'Create a Lead from within a Contact or Company (prefilled)',
+    type:'Feature', module:'Leads', wave:'HubSpot associations',
+    priority:'P1', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'LeadFormPage reads /leads/new?contact=&company= and prefills person+company (mirrors ContactFormPage). Launch buttons on both detail pages. Uses lead_master.contact_id (confirmed present in live DB).'
+  },
+  {
+    id:'ALT-147', title:'Contact detail: associated Leads + Colleagues panels',
+    type:'Feature', module:'Contacts', wave:'HubSpot associations',
+    priority:'P1', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'New fetchContactLeads (by contact_id + source_lead_id). Contact page now shows associated Leads and Colleagues (other contacts at same company), matching the company page associations.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Outreach-first pivot — bug fixes + internal-launch workstreams (2026-06-18)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-148', title:'Fix: Company Feasibility saved/showed wrong value (boolean vs 3-value text)',
+    type:'Bug', module:'Companies', wave:'Post-deploy fixes',
+    priority:'P1', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'is_feasible modeled as boolean while dropdown+DB column are text (feasible/not_feasible/unknown). Picking Feasible showed+saved not_feasible. Fixed end-to-end. Commit 19021cf, pushed.'
+  },
+  {
+    id:'ALT-149', title:'Email templates improved (copy + working CTA buttons)',
+    type:'Feature', module:'Notifications', wave:'Post-deploy fixes',
+    priority:'P2', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'All 8 rewritten: warmer copy, better subjects, greeting, working buttons (ctaUrl/APP_URL). Baseline; owner to send final wording. Commit 19021cf.'
+  },
+  {
+    id:'ALT-150', title:'Role posture — outreach team is update-only (hide create + gate /admin route)',
+    type:'Feature', module:'Security', wave:'Internal launch',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'canCreate/isAdmin in AuthContext; hide +New buttons; RoleProtectedRoute on /leads-new,/contacts-new,/companies-new,/leads/:id/edit and /admin. See UX-REDESIGN.md A. Owner decision: who can create.'
+  },
+  {
+    id:'ALT-151', title:'Bulk login provisioning for the launch team',
+    type:'Task', module:'Admin', wave:'Internal launch',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'~110 users, only 1 has a login. Bulk create-logins admin action + temp-password CSV + forced first-login change. Owner: provide 15-20 launch users + roles.'
+  },
+  {
+    id:'ALT-152', title:'BLOCKER: agent write-path / ownership model (edit ASSIGNED not CREATED records)',
+    type:'Bug', module:'Security', wave:'Internal launch',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'LAUNCH-STOPPER. status/disposition/notes/interaction writes gate on contact/company created_by=current_user_id; bulk-migrated data => agents hit 42501 on their call-list. Re-point created_by to assignees OR widen WITH CHECK to assignment/membership. Validate with REAL agent login. Owner: confirm assignment model.'
+  },
+  {
+    id:'ALT-153', title:'RLS + masking validation with real non-admin logins',
+    type:'Task', module:'Security', wave:'Internal launch',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Throwaway AGENT/TEAM_LEAD/QC logins. NOTE: leads are ROW-scoped; contacts/companies are ROW-public + COLUMN-masked. Confirm friendly 42501 on all write paths. Depends on ALT-151/152.'
+  },
+  {
+    id:'ALT-154', title:'Email sign-off: wording + recipient + Gmail rotation + links',
+    type:'Task', module:'Notifications', wave:'Internal launch',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Ankit',
+    notes:'Owner approves wording; confirm recipient=user_master.email; rotate Gmail app password (env key GMAIL_APP_PASSWORD, not GMAIL_PASS); wire record deep-links. See ALT-137.'
+  },
+  {
+    id:'ALT-155', title:'Record UX pass (action bar, click-to-call/email, ProjectStatusPanel)',
+    type:'Feature', module:'Companies', wave:'Launch polish',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Unify Company+Contact detail on 3-zone layout; OutreachActionBar; ContactMethods (tel:/mailto:, masked=locked); read-first ProjectStatusPanel. See UX-REDESIGN.md B. Can trail go-live.'
+  },
+  {
+    id:'ALT-156', title:'Lead form reorg (Client/Source/Project on top) + autopopulate from company',
+    type:'Feature', module:'Leads', wave:'Launch polish',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Deal Setup section at top; enrich company lookup; autopopulate city/blank fields on company-select; industry/domain/CIN read-only. See UX-REDESIGN.md C.'
+  },
+  {
+    id:'ALT-157', title:'Inline grid editing from lists (EditableCell family)',
+    type:'Feature', module:'Contacts', wave:'Post-launch',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Extract EditableSelectCell/EditableTextCell; wire Contacts notes/comments + Companies status/feasibility inline via existing upserts. See UX-REDESIGN.md D. Deferred post-launch.'
+  },
+  {
+    id:'ALT-158', title:'Owner + next-step schema & inline setters',
+    type:'Feature', module:'Data', wave:'Post-launch',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Migration: next_step/next_step_date (+ optional last_disposition) on *_project_status; patch types + setStatusOwner. Gated on ownership-model decision. See UX-REDESIGN.md E.'
+  },
+  {
+    id:'ALT-159', title:'Bulk Export->edit->Import (UPDATE) for companies (admin-only)',
+    type:'Feature', module:'Companies', wave:'Post-launch',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Company ID column in export; service-role POST /api/companies/bulk-update (match id/domain/cin, update-only, skip-blanks, dry-run diff, per-row report); admin import wizard. Phase 2 -> contacts. See BULK-IMPORT-EXPORT.md.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: North-star ecosystem & roadmap (2026-06-18)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-160', title:'Task Manager — scheduled tasks as tickets, associated to records (HubSpot/Zoho-style)',
+    type:'Feature', module:'Tasks', wave:'Roadmap',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'OWNER RE-CONFIRMED 2026-06-21: a per-CRM-user Task Manager as a SEPARATE module. Each user can schedule or 1-CLICK create a Call task / Meeting / general task, associated to a record (lead/company/contact/meeting), with EMAIL + BROWSER reminders so a "call this customer" ask is not forgotten. HubSpot/Zoho-style (check their task/engagement model). EPIC now broken into the PHASE-1 plan ALT-250..ALT-262 (full detail docs/product/TASK-MANAGER.md, grounded in HubSpot live task model + Zoho + adversarial review). Build: task table + reminder-timing trigger + manages_user RLS helper; reminders -> in-process email scanner + bell insert + ~60s web timer (web push deferred); My Tasks Today/Overdue/Upcoming + per-record one-click. OPEN: per-task vs digest email (ALT-262). See VISION.md.'
+  },
+  {
+    id:'ALT-161', title:'Client portal — clients see scheduled/success post-scheduling + dashboard',
+    type:'Feature', module:'Client Portal', wave:'Roadmap',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'SUPERSEDED/EXPANDED by epic ALT-221 (see docs/product/CLIENT-PORTAL.md, planned 2026-06-21 from CEO transcript). Client-scoped read views of lead reports/meetings/dashboard + governance/onboarding/invoices, Amplior-branded.'
+  },
+  {
+    id:'ALT-221', title:'EPIC: Client Portal / Sales Screen (white-label Amplior + AltLeads) — plan in docs/product/CLIENT-PORTAL.md',
+    type:'Feature', module:'Client Portal', wave:'Roadmap',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'PLANNED 2026-06-21 (CEO transcript + 2 owner interviews; see CLIENT-PORTAL.md v1-v3). ONE white-label product, TWO brands (Amplior + AltLeads), absolute brand isolation, 2 domains. Client roles = Company Admin > Sales Head > Sales Person (these were the vendor MOBILE app users = CLIENT, never Amplior staff). Replaces the mobile app; the /sales shell is the seed. APPROVED: same Supabase project + Pro ($25) + curated client-scoped read-only views + CLIENT role + adversarial multi-tenant RLS validation. PHASE-1 ORDER: (1) sales screens = view + assign/reassign meetings (port old-code/amplior-mobile-app-main); (2) ICP/docs/decks (edit by Company Admin+Sales Head w/ notify-on-save); (3) governance scheduling = review-meeting reminders + calendar view. Feedback available once meeting STARTED; recorded in CRM. DATA ISOLATION: client owns only MEETING records (not company/contact); sees company info as a SNAPSHOT captured up to their meeting; never another project/client meeting on the same shared company. Dashboard spec TBD. PHASE-1 PLAN NOW DETAILED in docs/product/CLIENT-PORTAL-PHASE1.md + child tickets ALT-222..ALT-245 (grounded in old-code mobile app + adversarial review). KEY DECISIONS from review: portal is a BRAND-NEW separate app (NOT a re-skin of the CRM — reuse would leak live shared data); isolation = a per-meeting denormalised SNAPSHOT table + SECURITY-INVOKER portal_* views + RLS, validated by throwaway-login test (ALT-229, HARD GATE); a one-time BACKFILL (ALT-225) seeds existing meetings so day-one is not empty; full email re-branding (ALT-232). OWNER DECISIONS PENDING: client-visible column whitelist (ALT-243) + snapshot-writer trigger mechanism (ALT-224). Build after those.'
+  },
+  {
+    id:'ALT-162', title:'Chrome extension — LinkedIn contact details + inline CRM edit (writes back live)',
+    type:'Feature', module:'Extension', wave:'Roadmap',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Priority #3. Extension reads the same Supabase backend; show contact details over an open LinkedIn profile + small editable controls that reflect in the CRM. Reuse the CRM data layer/API.'
+  },
+  {
+    id:'ALT-163', title:'Market-mapping data per city (enrich base + targeting)',
+    type:'Feature', module:'Data', wave:'Roadmap',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Priority #4. City-wise company/site dataset feeding targeting + enriching the RAG base.'
+  },
+  {
+    id:'ALT-164', title:'AI / RAG suggestion engine (who/when/what to reach out; targeting)',
+    type:'Feature', module:'AI', wave:'Roadmap',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Priority #5, gradual. pgvector embeddings over interaction history; suggestions per contact (best time/what to say) + targeting ("100 companies whose contracts renew next month"). DEPENDS on rich interaction capture from day one (ALT-152/foundations). See AI-PGVECTOR-PLAN.md + VISION.md.'
+  },
+  {
+    id:'ALT-165', title:'Leadership decks — Product & Launch + Product Guide (HTML/PDF)',
+    type:'Docs', module:'Docs', wave:'Roadmap',
+    priority:'P1', status:'Done',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: d(2026,6,18),
+    owner:'Claude',
+    notes:'docs/product/deck-product-launch.(html|pdf) + deck-product-guide.(html|pdf). Branded 10-slide decks, rendered via Playwright. Show impact, best+upcoming features, ecosystem/RAG north-star, roadmap, launch decisions.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Sales / Client Portal (priority #2) — see SALES-PORTAL.md (2026-06-18)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-166', title:'Sales Portal shell — second login + /sales routes + sales nav (reuse leads)',
+    type:'Feature', module:'Sales Portal', wave:'Sales portal',
+    priority:'P2', status:'In Progress',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'/sales/login + SalesProtectedRoute + sales AppShell/Sidebar (Leads/Meetings/Feedback); block sales users from internal routes; expose full role set in AuthContext. Additive, no DB risk. See SALES-PORTAL.md build step 1.'
+  },
+  {
+    id:'ALT-167', title:'Sales downline hierarchy + RLS scoping (SP=own, SH=downline)',
+    type:'Feature', module:'Security', wave:'Sales portal',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Add project_user.sales_head_user_id + partial UNIQUE(project_id,user_id). RLS helpers is_sales_person/is_sales_head/sales_downline_ids; additive SELECT term on lead_master keyed on lead_report.user_id in {self,downline}. VALIDATE with real SP/SH logins before prod. Owner: confirm downline model.'
+  },
+  {
+    id:'ALT-168', title:'Feedback CRUD (first sales write) — feedback_answer + complete meeting',
+    type:'Feature', module:'Sales Portal', wave:'Sales portal',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Server-driven questions (feedback_question_master), Yes/No + free-text + follow-up date; INSERT feedback_answer per question, set meeting Completed + follow_up_date; write RLS for assigned SP/SH. Write path does NOT exist yet (read-only today). Capture real question set from live DB.'
+  },
+  {
+    id:'ALT-169', title:'Sales Head adds Sales Person (/api/sales/users/create + requireSalesHead)',
+    type:'Feature', module:'Sales Portal', wave:'Sales portal',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'New endpoint forces role_id=5, assigns caller projects via project_user, records downline link. Reuse genTempPassword/findAuthUserByEmail/ensureProfileLink. Admin provisions first SALES_HEAD per project from Settings.'
+  },
+  {
+    id:'ALT-170', title:'Provision client/sales users from Admin Settings',
+    type:'Feature', module:'Admin', wave:'Sales portal',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Make SALES_HEAD/SALES_PERSON web-assignable in the right context; assign to project(s); the SALES roles are is_web=false today and hidden from the picker.'
+  },
+  {
+    id:'ALT-171', title:'Sales Head executive dashboard + assign/reassign salesperson',
+    type:'Feature', module:'Sales Portal', wave:'Sales portal',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'Recreate vendor head dashboard: meeting-status strip, revenue potential, hot prospects, meetings-by-city, F2F vs virtual %, industry spread, pipeline funnel; SP gets simple today-view. Assign/reassign via lead_report.user_id. Date-range filter.'
+  },
+  {
+    id:'ALT-172', title:'Integrations: own workflow engine + public APIs + MCP (other CRMs/tools)',
+    type:'Feature', module:'Integrations', wave:'Roadmap',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,18), updated: d(2026,6,18), finished: null,
+    owner:'Claude',
+    notes:'In scope (owner): integrate with other CRMs/tools via our own workflow engine, public APIs, and an MCP server (two-way sync, webhooks, automation). Design after internal launch + portal v1.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: 2026-06-19 owner decisions (see DECISIONS.md ADR-21/22)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-173', title:'Contact masking redesign — partial mask + click-to-reveal (ADR-22)',
+    type:'Feature', module:'Security', wave:'Launch polish',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,19), updated: d(2026,6,19), finished: null,
+    owner:'Claude',
+    notes:'Phone: first 3 + last 3 visible, middle blurred; email similar; click reveals full until page refresh. Non-permitted viewers = hidden always (masked view returns null). UI layer over contact_master_masked. See DECISIONS.md ADR-22.'
+  },
+  {
+    id:'ALT-174', title:'Create rights as configurable per-project setting (default admin-only)',
+    type:'Feature', module:'Admin', wave:'Internal launch',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,19), updated: d(2026,6,19), finished: null,
+    owner:'Claude',
+    notes:'Default CREATE = ADMIN only; admin can grant create + CRUD to Team Leads (others) via the Project Access dials. Not hardcoded. Ties to accessSettings + role posture ALT-150. See DECISIONS.md ADR-21.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Planned (not started) — owner asked to "plan somewhere", 2026-06-19
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-175', title:'Email templates v2 — re-engineer + attachments (e.g. meeting-schedule PDF report)',
+    type:'Feature', module:'Notifications', wave:'Backlog (planned)',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,19), updated: d(2026,6,19), finished: null,
+    owner:'Claude',
+    notes:'Owner wants richer emails per event, possibly a generated PDF report attached (e.g. meeting-schedule confirmation as a PDF). Current emails = improved copy + working buttons only (ALT-149). v2 = re-engineered layouts per event + PDF/attachment generation (reuse the Playwright HTML->PDF method from render-decks.cjs). PLAN ONLY for now.'
+  },
+  {
+    id:'ALT-176', title:'Bulk USER import (admin) — provision many users from a sheet',
+    type:'Feature', module:'Admin', wave:'Backlog (planned)',
+    priority:'P3', status:'Planned',
+    created: d(2026,6,19), updated: d(2026,6,19), finished: null,
+    owner:'Claude',
+    notes:'Future: import users (name/email/role/project) from CSV/XLSX to bulk-create logins + roles + project membership (extends the bulk-login work ALT-151 and the bulk import engine ALT-159). Launch-user list not needed now; this is the durable mechanism. PLAN ONLY.'
+  },
+  {
+    id:'ALT-216', title:'INSERT RLS does not enforce admin-only create — DEFER, but REQUIRED before sales portal shows companies/contacts',
+    type:'Security', module:'Security', wave:'Security hardening',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'SECURITY FINDING (security pass 2026-06-21). access-rls-v1.sql INSERT policies on lead_master/company_master/contact_master are WITH CHECK (is_admin() OR created_by = current_user_id()) — so ANY authenticated user can create records they own, contradicting ADR-21 "admin-only create". OWNER DECISION 2026-06-21: DO NOT harden the DB now — the internal team is trusted and the UI gate (canCreateData=isAdmin, hides New buttons) is sufficient for the internal launch. HOWEVER this MUST be enforced at the DB before the SALES PORTAL exposes companies/contacts: sales users (SALES_HEAD/SALES_PERSON) must NOT be able to create company/contact/lead. Action when that lands: tighten INSERT WITH CHECK to is_admin() (or is_admin() OR has_project_create_grant) AND ensure sales-role users fail the check; validate with throwaway sales logins before prod. Pairs with sales-portal RLS scoping (ALT-167) + update-path blocker ALT-152.'
+  },
+  {
+    id:'ALT-217', title:'Company record — richer "About" details (revenue, employees, website, email, LinkedIn, description)',
+    type:'Feature', module:'Companies', wave:'Companies & Contacts',
+    priority:'P2', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'DONE 2026-06-21 (owner ask). CompanyDetailPage now shows an "About this company" grid: Industry, Employees (company_size), Revenue (turnover_master.turnover via turnover_id), City, Website, Email, LinkedIn, CIN + the free-text description. companies.ts fetchCompanyById extended (turnover_id, description joins). Build passes.'
+  },
+  {
+    id:'ALT-218', title:'Inline Zoho-style tick-to-save contact editor inside company + cross-record new-tab redirects',
+    type:'Feature', module:'Companies', wave:'Companies & Contacts',
+    priority:'P2', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'DONE 2026-06-21 (owner ask). Replaced the confusing expand-arrow+Save with an always-visible inline editor strip (status + description + comments) that uses the row width; a green ✓ tick saves (Enter also saves) and ✗ discards, only while dirty; toast feedback. Contact name now links to the contact record. ALL cross-record redirects now open in a NEW TAB with rel=noreferrer noopener: company→contact, company→lead (DealsTab), contact→company, contact→lead, contact→colleague. "Add new contact" inside company gated by canCreateData.'
+  },
+  {
+    id:'ALT-219', title:'Unsaved-changes guard + draft cache + restore on New/Edit forms',
+    type:'Feature', module:'Web core', wave:'UX audit',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'DONE 2026-06-21 (owner ask: "if something is edited and someone tries something that loses it, save in cache + warn to save or discard"). New useUnsavedChanges hook: caches the in-progress draft to localStorage while dirty, warns on browser close/refresh (beforeunload), and offers to RESTORE the draft when the user returns. Wired into Lead/Contact/Company New+Edit forms with a Discard-changes confirm on Cancel/Back, cache cleared on successful save and on logout (shared-computer hardening). Implements UX-AUDIT Top-30 #13 (ALT-190) for forms; modals/detail-edit remain.'
+  },
+  {
+    id:'ALT-220', title:'Security: clear global-search index cache on logout (cross-session leak)',
+    type:'Security', module:'Security', wave:'UX audit',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'DONE 2026-06-21 (found in post-milestone security review). The Cmd-K search index is cached at module scope; the SPA does not full-page reload on logout, so on a shared machine the next user could see the previous user\'s cached leads/companies/contacts. signOut() now calls clearSearchIndex() alongside the existing draft-cache purge.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC ALT-221 children: Client Portal PHASE-1 build plan (2026-06-21)
+  // Plan-only, grounded in old-code/amplior-mobile-app-main + adversarially
+  // critiqued. Full detail: docs/product/CLIENT-PORTAL-PHASE1.md
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-222', title:'Portal schema + CLIENT role + client_portal_user table',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'AUTHORED + adversarially reviewed + revised 2026-06-21 -> apply-portal-foundation.cjs (portal schema, client_portal_user[auth_uid->client_assoc_id+role], meeting_snapshot, SECURITY-INVOKER portal_* views, portal.notification, explicit grants — only views granted, ZERO on base tables). Covers ALT-223/226/228. STAGED — gated on ALT-229 throwaway-login validation. See CLIENT-PORTAL-PHASE1.md.'
+  },
+  {
+    id:'ALT-223', title:'portal.meeting_snapshot table (denormalised, per-meeting frozen copy)',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Denormalised project_id+client_assoc_id+assigned_user_id on every row + snapshot_source flag. The core data-isolation mechanism. GATED on column-whitelist sign-off ALT-243 — do NOT guess columns. dependsOn ALT-222, ALT-243.'
+  },
+  {
+    id:'ALT-224', title:'Snapshot writer (live path) on CRM meeting generation',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'DECISION RESOLVED 2026-06-21 (owner delegated to Claude): mechanism = a SECURITY DEFINER Postgres function fired by a DB TRIGGER on the meeting source (AFTER INSERT/UPDATE), chosen over an app endpoint because the snapshot is isolation-critical and must be ATOMIC + UNBYPASSABLE (cannot be forgotten at a call site). The browser never writes snapshots. Until wired, no NEW meeting produces a snapshot. dependsOn ALT-223.'
+  },
+  {
+    id:'ALT-225', title:'One-time snapshot BACKFILL applier (seed every existing meeting)',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Idempotent migration applier snapshotting every PRE-EXISTING meeting (snapshot_source=backfill) so the portal is not empty on day one. Run AFTER RLS validation, BEFORE go-live; re-validate isolation on real volume after. dependsOn ALT-223, ALT-227, ALT-229, ALT-243.'
+  },
+  {
+    id:'ALT-226', title:'Curated portal_* views (incl. portal_notifications)',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'SECURITY INVOKER views over snapshot/notification tables; clients get ZERO grants on base tables. dependsOn ALT-223, ALT-228.'
+  },
+  {
+    id:'ALT-227', title:'Portal RLS policies (snapshot/wishlist/feedback/docs/governance)',
+    type:'Security', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'AUTHORED + adversarially reviewed + revised 2026-06-21 -> apply-portal-rls.cjs. Review caught 2 EXISTENTIAL gaps, both FIXED: (1) policies now target the real authenticated role (gated by portal.caller_client_assoc_id() IS NOT NULL), not an unbridged portal_client role; (2) BASE-TABLE LEAK CLOSURE — an AS RESTRICTIVE deny_portal_session policy is added to EVERY RLS-enabled public table so a portal session fails the CRM permissive USING(true) reads while CRM staff are unaffected. Company Admin=client scope; Sales Head=project+downline; Sales Person=own assigned; NO client write policy. This is a CRM-WIDE RLS change — MUST pass ALT-229 throwaway-login validation before prod. dependsOn ALT-223.'
+  },
+  {
+    id:'ALT-228', title:'Portal notifications table + RLS (portal.notification)',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Closes a review gap. Portal-OWNED table (NOT the CRM in_app_notification). RLS scopes SELECT/UPDATE to recipient_auth_uid AND client_assoc_id; INSERT service-role only. dependsOn ALT-222.'
+  },
+  {
+    id:'ALT-229', title:'Adversarial throwaway-login RLS validation (HARD RELEASE GATE)',
+    type:'Security', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'One login per portal role on a test client; PROVE no cross-client snapshot read, no peer-meeting read, no cross-client notification read. Run pre-prod AND after backfill on real volume. Multi-tenant leak is existential. dependsOn ALT-227, ALT-228.'
+  },
+  {
+    id:'ALT-230', title:'Portal app skeleton (net-new /portal route tree)',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'BUILT + isolation-reviewed + wired 2026-06-21 (build passes). PRAGMATIC DEVIATION from "separate Vite app": built as a NET-NEW, fully isolated /portal route tree inside the existing web app (src/portal/**) with its OWN login + guard + layout + data layer — mounted in App.tsx OUTSIDE the CRM/sales guards. Adversarial review VERIFIED: zero imports of CRM pages/live-data modules (only portal data layer + ui primitives), data layer hits ONLY supabase.schema(portal) views. Separate-origin brand isolation still achievable via per-deploy VITE_BRAND + 2 domains -> same build. Covers ALT-231/233/234/237/240 in 2a. INERT until portal schema applied + exposed (ALT-229). dependsOn ALT-222.'
+  },
+  {
+    id:'ALT-231', title:'Brand seam — web (BrandContext + per-brand CSS vars)',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P1', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'useBrand() resolves from VITE_BRAND/hostname; data-brand tokens; Logo/login/error/help read it. Amplior vs AltLeads brand isolation by separate origins. dependsOn ALT-230.'
+  },
+  {
+    id:'ALT-232', title:'Brand seam — email FULL parameterization (email-templates.js)',
+    type:'Task', module:'Notifications', wave:'Client portal P1',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Parameterize ALL hardcoded AltLeads strings: header wordmark, footer line, every [AltLeads] subject prefix, per-event body copy, accent colour + APP_URL. Defaults to AltLeads so CRM emails are unchanged. Prevents brand bleed to Amplior clients.'
+  },
+  {
+    id:'ALT-233', title:'Portal auth (own guard: login/forgot/set-password)',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:"Portal's OWN guard accepting only enabled client_portal_user rows (not the CRM SalesProtectedRoute). OPEN: OTP vs email-link. dependsOn ALT-230, ALT-222."
+  },
+  {
+    id:'ALT-234', title:'Meetings list / status / detail (NET-NEW pages, snapshot-only)',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Reads ONLY portal_meetings snapshot. FORBIDDEN to reuse CRM LeadsPage/LeadDetailPage (they query live company_master/lead_report). No reschedule/drop/cancel buttons. dependsOn ALT-226, ALT-233.'
+  },
+  {
+    id:'ALT-235', title:'Assign / reassign salesperson (port SalesPersonModal)',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Company Admin + Sales Head only; updates lead_report.user_id for the Amplior-generated meeting via an RLS-checked write; fires lead_reassigned email (brand=Amplior). dependsOn ALT-234.'
+  },
+  {
+    id:'ALT-236', title:'Lead / Lead-details (NET-NEW read-only, snapshot-only)',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Snapshot lead profile from portal views only. Explicitly NOT the CRM LeadDetailPage. dependsOn ALT-234.'
+  },
+  {
+    id:'ALT-237', title:'Feedback (started-gated) + MeetingReview',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Enabled only when meeting_snapshot.started_at <= now(). Sales Person own; Sales Head edit in-scope. Writes portal_feedback; records back into the CRM + notifies Amplior (portal.notification + email). dependsOn ALT-234.'
+  },
+  {
+    id:'ALT-238', title:'Wishlist + SAFE name-only company suggest',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'company_name_suggest returns ONLY {company_name} — no id/industry/website/owner/count, nothing revealing another client targets it. Reconcile to a real company_id server-side, Amplior-side. Optional file upload + free-text address replace camera/GPS. dependsOn ALT-233.'
+  },
+  {
+    id:'ALT-239', title:'Notifications feed (portal-scoped)',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Reads portal_notifications (RLS-scoped per recipient + client_assoc_id). Reuses the bell PATTERN, not CRM in_app_notification data. dependsOn ALT-228, ALT-233.'
+  },
+  {
+    id:'ALT-240', title:'Home + dashboard shell + Profile',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P2', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'Status cards + date-range from portal_dashboard_metrics; role-gated extras. Full chart spec DEFERRED until owner provides it. dependsOn ALT-233.'
+  },
+  {
+    id:'ALT-241', title:'Docs / ICP / criteria / decks + save-popup notify flow',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Read all roles; edit by Company Admin + Sales Head with a confirm popup that notifies Amplior ADMIN+TL+project users. Per-client/project Storage bucket scoping. dependsOn ALT-227, ALT-233.'
+  },
+  {
+    id:'ALT-242', title:'Governance review-meeting reminders (email + .ics) + detail page',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'governance_meeting_reminder notify event + portal.governance_meeting table. Email + .ics only, NO web push (that lives in the Task Manager module). TL/Manager <-> Company Admin review meetings. dependsOn ALT-232, ALT-233.'
+  },
+  {
+    id:'ALT-243', title:'DECISION: client-visible column whitelist sign-off',
+    type:'Task', module:'Client Portal', wave:'Client portal P1',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Ankit',
+    notes:'RESOLVED 2026-06-21: client sees EVERYTHING the vendor MOBILE-app user could see (i.e. the full field set the old client app surfaced for meetings/leads/companies). Owner will refine the list later (eventual target = "all that any project CRM user can see"). Snapshot columns (ALT-223) = the mobile-app field set; unblocked.'
+  },
+  {
+    id:'ALT-244', title:'CRM Edit-User sales-role bug fix (UsersTab.tsx)',
+    type:'Bug', module:'Admin', wave:'Client portal P1',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'DONE 2026-06-21. UsersTab Edit-roles modal now always surfaces SALES_HEAD/SALES_PERSON (via new SALES_ROLE_NAMES const) in roleOptions = [...webRoles, ...salesRoles, ...extras], making Edit symmetric with Add — an admin can now GRANT a sales role to a user who lacks it (previously extras only re-showed non-web roles the user already had). Build passes.'
+  },
+  {
+    id:'ALT-245', title:'Provisioning: Company-Admin login creation',
+    type:'Feature', module:'Client Portal', wave:'Client portal P1',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Extend notify-service /api/users/create for portal users; also writes the client_portal_user row. Company Admin then adds their own Sales Heads/People. dependsOn ALT-222.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC ALT-160 children: Task Manager module (internal CRM) — 2026-06-21
+  // Plan-only, grounded in HubSpot's live task model + Zoho + adversarially
+  // critiqued. Full detail: docs/product/TASK-MANAGER.md
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-250', title:'Task table + reminder-timing trigger + indexes (migration applier)',
+    type:'Task', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'AUTHORED + adversarially reviewed 2026-06-21 -> new-code/migration/apply-create-task-table.cjs (self-contained embedded SQL, idempotent, txn-wrapped). public.task + public.task_user_pref; BEFORE INSERT/UPDATE trigger recomputes reminder_at = due_at - offset AND clears reminder_sent_at on due_at/offset change (snooze re-fires); partial scanner index; explicit grants (REVOKE anon/PUBLIC, GRANT authenticated). STAGED — not applied to prod (gated on owner sign-off + throwaway-login validation ALT-251).'
+  },
+  {
+    id:'ALT-251', title:'manages_user() RLS helper + task RLS policies',
+    type:'Security', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'AUTHORED + adversarially reviewed 2026-06-21 -> apply-task-rls.cjs. Review CAUGHT a leak (first draft derived manages_user from shared-project membership = a TL could read co-members tasks) and it was FIXED: manages_user() now FAILS CLOSED (owner + is_admin only) until a real person-hierarchy table exists. All 8 policies scoped TO authenticated. STAGED — apply to prod only after throwaway agent/TL/admin login validation. dependsOn ALT-250.'
+  },
+  {
+    id:'ALT-252', title:'My Tasks screen — Overdue/Today/Upcoming/Completed (IST bucketing)',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:"BUILT + WIRED 2026-06-21 (build passes). src/pages/MyTasksPage.tsx (tabs + counts + per-row done/skip/snooze + New-task), src/data/tasks.ts (CRUD + IST bucketing in Asia/Kolkata), src/components/tasks/CreateTaskModal.tsx + taskScheduling.ts (preset chips). Route /tasks + Sidebar 'My Tasks' nav added. Covers ALT-253/254/255 UI. INERT until the task table is applied (ALT-250). Pending: TL owner-field (ALT-261), one-click-from-record (ALT-260), reminders (ALT-256/257/258)."
+  },
+  {
+    id:'ALT-253', title:'Per-row actions: Mark done / Skip / Snooze',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'Snooze = UPDATE due_at; the trigger recomputes reminder_at and clears reminder_sent_at so it re-fires. Reuse useConfirm for Skip. dependsOn ALT-252.'
+  },
+  {
+    id:'ALT-254', title:'Create-task modal + Owner field (TL/Admin only changes owner)',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'Reuse Modal.tsx + Toast + useUnsavedChanges. Owner change at create enforced by the INSERT policy. dependsOn ALT-251.'
+  },
+  {
+    id:'ALT-255', title:'IST quick-schedule presets + global "+ Task"',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'Chips (Today 5pm / Tomorrow 9am / In 3 days / Next Monday / Custom) computed in Asia/Kolkata then stored as timestamptz. Global create with optional record association. dependsOn ALT-254.'
+  },
+  {
+    id:'ALT-256', title:'Email reminder scanner (in-process send) + task_reminder template + heartbeat',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Scanner in notify-service using the service-role client; calls buildEmail+getTransporter().sendMail DIRECTLY (cannot use POST /notify — needs a user JWT). last_scan_at heartbeat on /health. Test to ankit. BLOCKED until ALT-262 (volume decision). dependsOn ALT-250, ALT-262.'
+  },
+  {
+    id:'ALT-257', title:'Server-side in_app_notification insert from scanner (bell source)',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Scanner INSERTs directly into in_app_notification with the service-role client (notifyInApp is client-only and cannot run server-side). dependsOn ALT-256.'
+  },
+  {
+    id:'ALT-258', title:'NEW ~60s web timer for live badge-bump + due-task toast',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Corrects a false premise: the TopBar bell only refetches on route change, NO timer today. Add setInterval (~60s) re-running fetchUnreadNotifCount + a toast for newly-due tasks. In-tab only. dependsOn ALT-257.'
+  },
+  {
+    id:'ALT-259', title:'Optional OS toast via Web Notifications API',
+    type:'Task', module:'Tasks', wave:'Task manager',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'One-time Notification.requestPermission() then new Notification(...) from the ~60s timer; OS toast when the tab is backgrounded (tab still open). Trivial on top of ALT-258. dependsOn ALT-258.'
+  },
+  {
+    id:'ALT-260', title:'One-click task actions on Lead/Company/Contact + open-tasks mini-list + top-bar badge',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Action row (Call back / Schedule meeting / Add task) pre-fills the association + denormalised name/phone. Record-page open-activities mini-list; top-bar open+overdue count shares the ~60s timer. dependsOn ALT-254, ALT-258.'
+  },
+  {
+    id:'ALT-261', title:'TL/Admin reassign + assigned_by audit',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Reassign gated by manages_user (ALT-251); stamp assigned_by_user_id (HubSpot-style audit). dependsOn ALT-251, ALT-252.'
+  },
+  {
+    id:'ALT-262', title:'DECISION: per-task vs digest email volume (Gmail throttling)',
+    type:'Task', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Ankit',
+    notes:'RESOLVED 2026-06-21: PER-TASK reminder email WITH a safety cap (per-user per-window) to protect Gmail deliverability, PLUS an optional DAILY SUMMARY digest that is OPT-IN, default OFF. So the scanner sends one email per due task (capped) + a separate daily digest job gated by a per-user pref (default false). Unblocks ALT-256.'
+  },
+  {
+    id:'ALT-263', title:'Continuous code-health / UX hardening — find-and-fix loop',
+    type:'Chore', module:'Web core', wave:'UX audit',
+    priority:'P2', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'Owner directive 2026-06-21: keep finding + fixing small things continuously. Each round = a read-only multi-dimension audit (adversarially verified) -> per-file fixes -> build -> commit. ROUND 1 DONE (24 files, build passes): icon-only close/clear buttons given aria-labels (EditMeeting/UpdateMeeting/MeetingTab/Approvals x2/SearchSelect/CompanyDetail/ColumnCustomizer); dead code removed (WishlistPage X import + stale marker, ContactsPage XLSX, ProjectSelect unused prop); PreSalesQuestionsTab last window.confirm -> ConfirmDialog; clipboard copy .catch (UsersTab); truncation title tooltips (CompanyDetail/ContactDetail/PreSales); REAL BUGS: IST/UTC week-bucket (realLeads.getWeekStart) + lead-meeting upcoming/past bucket (leadWorkspace) fixed to local date-string compare; stuck-spinner unhandled rejections caught (Dashboard/CommandPalette/LeadDetail/ContactDetail/ContactForm/Meetings + globalSearch inflight self-clear); ExportButton try/catch; approveReport no longer self-notifies the actor; EditMeeting time-field no longer blanks a non-HH:MM saved time. ROUND 2 DONE (12 files incl. backend, build + node --check pass): swallowed Supabase errors now logged/surfaced (contacts/leadWorkspace/projectStatus/meetings); AuthContext provider value memoized (useMemo) to cut needless re-renders; ReportTab new-question rows keyed on a stable _uid (was array index); ActivityTab + DispositionForm got load error/empty states; MeetingTab delete -> ConfirmDialog; WishlistDetail toast auto-dismiss; UsersTab Add-User validates email before enabling Create; notify-service hardened x8 (async route bodies wrapped in try/catch -> 503, input validation, no internal-error leakage). ROUND 3 DONE (21 files, build pass after 1 typing fix): form a11y (admin Field links label htmlFor->control id via useId+cloneElement; aria-required/invalid/describedby on Login/Reset/Convert/Disposition; SearchSelect role=combobox+listbox; AssignModal focus-trap+autofocus); route-id guards (LeadDetail/WishlistDetail/ContactDetail: non-numeric/0 id -> error state not stuck spinner); date-format consistency (LeadsPage/leadWorkspace/ContactDetail via formatDate; Dashboard count toLocaleString en-IN); friendlier error copy (SettingsPage password change, WishlistDetail status, CompanyDetail "Status saved"); dead code removed (useUrlState module [ALT-186 recreates when built], listViews, admin TableHead, TypeBadge, fetchStageHistory, resolveUserEmail/Name). More rounds to follow.'
+  },
+  // ── Owner feedback batch 2026-06-21 (live testing of Task Manager) ──
+  {
+    id:'ALT-264', title:'BUG: modal inputs lose focus after 1 character (shared admin Modal)',
+    type:'Bug', module:'Web core', wave:'UX audit',
+    priority:'P0', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'DONE 2026-06-21 (owner found while testing My Tasks: "after 1 letter the cursor disappears"). Root cause: admin/Modal.tsx focus-on-open useEffect depended on [open, onClose]; onClose (handleClose) is a new fn identity each render, so every keystroke re-ran the effect and re-focused the dialog container, stealing focus from the input. Fix: split into two effects — Escape keydown ([open,onClose]) and focus-on-open ([open] ONLY). Affected EVERY modal form, not just tasks.'
+  },
+  {
+    id:'ALT-265', title:'Task Manager Inc2 — reminder scanner (email + in-app bell) + opt-in digest',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P0', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Claude',
+    notes:'BUILT + adversarially reviewed 2026-06-21 (node --check passes). notify-service scanner: every ~60s, service-role client finds OPEN tasks with reminder_at<=now() AND reminder_sent_at IS NULL (LIMIT cap 40, oldest first), sends a task_reminder email (new template) + inserts in_app_notification (bell), then sets reminder_sent_at (before send, so no double-fire). Per-tick try/catch can never crash the server; last_scan_at on /health. Opt-in DAILY DIGEST gated on task_user_pref.daily_digest_opt_in=true. ACTIVATES on notify-service restart/redeploy. Known minor: digest lastDigestDate is in-memory (a mid-day restart could re-send the digest) — acceptable for opt-in v1. Supersedes ALT-256/257.'
+  },
+  {
+    id:'ALT-266', title:'One-click task from a record (Call back / Schedule meeting / Add task)',
+    type:'Feature', module:'Tasks', wave:'Task manager',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'BUILT for Lead/Company/Contact detail 2026-06-21 (owner ask #3: "no task can be created from company/contact/meeting/lead"): a Call back / Schedule meeting / Add task action row opens CreateTaskModal pre-filled with the record association + owner. DONE for Meeting detail too 2026-06-21 (all four modules). Supersedes ALT-260.'
+  },
+  {
+    id:'ALT-267', title:'BUG: activity not recorded for company-related contacts (per-project)',
+    type:'Bug', module:'Companies', wave:'Companies & Contacts',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Ankit',
+    notes:'OWNER (#4) 2026-06-21: doing an activity inside a company\'s related contacts records NO activity — should log a project-scoped activity like a normal disposition (separate per project). Investigate the company->related-contacts write path (contact status/disposition inside CompanyDetailPage) and ensure it appends an interaction/activity scoped to the project, visible in that contact/company activity feed.'
+  },
+  {
+    id:'ALT-268', title:'Admin: all-projects activity view with detailed timeline',
+    type:'Feature', module:'Admin', wave:'Roadmap',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Ankit',
+    notes:'OWNER (#5, "big one") 2026-06-21: for ADMIN, ALL activity in detail across ALL projects + chronological timeline. SHIPPED (commit ab92711): new "Activity" tab in AdminPage (already ADMIN-gated). data/activityTimeline.ts reads the interaction table (status changes + logged calls, with project_id/occurred_at/actor), newest-first, cap 200, with a project selector incl. "All projects". components/admin/ActivityTimelineTab.tsx groups events by IST day, links each to its record (contact/company/lead), resolves actor+project names. Read-only, no migration. FOLLOW-UPS (future): add date/user filters; aggregate meetings/tasks/call_log sources too (currently interaction only — the richest single source); pagination beyond 200.'
+  },
+  {
+    id:'ALT-269', title:'EPIC: Call module — schedule + log calls per record, dashboard, future call-tool integration',
+    type:'Feature', module:'Calls', wave:'Roadmap',
+    priority:'P1', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'OWNER (#6) 2026-06-21: a CALL module like the Task Manager but call-specific. BUILT (commit 57bcd92, migrations STAGED not applied): public.call_log ledger of calls that HAPPENED (direction OUT/IN, disposition [OWNER-DEFAULT B2B set: CONNECTED/INTERESTED/FOLLOW_UP/CALLBACK_REQUESTED/LEFT_VOICEMAIL/NO_ANSWER/BUSY/NOT_INTERESTED/WRONG_NUMBER], notes, duration_seconds, called_at, lead/company/contact/meeting assoc, owner_user_id, NULLABLE recording_url + transcript = future calling-tool SEAM) + RLS mirroring task (owner OR is_admin OR manages_user, fail-closed; anon revoked). data/calls.ts (logCall/listCallsForRecord/listMyCalls/callStatsToday); LogCallModal + CallHistoryCard; "Log call" on all 4 detail pages; "Calls Today" dashboard card (project-scoped). SCHEDULING reuses Task task_type=CALL (not duplicated). Review: no blocker/high. REMAINING: apply the 2 migrations in prod (gated); a My-Calls list page (so the dashboard card can drill down); wire the future telephony/transcription integration into the recording_url/transcript seam.'
+  },
+  {
+    id:'ALT-270', title:'Advanced per-field filters with multi-select (each column)',
+    type:'Feature', module:'Web core', wave:'UX audit',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'OWNER (#1) 2026-06-21: cannot see an advanced filter for EACH field with multi-select. Extends ALT-184: a per-column advanced filter (multi-select chips + contains/is-empty where relevant) on every list field, not just the few facets. Builds on the existing SearchSelect multi-select filters (Top#6) -> make it comprehensive per-field.'
+  },
+  {
+    id:'ALT-271', title:'Research: basic B2B CRM feature list (non-sales) via websearch',
+    type:'Docs', module:'Docs', wave:'Roadmap',
+    priority:'P2', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Claude',
+    notes:'OWNER 2026-06-21: web-search basic B2B CRM features; ignore sales features but still list them. DONE (doc docs/product/B2B-CRM-FEATURES.md): Section A = core/non-sales features mapped to our app (have/partial/gap) — top gaps: workflow automation, two-way email sync+tracking, custom report builder, kanban board, merge-duplicates, custom fields. Section B = sales-cycle features deliberately deferred (invoicing/quotes/CPQ/forecasting/commissions/marketing-automation/lead-scoring/ticketing/etc.). Grounded in 2026 HubSpot/Zoho/Salesforce/Pipedrive comparisons.'
+  },
+  {
+    id:'ALT-272', title:'Global fuzzy search — grouped results (Leads/Companies/Contacts/Tasks/Meetings), Zoho/HubSpot-style',
+    type:'Feature', module:'Web core', wave:'UX audit',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Ankit',
+    notes:'OWNER (#7) 2026-06-21: enhance the EXISTING Cmd-K global search into GROUPED results. SHIPPED (commit 9fc6315): added TASKS + MEETINGS to globalSearch.ts (meetings via fetchMeetings; tasks via a direct RLS-scoped task read so the caller only sees their own/managed/admin). CommandPalette now renders fixed Zoho/HubSpot-style sections — Leads, Companies, Contacts, Tasks, Meetings — each with a count header; keyboard ↑/↓ walks the grouped list in display order, Enter opens the highlighted row; tasks open their associated record (or My Tasks). Index limit 24→40. FOLLOW-UP (future): always-visible inline results dropdown from the TopBar bar (currently the Cmd-K modal) + per-group "see all".'
+  },
+  {
+    id:'ALT-273', title:'Global PROJECT selector (top bar) — pre-filters all modules/records; default in personal settings',
+    type:'Feature', module:'Web core', wave:'Roadmap',
+    priority:'P1', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'OWNER (#8) 2026-06-21: a PROJECT selector next to the global search bar on every screen. The selected project becomes the default pre-filter across ALL modules + records (so multi-project users see only that project by default). Default project changeable in personal Settings; persists. SHIPPED (commit 7241294): global ProjectContext (selected project_id, persisted to localStorage; default-project pref seeds new sessions), TopBar ProjectSwitcher (from the user\'s accessible projects via admin.fetchMyProjects — admin=all enabled, others=their project_user rows; self-hides for <2 projects), "All projects" = null = no filter, Settings "Default project" card. SCOPED on NUMERIC project_id (not name — duplicate/blank names + query drift can\'t hide records): Leads (RealLead.projectId from lead_master.project_id) + Meetings (MeetingRow.projectId via lead). REMAINING: Tasks + Wishlist left UNFILTERED (no reliable project field — documented TODO; Tasks could derive via linked lead later); Companies/Contacts are shared across projects (per-project scoping TBD). Status → In Progress until those modules are scoped or explicitly de-scoped by owner.'
+  },
+  {
+    id:'ALT-273B', title:'Project-selector hardening — fixes from adversarial review (wh2yjqssa)',
+    type:'Bug', module:'Web core', wave:'Roadmap',
+    priority:'P1', status:'In Progress',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'Adversarial review of ALT-273 confirmed 21 defects. FIXED: portal-RLS BLOCKER (meeting_snapshot FORCE→ENABLE, commit e4c94a4). OPEN: HIGH Dashboard ignores selected project (shows all-project totals). MEDIUM: scope not cleared on logout (shared-device bleed) + not re-seeded on new login (key scope by user_id); fetchMyProjects swallows errors→[] can wipe saved selection; single-project user force-scoped w/ no "All projects" escape (switcher self-hides <2); Sales Portal silently inherits scope w/ no control; Contacts+Companies ignore global switcher while showing a competing local Project dropdown; daily-digest dedup in-memory only (restart re-sends); portal feedback writes to non-existent portal.meeting_feedback. LOW: NULL project_id rows silently hidden (no "N hidden" hint); reminder bell double-fire under overlapping ticks; CreateTaskModal stale prefill on reopen; MyTasks async setState/no in-flight guard. NIT: ProjectContext useMemo omits setter (latent stale closure); Tasks/Wishlist no-op need an on-screen "not project-scoped" hint.'
+  },
+  {
+    id:'ALT-274', title:'Client Portal = show that client\'s meetings (simple) — not the internal CRM',
+    type:'Feature', module:'Sales/Client Portal', wave:'Wave 2',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'OWNER 2026-06-21: the client portal simply shows that client\'s MEETINGS (list + the mobile-ditto record view ALT-275). "As simple as that." Scoped by client_assoc_id via the portal snapshot/RLS already designed (apply-portal-*; blocker fixed e4c94a4, still STAGED pending validate + Supabase schema-expose). No internal CRM tabs/machinery exposed. See SALES-PORTAL.md "Owner decisions 2026-06-21" #1.'
+  },
+  {
+    id:'ALT-275', title:'Sales/Portal record view = EXACT ditto copy of mobile MeetingDetails (single consolidated screen)',
+    type:'Feature', module:'Sales/Client Portal', wave:'Wave 2',
+    priority:'P1', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Ankit',
+    notes:'OWNER 2026-06-21: sales + client-portal users must NOT see the internal CRM record screens. SHIPPED (commit 8bf9aff): MobileMeetingRecord.tsx (7 sections, mobile order, Confirmed→Scheduled/Cancelled→Dropped relabel) at /sales/meetings/:id (SalesMeetingDetailPage); MeetingsPage navigates to /sales/meetings/:id under the sales shell so sales users never hit the internal screen. fetchMeetingDetail extended with ~15 mobile-parity cols (lead alt_mobile/linkedin/role_and_resp/area_of_interest/title/value/description; lead_report sales_intelligence+created_by→scheduledBy; company size/web_url/linkedin + turnover_master + company_sector.sector [col verified]; address lines). Adversarial review PASSED (no blocker/high). Review fixes applied: Call Recording/Image gated to SALES_HEAD+internal (canSeeRecordings) so a Sales Person / client never sees recordings. Sparse records (~79% NULL company_id) render N/A like mobile. REMAINING: client-portal REUSE of this view = ALT-274 (needs portal DB).'
+  },
+  {
+    id:'ALT-276', title:'Sales/Portal Wishlist add (prospect capture) — company + lead + location, mobile-style',
+    type:'Feature', module:'Sales/Client Portal', wave:'Wave 2',
+    priority:'P2', status:'Done',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: d(2026,6,21),
+    owner:'Ankit',
+    notes:'OWNER 2026-06-21: sales/portal users can ADD a wishlist by selecting Company name + Prospect(lead) + Location. Mirrors mobile src/screens/wishlist/Wishlist.jsx. Fields: Company (searchable autocomplete from company master, ≥2 chars, free-text ok), Lead name (+auto-fill designation from company leads), Mobile(10-digit), Designation, Branch picker (auto-fills addr/city/state/pin), Address1+2(req), State→City cascading(req), PIN(req), Country(India default), Description, optional geo image/GPS (web v1 = skip). Submit→ our wishlist table (data/wishlist.ts). Full payload spec in SALES-PORTAL.md #3.'
+  },
+  {
+    id:'ALT-277', title:'Site feasibility + per-site/city employee size (primary research) for calling agents',
+    type:'Feature', module:'Companies/Market', wave:'Wave 2',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'OWNER 2026-06-21: agents waste time calling company SITES that aren\'t feasible for a given PROJECT (e.g. HungerBox non-feasible at many sites). Owner HAS primary market-researched data per company × site/city: feasible/non-feasible + employee size per site. Leverage the existing city-wise prospect grouping (COMPANIES-CONTACTS-BLUEPRINT.md) as the unit: show employee size per site/group + feasible/non-feasible badge for the active project; de-emphasise/filter non-feasible. Build: new per-(company,site/city,project) feasibility table + bulk import of owner\'s research sheet + surface in the grouped view (project-scoped via #8). Full spec: docs/product/SITE-FEASIBILITY.md. Sequencing: AFTER ALT-275/276, BEFORE live-data handoff to real calling agents. Design UX TBD with owner.'
+  },
+  {
+    id:'ALT-278', title:'Pre-production readiness audit — "where do calling agents get stuck?"',
+    type:'Task', module:'QA/Launch', wave:'Wave 2',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,21), updated: d(2026,6,21), finished: null,
+    owner:'Ankit',
+    notes:'OWNER 2026-06-21: before real calling agents get LIVE production data, walk the agent\'s actual path and enumerate every place they can stall (missing feasibility/employee-size, non-feasible sites unflagged, ambiguous lead ownership, masked contact info they actually need, broken write-path, etc.) → produce a go/no-go checklist. Depends on ALT-277 (feasibility data) landing. See SITE-FEASIBILITY.md.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Chrome extension rebuild (LinkedIn CRM side-panel on Supabase)
+  // Scoped 2026-06-22. Full docs: docs/chrome-extension-rebuild/ (README +
+  // 01-CURRENT-STATE-ANALYSIS + 02-MIGRATION-BLUEPRINT + 03-LINKEDIN-MINI-CRM-FLOW
+  // + CRM-HANDOFF-FOR-CRM-OPUS). Owner decisions locked: NO page injection /
+  // side-panel only / read ONLY the address-bar URL (LinkedIn banned users for
+  // injection); non-owned contact view + request-company→TL approval; project
+  // selector shared with the CRM (ALT-273).
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-279', title:'EPIC: Chrome extension rebuild — show CRM contact on LinkedIn (Supabase), side-panel only',
+    type:'Docs', module:'Extension', wave:'Chrome extension',
+    priority:'P2', status:'In Progress',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'OWNER 2026-06-22: rebuild the 2 Firebase extensions (AltLeads 4.1.0 + Data ResearchExt) into ONE MV3 extension wired to our Supabase CRM (not a separate prospects DB). HARD CONSTRAINT: NO injection into the LinkedIn page and NO reading of LinkedIn page DOM — LinkedIn BANNED the owner\'s users\' personal accounts for injection. The ONLY LinkedIn input is the active tab\'s address-bar URL. Planning + scan complete (13-agent workflow); 5 docs written to docs/chrome-extension-rebuild/. Phase 1 (read-only show details) = shippable; Phase 2 (edit) = blocked on ALT-152. Children: ALT-280..287.'
+  },
+  {
+    id:'ALT-280', title:'Extension Phase 0 — MV3 side-panel scaffold + Vite build + Supabase client + auth',
+    type:'Feature', module:'Extension', wave:'Chrome extension',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'MV3 manifest (side_panel; permissions ["sidePanel","tabs","storage"]; host_permissions = Supabase URL only, + crm.altleads.com if SSO). Bundle @supabase/supabase-js (anon key — public/safe). Auth A1 = popup email/password signInWithPassword; A2 (later) = lift the CRM tab\'s Supabase session via host permission. Load profiles.user_id + roles (mirror AuthContext) for later write-stamping. NO content_scripts. Acceptance: extension logs in, holds a real JWT, can call find_contact_dup. See 02-MIGRATION-BLUEPRINT.md.'
+  },
+  {
+    id:'ALT-281', title:'Extension Phase 1 — detect tab LinkedIn URL + normalize + match contact + show details (read-only)',
+    type:'Feature', module:'Extension', wave:'Chrome extension',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'Background service worker watches chrome.tabs.onUpdated/onActivated, reads tab.url, tests for "linkedin.com/in/", normalizes to the slug (MUST mirror deriveLinkedinClean + lowercase + strip query/fragment + first path segment after /in/), calls supabase.rpc(find_contact_dup,{p_linkedin}). On match, side panel loads contact + leads + per-project status + tasks + meetings (via meeting_schedule chain) + interaction feed through the masked view/existing query shapes, shown "in short". Handle no-match + masked states. NO page read; SPA nav handled via chrome.tabs.onUpdated. Strictly read-only (outreach-only north-star). See 03-LINKEDIN-MINI-CRM-FLOW.md. Depends on CRM ALT-287 (normalization fix).'
+  },
+  {
+    id:'ALT-282', title:'Extension Phase 1 — non-owned contact limited card + masking-safe find_contact_for_panel RPC',
+    type:'Feature', module:'Extension', wave:'Chrome extension',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'When the matched contact is NOT owned by the agent, the panel shows name + company + COMPANY STATUS (may be DNC — must be visible so the agent does not request a do-not-contact company) + last activity date + owner name (within the selected project) + a "Request this company" button. find_contact_dup only returns id/name/company, so this needs a NEW SECURITY DEFINER RPC find_contact_for_panel(p_linkedin,p_project_id) returning the limited masking-safe payload (PII stays NULL for non-owners). CRM dependency — see CRM-HANDOFF-FOR-CRM-OPUS.md TODO-A.'
+  },
+  {
+    id:'ALT-283', title:'Company-assignment request → TL approval workflow (reuse lead approval pattern); reveal on approve',
+    type:'Feature', module:'Extension', wave:'Chrome extension',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'OWNER 2026-06-22: agent can request to work a company they don\'t own; request goes to their TL, mirroring the existing lead-report/meeting approval flow (ALT-032). On approve, ownership is re-pointed to the agent so RLS lets them reveal contact info + (Phase 2) edit. This is one assignment mechanism for ALT-152. Spans CRM (workflow + schema + queue/bell/email) and the extension (request button). The "Request this company" button in ALT-282 is wired only once this ships. See CRM-HANDOFF-FOR-CRM-OPUS.md TODO-B.'
+  },
+  {
+    id:'ALT-284', title:'Extension project selector synced with CRM global selector (ALT-273)',
+    type:'Feature', module:'Extension', wave:'Chrome extension',
+    priority:'P2', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'OWNER 2026-06-22: the extension side panel has a top project selector (like the old ext); it defaults to the user\'s CRM personal-settings project (or the only project) and stays in sync with the CRM\'s global project selector (ALT-273, already shipped). All per-project data (contact_project_status, company status, meetings) is scoped to the selected project. CRM exposes the current selection to the extension — see CRM-HANDOFF-FOR-CRM-OPUS.md TODO-C.'
+  },
+  {
+    id:'ALT-285', title:'Extension Phase 2 — edit-in-place mini-CRM (recorded identically to web)',
+    type:'Feature', module:'Extension', wave:'Chrome extension',
+    priority:'P2', status:'Blocked',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'BLOCKED on ALT-152. Edit/status/log-call from the LinkedIn side panel; every write routes through the SAME data-layer recipe as the web app (UPSERT contact_project_status + append interaction status_change/call + re-derive linkedin_clean + optional lead_activity + in_app_notification + notify email), stamping created_by/updated_by as user_id-as-text, wrapped in a SECURITY-INVOKER RPC for atomicity. Verifier found the blocker spans THREE owner-only write gates (contact_master + contact_project_status + interaction-on-contact) — ALT-152 must align all three. Do NOT ship before ALT-152 is validated with a real non-admin agent login. NEVER embed the service-role key in the extension.'
+  },
+  {
+    id:'ALT-286', title:'SECURITY: rotate leaked secrets in the old extensions (Firebase apiKey + LLM keys)',
+    type:'Security', module:'Security', wave:'Chrome extension',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Ankit',
+    notes:'From 01-CURRENT-STATE-ANALYSIS.md: the old extensions ship a hardcoded Firebase apiKey (shared across all 3 apps) plus DO Gradient / Groq / Gemini / OpenRouter LLM API keys in client code — treat as COMPROMISED and rotate/disable. The rebuild drops all of them (no Firebase, no AI), but the existing keys are exposed in the shipped/old code and should be revoked.'
+  },
+  {
+    id:'ALT-287', title:'CRM: fix deriveLinkedinClean() to lowercase + one-time backfill of linkedin_clean',
+    type:'Bug', module:'Contacts', wave:'Chrome extension',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Claude',
+    notes:'CRM-side prerequisite for reliable LinkedIn matching. deriveLinkedinClean() (web src/data/contacts.ts) does NOT lowercase, but the migration stored linkedin_clean = lower(...); find_contact_dup does an exact = match, so app-written rows with mixed-case slugs silently MISS. Fix: lowercase (+ trim query/fragment + first path segment after /in/) in deriveLinkedinClean, and a one-time backfill to lowercase existing linkedin_clean. See CRM-HANDOFF-FOR-CRM-OPUS.md TODO-1.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: High-impact UX gaps (Ankit 2026-06-22). Prioritized Tier 1/2/3.
+  // Full write-up: docs/product/HIGH-IMPACT-UX-GAPS.md. Reassignment is the
+  // owner's #1 named gap and ships WITH the ALT-152 write-model. Already-
+  // ticketed items referenced (NOT duplicated): ALT-152 (write model),
+  // ALT-167 (sales RLS scoping), ALT-157/213 (inline edit), ALT-272/188
+  // (global search), ALT-035/044/050/081 (saved column views).
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id:'ALT-288', title:'EPIC: Reassign / change owner across lead/company/contact/meeting (internal + sales, single + bulk)',
+    type:'Docs', module:'Access/Ownership', wave:'Wave 2',
+    priority:'P1', status:'In Progress',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Ankit',
+    notes:'ANKIT 2026-06-22 (Tier-1 UX gap #1): today there is NO UI to reassign / change the owner of a lead, company, contact or meeting — internal OR sales side. Only wishlist has assignment (assignWishlist + AssignModal); leads only have a request-to-claim approval flow. This is the owner-named gap. Ships WITH the ALT-152 assignment write-model (you can only edit what you own, so reassignment is ALSO how a record becomes editable). Children: ALT-289 (lead+meeting — buildable now, clear assignment col lead_report.user_id), ALT-290 (company+contact — needs ownership-model decision), ALT-291 (bulk toolbar). Sales-side reassignment = existing ALT-171/235. Design pass = workflow wa2g8qboi. See HIGH-IMPACT-UX-GAPS.md.'
+  },
+  {
+    id:'ALT-289', title:'Reassign lead + meeting owner (lead_report.user_id) — detail action + staged RLS',
+    type:'Feature', module:'Access/Ownership', wave:'Wave 2',
+    priority:'P1', status:'Done',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: d(2026,6,22),
+    owner:'Ankit',
+    notes:'Phase A of ALT-288 — SHIPPED (UI + data + STAGED RLS). "Change salesperson" button on Lead detail (stepper action row) + Meeting detail (header actions), gated by useAuth().canReassign (admin/TL/SH). New components/common/ReassignModal.tsx (generic single-owner picker on ModalShell) + data/assignment.ts (reassignLead / reassignMeeting / reassignLeadsBulk / fetchAssignableUsers) modeled on assignWishlist — writes lead_report.user_id, fires lead_reassigned email + in-app notify to the new owner. LeadDetail now exposes salesperson_user_id/name. Meeting reassign resolves the lead via meeting_schedule→lead_report and reassigns it (no cascade beyond, OD-5). RLS = new-code/migration/apply-assignment-rls.cjs (assigned_to() + meeting_lead_id() helpers; lead_master UPDATE gains an assignment OR-term = the ALT-152 fix; lead_report RESTRICTIVE UPDATE guard so only assignee self-edits / managers reassign; company/contact *_project_status gain owner_user_id term). STAGED + reversible (--rollback); NOT applied — prod apply gated on throwaway-login validation. Build green. Client code is harmless pre-RLS.'
+  },
+  {
+    id:'ALT-290', title:'Reassign company + contact owner (per-project owner_user_id)',
+    type:'Feature', module:'Access/Ownership', wave:'Wave 2',
+    priority:'P1', status:'Done',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: d(2026,6,22),
+    owner:'Ankit',
+    notes:'Phase B of ALT-288 — SHIPPED. DECISION CONFIRMED by Ankit 2026-06-22: per-project owner, and the column ALREADY EXISTS (company_project_status.owner_user_id / contact_project_status.owner_user_id) — NO schema add, it was just dormant (never written, never read by RLS). "Owner (this project)" row + Change/Assign-owner button on Company detail AccountPanel + Contact detail Project-Status card, gated by canReassign, scoped to the active project (which now follows the global selector — ALT-294). data/assignment.ts reassignCompany/reassignContact upsert owner_user_id on (record,project) + fire owner notify; fetchUserLabel resolves the owner name. RLS: the staged apply-assignment-rls.cjs adds the owner_user_id OR-term to company/contact *_project_status UPDATE (so the assignee can edit + only managers re-point owner). Build green. STAGED RLS not applied. NOTE: full contact-edit unblocking still needs the 3-gate alignment (contact_master + interaction-on-contact) per extension verifier — tracked under ALT-152/ALT-285.'
+  },
+  {
+    id:'ALT-291', title:'Bulk-action toolbar on lists (bulk reassign / bulk status / bulk add-to-project)',
+    type:'Feature', module:'UX', wave:'Wave 2',
+    priority:'P2', status:'In Progress',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Ankit',
+    notes:'Tier-2 UX gap. BULK REASSIGN SHIPPED on ALL FOUR lists (Leads/Meetings/Companies/Contacts): a "Reassign (N)" button appears in the list toolbar when rows are selected + canReassign, opening ReassignModal (bulk wording) → data/assignment.ts reassignLeadsBulk / reassignMeetingsBulk / reassignCompaniesBulk / reassignContactsBulk (RLS-checked per row, partial-success toast, one summary notify to the new owner). Companies/Contacts bulk needs an active project (button hidden when scope=All). REMAINING (this ticket stays In Progress): bulk STATUS-change + bulk ADD-TO-PROJECT. Distinct from ALT-159 (export→edit→import). Build green; STAGED RLS gates the manager-only enforcement.'
+  },
+  {
+    id:'ALT-292', title:'Kanban pipeline board — drag leads across stages',
+    type:'Feature', module:'UX', wave:'Wave 3',
+    priority:'P3', status:'In Progress',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Ankit',
+    notes:'Tier-3. SHIPPED (read-only) via parallel subagent: src/pages/LeadsKanbanPage.tsx + components/kanban/{KanbanBoard,KanbanColumn,KanbanCard}. One column per stage (+ Unstaged bucket), counts, cards show company/city/agent and open the lead; project-scoped (ALT-273, mirrors LeadsPage noProjectHidden); sales-shell aware. Route /leads/board + a "Board" toggle on the Leads toolbar. Native HTML5 drag seam is built but DISABLED: drag→stage-change needs lead_report.report_id + numeric stage_id (not on RealLead) — left as // TODO(ALT-292) to extend the fetch + map stage names, then call updateLeadStage. REMAINING: enable drag-write (with the ALT-036 stage workflow). Build green.'
+  },
+  {
+    id:'ALT-293', title:'Merge duplicate companies / contacts (in-app)',
+    type:'Feature', module:'Data Quality', wave:'Wave 3',
+    priority:'P3', status:'On Hold',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Ankit',
+    notes:'PARKING LOT (Ankit 2026-06-22): dedupe/merge DEFERRED — revisit later. Code is parked (no live button). // Tier-3. CODE BUILT via parallel subagent (data/merge.ts: mergeCompanies/mergeContacts re-point children + soft-delete loser; components/merge/MergeDuplicatesModal.tsx: side-by-side compare, pick survivor, type-MERGE confirm). Company merge re-points contact_master/company_project_status/lead_master.company_id + interaction(company); contact merge re-points lead_master.contact_id/contact_project_status + interaction(contact). DELIBERATELY NOT WIRED to a live entry point yet — it is NON-ATOMIC (client-side sequence, can half-merge), does not de-dupe per-project UNIQUE(record,project) rows (stops on 23505), and is admin-only by convention not DB-enforced. BEFORE going live: move to a single SECURITY DEFINER transactional RPC + validate with throwaway logins; then wire an admin-gated "Merge" action on Companies/Contacts lists (2 selected). Build green.'
+  },
+  {
+    id:'ALT-294', title:'BUG: record detail per-project view ignored the global project selector (defaulted to first project)',
+    type:'Bug', module:'UX', wave:'Wave 2',
+    priority:'P1', status:'Done',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: d(2026,6,22),
+    owner:'Ankit',
+    notes:'ANKIT 2026-06-22: after picking a project (e.g. DEMO) in the top-bar selector, opening a Company/Contact record still showed the FIRST project (AP North) per-project panel — ProjectSelect defaulted to rows[0] and never read the global selection. FIXED: ProjectSelect now defaults to the global selectedProjectId (ALT-273), falling back to first only when scope = All projects; CompanyDetailPage + ContactDetailPage seed their local projectId from the global selector and live-sync on change. Meetings are inherently single-project (no selector); My Tasks intentionally spans all projects (left as-is per owner).'
+  },
+  {
+    id:'ALT-295', title:'Project access mode (admin): make project data public — Edit / View-only / Limited-view',
+    type:'Feature', module:'Access/Ownership', wave:'Wave 2',
+    priority:'P1', status:'Planned',
+    created: d(2026,6,22), updated: d(2026,6,22), finished: null,
+    owner:'Ankit',
+    notes:'ANKIT 2026-06-22: kill ownership ambiguity by giving Admin a per-PROJECT access mode in Project Settings (overrides per-record ownership) — "control & flexibility else we keep colliding on ambiguity." Modes: (1) Owner-scoped (current default — owner + upline edit, others limited); (2) Public · Edit (everyone in the project can edit everything); (3) Public · View-only (everyone sees ALL fields, no edit); (4) Public · Limited view (everyone sees NON-sensitive fields only — contact_status/designation/linkedin etc.; contact details email/phone + sensitive info MASKED). Maps onto the existing project_visibility_setting dials (ALT-134 view_scope/edit_scope) + the masking view can_see_contact_details (ALT-133) — needs a new "limited" masking tier. Build = Project Settings UI writing the dial + RLS/masking respect. STAGED RLS + throwaway-login validation before prod. Supersedes/extends ALT-134/ALT-174; record an ADR in DECISIONS.md.'
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Persona Audit (2026-06-22) — 4 parallel persona/UX research agents
+  //   (Admin/TL · Agent/QC · Sales/Client · cross-cutting UI). NEW findings only
+  //   (overlaps with existing ALT-### were skipped). See docs/product/
+  //   PERSONA-AUDIT-2026-06.md + AMBIGUOUS-DECISIONS.md.
+  // ══════════════════════════════════════════════════════════════════════
+  ...((() => {
+    const A = (id, title, type, module, priority, notes) => ({
+      id, title, type, module, wave:'Persona Audit 2026-06', priority, status:'Planned',
+      created: d(2026,6,22), updated: d(2026,6,22), finished: null, owner:'Ankit', notes,
+    });
+    return [
+      // — Admin / Team Lead —
+      A('ALT-296','Show owner/salesperson on lists (Companies+Contacts Owner column; Leads Salesperson column+filter)','Bug','Companies','P1',
+        'Persona audit (Admin/TL). CompaniesPage renders Owner hardcoded "Unassigned" (TODO ownership) though company_project_status.owner_user_id now exists + is written by reassign (ALT-290); Contacts has NO owner column; Leads exposes only "Agent" (created_by) not the salesperson (lead_report.user_id) it reassigns. FIX: resolve + show the real owner on Companies & Contacts, add a Salesperson column+filter to Leads (mirror MeetingsPage). HubSpot/SFDC: Owner column+filter is table-stakes.'),
+      A('ALT-297','ClientsTab status toggle is a dead control','Bug','Admin','P2',
+        'Persona audit. ClientsTab renders <StatusToggle> with no onToggle — clicking does nothing (UsersTab/ProjectsTab toggles are live). Wire onToggle or remove.'),
+      A('ALT-298','Add-User role picker hardcodes the 6 roles','Bug','Admin','P2',
+        'Persona audit. UsersTab hardcodes roles for the Add-User picker while the rest uses lookups.roles — a new role_master row never appears. Drive from lookups.roles.'),
+      A('ALT-299','Project staffing is one-user-at-a-time','Task','Admin','P2',
+        'Persona audit. ProjectsTab assign modal closes after each single add → staffing a 10-person pod = 10 reopens. Multi-select user picker + single role, keep modal open, show running member list.'),
+      A('ALT-300','Activity timeline: date/actor filters + pagination/export + Team-Lead access','Feature','Admin','P2',
+        'Persona audit. ActivityTimelineTab hard limit:200, no date/actor filter, no load-more/export, and is Admin-only so a TL (who QCs calls) cannot reach it. Add filters + pagination/export + a team-scoped TL view.'),
+      A('ALT-301','Manager / team dashboard rollup (per-rep counts, workload)','Feature','Admin','P1',
+        'Persona audit (sharpens ALT-112). DashboardPage is role-blind — no per-agent/per-salesperson counts, no workload/leaderboard, no pending-approvals or stuck-record tiles. Build a "My Team" panel for ADMIN+TEAM_LEAD. HubSpot rep leaderboard / Zoho Team dashboard.'),
+      A('ALT-302','Reassign / Add-to-project buttons vanish without a project — show disabled+tooltip','Task','Companies','P3',
+        'Persona audit. On Companies/Contacts the bulk buttons hide unless a project is selected, with no hint. Keep visible-but-disabled with tooltip "Select a project to reassign."'),
+      // — Agent / QC —
+      A('ALT-303','Unify call logging: ONE disposition vocabulary + ONE logger (+ one-click outcomes)','Bug','Leads','P1',
+        'Persona audit (Agent). TWO live loggers with DIVERGENT vocab: LogCallModal (call_log enum CONNECTED/CALLBACK_REQUESTED…) vs DispositionForm (dropdown_option call_disposition connected/call_back/switched_off…) — both shown on ContactDetailPage, writing different tables/histories. Pick ONE canonical disposition list (recommend admin-editable dropdown driving call_log) + ONE logging path; retire the other; make Outcome one-click buttons (Salesloft-style) to cut per-call friction.'),
+      A('ALT-304','QC (role 6) workspace — define mandate + give a queue','Feature','Admin','P1',
+        'Persona audit. QC exists only as a label; no route/gating/screen, and the only review queue (Approvals) excludes QC. Decide QC mandate (2nd approver on reports AND/OR call/disposition quality auditor with sampling+scorecard) and build the queue. Today a QC login has nothing to do.'),
+      A('ALT-305','"My records" default + Assigned-to facet on all lists (scope by lead_report.user_id)','Feature','Leads','P1',
+        'Persona audit (Agent). All list fetchers return everything; the Agent facet keys off created_by not the salesperson. Add a "Mine" toggle (default ON for agents) scoping by the correct assignment field + an Assigned-to facet. HubSpot/Zoho default = "My open records."'),
+      A('ALT-306','Unified "Today / Next" work queue (tasks due + meetings today + stale assigned leads)','Feature','Leads','P1',
+        'Persona audit (Agent). "Due today" is split across My Tasks, Meetings (manual date filter), Dashboard. Build one prioritized home queue, one-click to act. Salesloft "Today" / Outreach tasks.'),
+      A('ALT-307','Click-to-call everywhere → auto-open Log-call prefilled','Feature','Leads','P2',
+        'Persona audit (Agent). Lead detail phone is not a tel: link; no dialer/auto-log. Make every phone click-to-call that opens the Log-call modal prefilled (recording_url/transcript seams already reserved in calls.ts). Salesloft/Outreach one-click dial.'),
+      A('ALT-308','Disposition implies a follow-up → inline "schedule callback" in the log modal','Task','Leads','P2',
+        'Persona audit (Agent). Logging CALLBACK_REQUESTED/FOLLOW_UP does nothing beyond the row; agent must remember to add a task. Offer an inline "Schedule callback" (prefilled) in the same modal. HubSpot prompts "create a task?" on call log.'),
+      A('ALT-309','Inline stage/disposition quick-edit on Leads list rows','Task','Leads','P2',
+        'Persona audit (Agent). Contacts has inline status edit; Leads has none (must open detail or Report tab). Add inline stage/status quick-edit on Leads rows. Zoho inline tick-to-save.'),
+      A('ALT-310','Global search index goes stale within a session','Bug','Leads','P2',
+        'Persona audit. globalSearch caches the index at module scope, cleared only on logout/bulk-import — a record edited mid-shift won\'t surface until re-login. Invalidate on write or add a short TTL.'),
+      // — Sales / Client —
+      A('ALT-311','Unify the meeting-record component across Sales + Client portals','Task','Meetings','P1',
+        'Persona audit (Sales/Client). MobileMeetingRecord (mobile-ditto, ALT-275) and PortalMeetingDetailPage (flat grid) are two implementations of the same screen that have drifted. Render ONE MobileMeetingRecord for both (client fed by snapshot) + unify the feedback model. One canonical record component, themed per audience.'),
+      A('ALT-312','Sales portal forgot-password / reset flow','Task','Admin','P3',
+        'Persona audit (Sales). SalesLoginPage has no reset, yet first-time provisioned users will need it. Wire forgot-password via the notify-service reset endpoint.'),
+      A('ALT-313','"Back to CRM" switcher for internal users viewing /sales','Task','UX','P3',
+        'Persona audit. Internal users may view /sales but have no way back; logout routes to /sales/login. Add a "Back to CRM" affordance for internal viewers.'),
+      // — Cross-cutting UI / design system —
+      A('ALT-314','Design-token sweep: replace hardcoded hex with CSS vars (+ lint)','Task','UX','P1',
+        'Persona audit (UI). var(--color-brand) defined but #1A7EE8 + raw hex hardcoded across ~46 files (190 occurrences); Settings/Admin/Approvals almost entirely inline hex. Sweep to tokens, add missing tokens (brand-darker/danger-bg/ring), lint-ban raw hex in style={}. The #1 drift risk.'),
+      A('ALT-315','One canonical Button component (variants) — retire the 3 primitive sets','Task','UX','P1',
+        'Persona audit (UI). admin/primitives + lead/primitives + per-page inline buttons = 4 implementations of the same button. Promote one ui/Button (variant/size, token-driven, CSS hover); migrate. HubSpot Canvas/Zoho ship one Button.'),
+      A('ALT-316','Shared DataTable + FilterBar + Pagination shell for all lists','Task','UX','P2',
+        'Persona audit (UI). Leads/Contacts/Companies/Meetings each re-implement table+filterbar+pagination (~4x duplication; Contacts uses a different engine). Extract a shared shell taking columns+filter defs; move Contacts onto TanStack.'),
+      A('ALT-317','Consolidate modals onto one ui/Modal','Task','UX','P2',
+        'Persona audit (UI). admin/Modal is accessible but only admin uses it; Approvals/meetings hand-roll raw overlays (inconsistent backdrop/radius/focus). Move Modal to components/ui and adopt everywhere.'),
+      A('ALT-318','Sticky table headers on all lists','Task','UX','P2',
+        'Persona audit (UI quick win). No list uses sticky headers; users lose column context on long pages. position:sticky on thead. Cheap, high perceived-quality. HubSpot/Zoho always sticky.'),
+      A('ALT-319','Fix muted-text contrast (gray-400 → gray-500) for WCAG AA','Bug','UX','P2',
+        'Persona audit (UI a11y quick win). --color-gray-400 #9CA3AF on white is ~2.6:1 (placeholders, captions, breadcrumb, secondary cells) — below AA 4.5:1. Use gray-500 #6B7280 (4.6:1) for any informational text; reserve 400 for decorative/disabled.'),
+      A('ALT-320','Shared role-aware EmptyState component','Task','UX','P2',
+        'Persona audit (UI). Empty states inconsistent (icon card vs bare text), no CTA. One <EmptyState> (icon+title+subtext+CTA) with role-aware copy ("ask admin to import" vs "no records assigned to you"). HubSpot/Zoho illustrated empties.'),
+      A('ALT-321','Canonical status-color map (badges + charts from one source)','Task','UX','P2',
+        'Persona audit (UI). Status colors defined 3x (Badge, StatusBadge VALUE_TONE, Dashboard chart map) with different greens/oranges. One exported statusColor(category,value) seeded from dropdown_option, used by badges AND charts.'),
+      A('ALT-322','Replace imperative JS hover with CSS hover/:focus-visible','Task','UX','P3',
+        'Persona audit (UI). onMouseEnter/Leave style-mutation in 42 files fakes :hover — fragile/inconsistent. Standardize on CSS hover + the existing :focus-visible ring; delete the handlers.'),
+      A('ALT-323','Breadcrumb: record name as leaf + clickable crumbs','Task','UX','P3',
+        'Persona audit (UI). TopBar breadcrumb is shallow ("Lead Detail", non-clickable). Show the record name as the leaf and make non-last crumbs navigable. HubSpot "Leads / Acme Corp".'),
+    ].map((t) => {
+      if (['ALT-318', 'ALT-297', 'ALT-298', 'ALT-296'].includes(t.id)) {
+        t.status = 'Done';
+        t.finished = d(2026, 6, 22);
+        t.notes = 'DONE 2026-06-22 (background subagent, build green). ' + t.notes;
+      }
+      return t;
+    });
+  })()),
+
+  // ══════════════════════════════════════════════════════════════════════
+  // EPIC: Views & Preview (2026-06-22, Ankit) — multiple list views per module
+  //   + right-hand record preview panel. Informed by live HubSpot data pull.
+  //   See docs/product/VIEWS-AND-PREVIEW-PLAN.md.
+  // ══════════════════════════════════════════════════════════════════════
+  ...((() => {
+    const V = (id, title, type, priority, status, notes) => ({
+      id, title, type, module:'UX', wave:'Views & Preview', priority, status,
+      created: d(2026,6,22), updated: d(2026,6,22), finished: null, owner:'Ankit', notes,
+    });
+    return [
+      V('ALT-324','EPIC: Multiple list views per module — view switcher (Table / Grid / Kanban)','Feature','P2','Done',
+        'Ankit 2026-06-22: every module (Companies, Contacts, Leads, Meetings, Wishlist) should offer multiple VIEWS via a switcher, persisted per-user like column prefs. Table (current) + Grid (cards) + Kanban (board). HubSpot/Zoho parity. Sub: ALT-325 (grid), ALT-326 (kanban per module), ALT-329 (calendar/map/split research).'),
+      V('ALT-325','Grid / card view (shared component) + wire to Companies/Contacts/Leads','Feature','P2','In Progress',
+        'SHIPPED 2026-06-22 (build green): ViewSwitcher + CardGrid wired into all 4 lists; view persisted per user+entity; card-click matches row behavior (Contacts→preview). Remaining: per-module bespoke cards + row-select on cards. // Reusable <CardGrid> rendering records as cards (avatar, name, key fields, owner/status chip, quick actions). Driven by the same column/field catalogue. Wire behind the ALT-324 view switcher.'),
+      V('ALT-326','Kanban for Companies (account_status) / Contacts (contact_status) / Meetings (meeting_status)','Feature','P2','Done',
+        'SHIPPED 2026-06-22 (build green): GenericKanban board on all 5 lists (Leads=stage, Companies=account_status, Contacts=contact_status, Meetings=meeting_status, Wishlist=status); per-project boards prompt to pick a project; cards open the preview drawer; compact icon switcher (Table/Grid/Kanban). Drag-to-change-status still deferred. // Extend the ALT-292 kanban components (KanbanBoard/Column/Card) to group Companies by account_status, Contacts by contact_status, Meetings by meeting_status. Reuse the read-only board first; drag-to-change-status after the per-entity status writers (already exist: upsertCompanyStatus/upsertContactStatus, meeting status).'),
+      V('ALT-327','EPIC: Right-hand record PREVIEW PANEL (slide-over) on row click — all modules','Feature','P1','In Progress',
+        'Ankit 2026-06-22: clicking a row should open a right-hand slide-over PREVIEW (compact mobile/tablet-width "mini full record" with ALL key info) instead of navigating away; an "Open full record" button still goes to the detail page. Reusable RecordPreviewPanel shell. PILOT building now on Contacts (ALT-328). Roll out to Companies/Leads/Meetings/Wishlist next. HubSpot/Salesforce "preview drawer" pattern.'),
+      V('ALT-328','Preview content per module (compact all-info record)','Feature','P1','In Progress',
+        'Per-module compact record bodies for the ALT-327 panel: Contacts (PILOT — SHIPPED 2026-06-22, build green: RecordPreviewPanel + ContactPreview, row-click opens the drawer), then Companies, Leads, Meetings, Wishlist. Each mirrors its full detail page but denser. Reuse existing data fns. Include HubSpot-style header (owner + lifecycle/status chips), quick contact actions, association counts, recent activity (see ALT-330). ANKIT FEEDBACK 2026-06-22: content is good BUT must reach PARITY with the full detail record — notably the PROJECT SELECTOR (switch project → owner/status shown per project, like the detail page DEMO dropdown). Panel is VIEW-ONLY for now (intended); once the assignment RLS is applied, allow EDITING in-panel (status/owner/notes). Compare each preview against its full record before rolling out to the other modules.'),
+      V('ALT-329','Research + build additional views: Calendar, Map, Split','Feature','P3','Planned',
+        'Beyond Table/Grid/Kanban: CALENDAR view for Meetings + My Tasks (by date); MAP view for Companies by city/site (ties to site-feasibility ALT-277/278 — feasible/non-feasible per site + employee size per city group); SPLIT view (list + persistent right preview) as a default density option. Research which fit each module before building.'),
+      V('ALT-330','Detail + preview enrichment from HubSpot patterns','Feature','P2','Planned',
+        'From the live HubSpot pull (2026-06-22): add the high-signal fields HubSpot leads with — lifecycle stage + lead status chips, "last contacted"/last-activity timestamp + engagement counts (# calls/notes/touches), association counts (X contacts · Y leads · Z meetings), a lightweight "Next step" field, and a consistent quick-actions row (Call/Email/Task/Meeting/Log). Apply to both the preview panel and the full detail pages.'),
+      V('ALT-331','REAL editable grid (Excel view) — inline-edit cells, all modules','Feature','P1','Done',
+        'Ankit 2026-06-23: the "Grid" view I shipped is read-only TILES (CardGrid/CardShell), NOT what was asked. Replace with a true EXCEL/spreadsheet grid where you edit cells inline from the list itself — no need to open the preview or the full record. UNIVERSAL across ALL modules (Leads/Companies/Contacts/Meetings/Wishlist), not one. EDIT SCOPE = "safe editable set" (Ankit chose): inline-edit status/stage, owner/salesperson, description, comments, and editable text fields; identifiers (name link), counts, created date stay READ-ONLY. Per-project fields (status/owner on Companies/Contacts) require a selected project, like inline status today. Save on Enter/blur with a saved-tick; reuse existing writers (upsert*Status, reassign*, etc.) so RLS + 42501 friendly-errors behave identically. New shared <EditableGrid> component.'),
+      V('ALT-332','Multi-select (checkboxes) in Grid + Kanban — parity with Table','Feature','P1','Done',
+        'Ankit 2026-06-23: row multi-select (for the bulk toolbar) exists ONLY in Table view today; Grid cards + Kanban cards have no selection. Add a leading checkbox to the editable grid rows AND to kanban cards, wired to the SAME useRowSelection state, so the bulk toolbar (reassign / add-to-project / set-status) works from every view. Universal across all modules.'),
+      V('ALT-333','Standardize the list TOOLBAR across all modules (shared ListToolbar)','Chore','P1','Done',
+        'Ankit 2026-06-23: the toolbar drifts per page — view switcher / export / create / columns appear in different orders (e.g. Contacts puts Export BEFORE the view switcher; Companies has 3 inline bulk buttons; Wishlist has none). Extract one shared <ListToolbar> enforcing a canonical left→right order: [left: count + selection + Clear] … [right: bulk-action buttons → ViewSwitcher → ColumnCustomizer → ExportButton → Create]. Adopt on all 5 pages so every module looks/behaves identically. Single source of truth going forward.'),
+      V('ALT-334','Preview "Open full record" opens in a NEW tab','Chore','P2','Done',
+        'Ankit 2026-06-23: the preview panel\'s "Open full record →" must open the full detail page in a NEW tab (target=_blank rel=noreferrer noopener), not navigate the current one — so the list/preview context is kept. All modules.'),
+      V('ALT-335','Call-log (disposition + comment) section in the preview panel','Feature','P1','Done',
+        'Ankit 2026-06-23: the preview panel must show CALL LOGS — each call\'s disposition + comment — for Company, Contact, Lead, Meeting. IMPORTANT for metrics: counts of dials / connects / connected / pitched etc. measure daily calling and feed the manager/leadership dashboard decision charts. Show recent call/disposition activity (read live source: interaction table today; aligns with the C1 "one canonical call logger" decision — see AMBIGUOUS-DECISIONS C1 / ALT-303 / call_log table apply, still owner-gated).'),
+      V('ALT-336','Dashboard redesign — deck FUNNEL received (dials→connects→pitches→scheduled→successful)','Feature','P1','Planned',
+        'Ankit 2026-06-23: DECK RECEIVED (Amplior×HungerBox 3-Year Review PDF). The dashboard funnel to model: Dials (~200k) → Connects (~82k, ~41% connect rate) → Qualified Pitches (~7k) → Meetings SCHEDULED (3,500) → Meetings SUCCESSFUL (2,637, ~67% scheduled→successful). Rules: every Successful was once Scheduled (counts in both); Scheduled can become dropped/cancelled/postponed (cancel = prospect cancelled; drop = sales team chose not to pursue). Show DIALS gauges + funnel + conversion rates. Per Q2: THREE dashboards — (1) Agent, (2) Sales, (3) TL. Metrics fed by call-logs (ALT-335) + meeting statuses. Big build — see ALT-344 for the full spec; this is the umbrella.'),
+    ];
+  })()),
+
+  // ══════════════════════════════════════════════════════════════════════
+  // 2026-06-23 (Ankit) — preview logging, kanban group-by, HubSpot-parity
+  //   associations / collaborators / multi-contact, dashboard funnel, and the
+  //   OPEN-QUESTIONS.md answers (access/masking/notifications re-engineering).
+  // ══════════════════════════════════════════════════════════════════════
+  ...((() => {
+    const V = (id, title, type, priority, status, notes) => ({
+      id, title, type, module:'UX', wave:'Reqs 2026-06-23', priority, status,
+      created: d(2026,6,23), updated: d(2026,6,23), finished: null, owner:'Ankit', notes,
+    });
+    return [
+      V('ALT-337','Log a call FROM the preview panel (not just view logged calls)','Feature','P1','In Progress',
+        'Ankit 2026-06-23: the preview shows recent calls (ALT-335) but has no way to LOG one — "i cant log inside preview pannel unlike inside record". Add a compact "Log a Call" (disposition + note) to the preview for Company, Contact, Lead, Meeting, reusing the working DispositionForm → logDisposition (interaction table); refresh the CallLogPreview after a successful log.'),
+      V('ALT-338','Kanban GROUP-BY field selector (status / city / industry / owner / disposition)','Feature','P1','In Progress',
+        'Ankit 2026-06-23: in Kanban let the user pick which field to group lanes by — contact/account status (current default), or city, industry, owner, etc. (disposition grouping needs latest-call data — backlog if not on the row). Small selector shown in kanban view; per-module field list. Universal across all modules.'),
+      V('ALT-339','Keep the Grid TILES (cards) view alongside the editable grid','Chore','P3','On Hold',
+        'Ankit 2026-06-23: "i never asked to remove tiles view… no need for that as of now." I replaced tiles with the editable grid. Park: later offer BOTH (cards + spreadsheet) as separate view options, not one replacing the other.'),
+      V('ALT-340','Merge duplicate companies + parent/child company association (HubSpot-style)','Feature','P2','On Hold',
+        'Ankit 2026-06-23 (PARKING LOT, keep in mind): when duplicate companies exist, allow MERGE (combine into one, re-point all associated records) OR a parent/child association like HubSpot. Either merge-all-associated-records or make it one company. Needs a transactional RPC + validation (extends ALT-293). Build after the association model (ALT-341).'),
+      V('ALT-341','EPIC: Generic record ASSOCIATIONS (HubSpot-style) across all modules','Feature','P2','Planned',
+        'Ankit 2026-06-23: on any record, add an "Add association" option to link more Companies / Leads / Meetings / Contacts / Wishlist / Tasks / Calls — anything associable, like HubSpot associations. Needs an association data model (association table or typed link rows) + UI. Foundation for ALT-340 (merge/parent-child) and richer previews/details. DB change → owner-gated.'),
+      V('ALT-342','Multiple emails / phone numbers per contact','Feature','P2','Planned',
+        'Ankit 2026-06-23: allow adding MORE email ids / phone numbers to a contact (like adding associated records) — but these extra details belong to THAT contact only, not shared. Needs a contact_email / contact_phone child table (one-to-many) + UI to add/label (work/personal/primary). DB change → owner-gated.'),
+      V('ALT-343','Record COLLABORATORS (edit/view exactly like owner) — all modules','Feature','P1','Planned',
+        'Ankit 2026-06-23: on any record (all modules) add COLLABORATORS — pick other PROJECT users (incl. the project sales team), shown WITH their role so you know who you add. A collaborator can view/EDIT the record exactly like the owner (even though not the owner) — to keep everyone in the loop who can\'t be owner. Plus (Q4 minor) LITE/VIEWER users (Zoho/HubSpot-style) for senior leaders: read-only review access, no edit. Needs a record_collaborator table + RLS (collaborator OR owner can edit). DB + RLS → owner-gated + throwaway-login validation.'),
+      V('ALT-344','Funnel/operations DASHBOARD per the HungerBox deck — 3 roles (Agent/Sales/TL)','Feature','P1','Planned',
+        'Ankit 2026-06-23: full build behind ALT-336. Funnel cards: Dials → Connects (connect %) → Qualified Pitches → Scheduled → Successful (scheduled→successful %), with cancel vs drop vs reschedule/postpone breakdown. THREE dashboards (Q2): Agent (own dials/connects/meetings), Sales (org pipeline/meetings — view), TL (all downline + own; schedule/successful/cancel/drop/reschedule). Metrics from call-logs (ALT-335) + meeting statuses. Match the deck\'s visual language (dials/gauges, dark stat tiles, blue accent). Confirm the exact disposition→funnel-stage mapping with Ankit (what counts as a "connect" vs "pitch").'),
+      V('ALT-345','Mask sensitive contact/company details at the DB level + reveal-on-demand','Feature','P2','Planned',
+        'Ankit 2026-06-23 (Q4, important not urgent): do NOT rely on client-side masking (hackable via network/inspect) — enforce at the DB so unpermitted users genuinely cannot fetch email/phone. Reveal-on-demand every time (revealed stays until tab refresh). WHO can reveal is set per project setting; DEFAULT = contact/company owner + ALL their uplines. Sales screen: SP/SH see their own records\' details unhidden by default (SP can\'t see other SP\'s; uplines can). Mask pattern ab••••@domain.com / 999****999. Refines ADR-22. DB/RLS → owner-gated.'),
+      V('ALT-346','Re-engineer NOTIFICATION recipients (Q5)','Feature','P1','Planned',
+        'Ankit 2026-06-23 (Q5): FIX — lead-scheduled notification must go to the lead OWNER / assigned agent (lead_report.user_id), NOT created_by (current rule is wrong). Sales team (client) gets only: meeting schedule, feedback, reschedule, cancel. First schedule also goes to the Sales Head if a Sales Person is directly assigned (unless SH himself / only-SH assigned). TL gets all downline + own: schedule, successful (when feedback by SP or marked by agent/TL with mandatory comment), cancel/drop, reschedule/postpone (cancel = prospect cancelled; drop = sales dropped). Reschedule/cancel REQUEST by SP/SH → routes to TL + the meeting\'s Agent (who then asks the prospect). Task manager: pending/scheduled task + daily summary (per-user toggle).'),
+      V('ALT-347','Per-project/client ROLE access matrix set in settings (Q1/Q2)','Feature','P2','Planned',
+        'Ankit 2026-06-23 (Q1/Q2): CRM super-admin sets each client role\'s edit/view in project/client settings. Client roles = Company Admin > Sales Head > Sales Person. Company Admin: view-all default, can edit-all + add SP/SH to their company (approved by CRM super-admin). Sales Head: assign/reassign or take a meeting to self, view all, edit only his; has all SP abilities. Sales Person: see own meetings only, request cancel/reschedule, give feedback (once given can\'t edit it — only SH can on his behalf; SH can also give feedback). TL/PM (Amplior) can reassign SP with an OPTIONAL remark (TL only, not SH). Re-engineer roles + the /sales screens accordingly.'),
+      V('ALT-348','Research: HubSpot + Zoho features & UX patterns','Chore','P2','In Progress',
+        'Ankit 2026-06-23: run subagents to research what other good features HubSpot & Zoho provide and HOW their UX makes users\' lives easier (associations, merge, collaborators, multi-detail, inline edit, saved views, quick actions, keyboard, empty states, etc.). Output a research doc to inform the backlog. This session.'),
+    ];
+  })()),
+
+  // ══════════════════════════════════════════════════════════════════════
+  // 2026-06-24 — SCHEMA AUDIT (docs/SCHEMA-AUDIT.md) + EMBEDDING PLAN
+  //   (docs/product/EMBEDDING-PLAN.md) + Ankit's OPEN-Q/AMBIGUOUS rulings.
+  //   Schema/DB + embedding = owner-gated (DB migration + validation).
+  // ══════════════════════════════════════════════════════════════════════
+  ...((() => {
+    const S = (id, title, type, priority, status, notes) => ({
+      id, title, type, module:'DB', wave:'Schema audit 2026-06-24', priority, status,
+      created: d(2026,6,24), updated: d(2026,6,24), finished: null, owner:'Ankit', notes,
+    });
+    const V = (id, title, type, priority, status, notes) => ({
+      id, title, type, module:'UX', wave:'Rulings 2026-06-24', priority, status,
+      created: d(2026,6,24), updated: d(2026,6,24), finished: null, owner:'Ankit', notes,
+    });
+    return [
+      // ---- Schema audit findings (see docs/SCHEMA-AUDIT.md) — DB, owner-gated ----
+      S('ALT-349','LAUNCH BLOCKER: canonical assignee model + repoint RLS off created_by','Bug','P1','Planned',
+        'SCHEMA-AUDIT NOW: ownership is split 3 ways — created_by = bulk-importer id (live numeric strings), real assignee = lead_report.user_id, dead lead_master.agent_id, + per-project owner_user_id. RLS keyed on created_by tells assigned agents "you can only edit records you own" for ~600 migrated leads. FIX: ONE canonical assignee_user_id (bigint REFERENCES user_master) backfilled from latest lead_report.user_id (597/598 leads = 1 report, ~1:1), app+RLS read only that, deprecate agent_id, keep created_by audit-only. Finish/replace apply-assignment-rls.cjs so it doesn\'t resolve assignee 3 ways. Validate w/ throwaway role-3 + TL/admin logins before prod. Reversible additive migration.'),
+      S('ALT-350','Normalize + CHECK/FK all status columns (already corrupted free text)','Bug','P1','Planned',
+        'SCHEMA-AUDIT NOW: report_status (11 drifting variants), meeting_status (incl NULL/""), dead meeting_master.status, active_status="0" string, free-text account_status/contact_status/is_feasible — none FK to stage_master/status_master/dropdown_option. One-time trim/case-fold/synonym-map UPDATE → CHECK constraints → FK into dropdown_option (28 rows, exists). Collapse meeting_master.status into meeting_status; active_status → boolean. Coordinate writers (data/meetings, projectStatus, realLeads) to emit canonical values.'),
+      S('ALT-351','Clean area_of_interest into a controlled list (worst-corrupted column)','Bug','P2','Planned',
+        'SCHEMA-AUDIT NOW: NOT NULL free text, 24+ "distinct" live values that are ~4 concepts (Security/security/Security services… ; 7 spellings of HungerBox services; " " and "" as values). Breaks segmentation + HungerBox feedback report + AI fit-scoring. Backfill via synonym map (1 human review) to dropdown_option/interest_master FK; move free elaboration to area_of_interest_note; replace useless NOT NULL with CHECK(trim()<>"").'),
+      S('ALT-352','Make `interaction` the canonical activity log (FK + one-of CHECK + dual-write + backfill)','Feature','P1','Planned',
+        'SCHEMA-AUDIT SOON: activity scattered across lead_activity (2670, no actor), 50-col boolean-soup lead_status_history, meeting_master, dormant generic interaction (18 rows, no FK on polymorphic record_id), call_log (not applied). Blocks the AI timeline. FIX: interaction = append-only event log w/ real FK + one-of CHECK + updated_by + soft-delete; dual-write all new calls/notes/status-changes/meeting-touches; backfill; retire lead_status_history to read-only. Unblocks activityTimeline + embeddings (ALT-352→ALT-359).'),
+      S('ALT-353','FORCE RLS + lock anon grants on all data tables','Bug','P1','Planned',
+        'SCHEMA-AUDIT NOW: every hot table relforcerowsecurity=false (table owner bypasses RLS) on a public Supabase URL holding PII for 111 users + 600+ leads. ALTER … FORCE ROW LEVEL SECURITY on lead_master/lead_report/company_master/contact_master/meeting_master/task/*_project_status/user_master/wishlist/lead_activity; REVOKE from anon table-wide. Verify service-role notify-service + snapshot trigger still work; validate w/ throwaway logins. Pairs with ALT-349.'),
+      S('ALT-354','Standardize + FK audit columns (created_by/updated_by/deleted_by) to user_master','Chore','P2','Planned',
+        'SCHEMA-AUDIT: audit columns are varchar holding numeric user ids with NO FK; new tables use bigint (type split); interaction/call_log/task lack updated_by. Add-new-col + backfill (cast numeric strings, map "system" to sentinel) → bigint REFERENCES user_master; add missing updated_by. Handle non-numeric legacy first. Reversible. Underpins the "who edited" audit Ankit wants (Q3).'),
+      S('ALT-355','Enforce contact/company de-duplication (unique indexes after merge)','Bug','P2','Planned',
+        'SCHEMA-AUDIT: 20 duplicate-email contact groups live, no unique constraint. Run merge (ALT-293/merge.ts) to clean dupes, then partial UNIQUE indexes on lower(email)/linkedin_clean (contacts) + cin_number/domain_clean (companies) WHERE deleted_date IS NULL; enforce upsert-on-import. Also fixes the Chrome-extension linkedin_url matching.'),
+      S('ALT-356','Tenant scoping: NOT NULL lead_master.project_id + ensure *_project_status rows','Bug','P2','Planned',
+        'SCHEMA-AUDIT: lead_master.project_id nullable; companies/contacts have no project_id; lead_master.contact_id 0/607 populated. Backfill + NOT NULL project_id; ensure every in-scope company (525)/contact (608) has a *_project_status row per project; decide canonical company/contact→project link before the sales portal (priority #2). Validate RLS before prod.'),
+      S('ALT-357','Backfill lead_master.contact_id + prune dead columns/tables','Chore','P3','Planned',
+        'SCHEMA-AUDIT: backfill lead_master.contact_id from contact_master.source_lead_id (breaks lead↔contact joins today); then drop agent_id; review/prune user_ghost, user_searches, duplicate designation tables, empty status_master after confirming no app use.'),
+      S('ALT-358','Fix id-type chaos + wrong column types (money/time)','Chore','P3','Planned',
+        'SCHEMA-AUDIT: widen int masters (city/state/countrycode/meeting_schedule) to bigint; align contact_master.city_id type to company_master.city_id + add its missing FK; numeric for money (meeting_question/new_sales_question float, lead_master.value varchar), proper time/interval for meeting_time/duration. Do before any revenue/forecast reporting.'),
+      // ---- Embedding (docs/product/EMBEDDING-PLAN.md) — AI, owner-gated ----
+      V('ALT-359','Enable pgvector + embeddings table + embed-on-write flag (capture from NOW)','Feature','P1','Planned',
+        'EMBEDDING-PLAN: cost asymmetry — embed-on-write is ~free/continuous; backfill is one-time + lossy (un-stored text can never be embedded). Phase 1: enable pgvector, add an embeddings table, embed-on-write (trigger/queue, behind a flag) for companies/contacts/interactions(call notes+dispositions)/meeting-feedback/leads. Gated behind the security/launch work (ALT-353). Depends on the clean interaction log (ALT-352). See docs/product/EMBEDDING-PLAN.md + AI-PGVECTOR-PLAN.md.'),
+      V('ALT-360','Embedding backfill job + retrieval/query patterns + vector RLS','Feature','P2','Planned',
+        'EMBEDDING-PLAN phase 2-3: backfill historical rows; retrieval (semantic search, similar-accounts, dedup, reach-out suggestions, which-100-to-target); RLS for vectors so retrieval respects record visibility. Powers the AI "superpower" (VISION). After ALT-359.'),
+      // ---- Buildable-now from Ankit's rulings (Stage-2 building this session) ----
+      V('ALT-361','Inline status edit uses global project + auto-resolves single-project (E1)','Feature','P1','In Progress',
+        'AMBIG E1: stop showing "Select a project first" — when the global project selector is set use it; when a record belongs to exactly ONE project auto-resolve to it; only prompt when genuinely ambiguous. Removes the daily wall for single-project agents. Building 2026-06-24.'),
+      V('ALT-362','QC gets Approvals access + mandatory rejection comment (B1/A5)','Feature','P1','In Progress',
+        'AMBIG B1/A5: QC (role 6) had no screen — give QC access to the Approvals queue (mirrors TL); require a non-empty comment when a reviewer REJECTS a report. (Project-scoping of the queue + the QC↔TL parallel-approver workflow = capture, needs downline link.) Building 2026-06-24.'),
+      V('ALT-363','Optional reassign reason + default-owner-self on create (Q1/A4)','Feature','P2','In Progress',
+        'OPEN-Q Q1 + AMBIG A4: optional "reason" when a TL reassigns a Sales Person (recorded on the reassignment); on create, default owner=self unless TL/manager/admin, with an "Assign to me" quick action. Building 2026-06-24.'),
+      V('ALT-364','UX-approved polish batch (grid/preview/search/auth/contrast)','Chore','P2','In Progress',
+        'UX-Audit (Ankit approved all): grid read-only truncation tooltips + frozen identity column; mailto/tel + copy on Company/Lead/Meeting/Wishlist previews; search clear-× parity on Companies/Contacts/Meetings/Wishlist; show/hide password on all auth screens + sales forgot-password + back-to-CRM switcher; conservative muted-text AA contrast bump. Building 2026-06-24.'),
+      V('ALT-365','Captured rulings refining existing tickets (access/roles/notif/calls/meeting/feedback)','Chore','P1','Planned',
+        'Ankit 2026-06-24 OPEN-Q/AMBIG rulings folded in — these refine existing tickets, mostly DB/RLS (capture): per-project access modes Public/Limited/Private/Public-edit + sensitive-field config (ALT-295/362-cap); downline/manager_id link + team-scoped visibility all modules (LAUNCH dep); notif recipient matrix incl created_by→assignee fix + cancel/drop + mandatory-comment-on-successful (ALT-346); sales role model + provisioning + super-admin approval (ALT-347); single call logger + admin-editable Call Disposition + Call-module Task-Manager-style UI (ALT-303); remove/fold Meeting module into Leads + lead→task + unified due-today queue (ALT-306, DESIGN DECISION); ONE feedback model — plain-language explain + recover earlier client-portal tweaks (ALT-311, BLOCKED on Ankit); converge MobileMeetingRecord vs PortalMeetingDetailPage (ALT-275); lite/viewer role for seniors (ALT-343); configurable create rights default-off + create-from-existing (ALT-174); design-system demos for approval (ALT-314/315/321); per-project client recording-reveal toggle (D4); edit-audit actor+role (ALT-354). Full rulings in OPEN-QUESTIONS.md + AMBIGUOUS-DECISIONS.md.'),
+      // ---- Pending safe-UX batch (built 2026-06-24 while DB/decisions wait) ----
+      V('ALT-368','"Select all N matching" across every list module','Feature','P2','In Progress',
+        'Bulk ops (reassign / status / export) could only ever act on the current page. New SelectAllMatchingBar appears once the whole page is selected and offers "Select all N matching" — selects every row in the full filtered set (already in memory client-side, so no extra fetch). Universal: Leads, Companies, Contacts, Meetings, Wishlist. New sel.addAll() on useRowSelection. Build green; not yet pushed.'),
+      V('ALT-372','Route code-splitting (1.6MB->282KB main bundle) + read-only login-coverage endpoint','Chore','P2','In Progress',
+        'Cycle 6 (non-dependent). Code-split: 23 route pages -> React.lazy + one Suspense boundary; providers/guards/auth kept eager. Initial JS 1672KB->282KB (gzip 437->82KB) — much faster first load for 111 users. Plus a READ-ONLY GET /api/admin/login-coverage (requireAdmin) reporting RSK-10 exposure (usersWithoutLogin, profilesNullUserId/Role, exposureCount, sample numeric ids only — no PII). QC PASS (read-only, guarded, Suspense correct). Deploy-gated; not pushed.'),
+      V('ALT-373','FE PII hardening — no PII cached in drafts / filters (survives logout on shared device)','Security','P2','In Progress',
+        'Security audit (Cycle 6) found FE-fixable PII-at-rest leaks. BUILT (Cycle 7, QC PASS, tsc clean): (1) useUnsavedChanges now redacts PII keys (email/phone/mobile/linkedin) before caching the draft to localStorage — non-PII fields still restore; (2) listFilters strips the free-text search term from persisted filters (facets still persist) so a typed phone/email never survives logout; (3) globalSearch already calls clearSearchIndex() on signOut (verified) — phone/email stay searchable in-session (legit caller feature). Export of contact details left intact (it is the intended calling workflow, not a leak). Deploy-gated; not pushed.'),
+      V('ALT-375','Delight wave 2 — density / compact mode toggle (tables)','Feature','P2','In Progress',
+        'UX-DELIGHT-BACKLOG Tier-1 (Cycle 9, QC PASS). New useDensity hook (mirrors useViewMode, per-user+entity localStorage) + DensityToggle segmented control; Comfortable (44px, pixel-identical to before — no regression) / Compact (32px, ~40% more rows). Wired into Leads table (reference) with a height transition; grid/kanban/data/sort/pagination untouched. FANNED OUT to ALL 5 list pages (Contacts/Companies/Meetings/Wishlist) on 2026-06-27 via 4 disjoint agents — comfortable mode now standardizes every list to 44px rows (Contacts was 48, Meetings/Wishlist were 40 → uniform). Pure FE; vite green. Not pushed.'),
+      V('ALT-374','Delight wave 1 — press "?" keyboard-help overlay + actionable empty states (all list pages)','Feature','P2','In Progress',
+        'UX-DELIGHT-BACKLOG Tier-1 (Cycles 7-8, QC PASS x2). Press "?" (when not typing) opens a focus-trapped overlay listing the app\'s REAL shortcuts (Cmd/Ctrl-K, arrows, Enter/Space to open a row, Esc) — no invented bindings; mounted once at app root. New reusable EmptyState component; the table empty state on ALL FIVE list pages (Leads, Contacts, Companies, Meetings, Wishlist) now offers a next action ("Clear filters" wired to each page\'s real handler / friendly message) instead of bare text. Pure FE; tsc clean; vite green. Not pushed.'),
+      V('ALT-371','Strict profiles-link on login provisioning + bulk on-ramp (closes RSK-10 silent-deny)','Bug','P1','In Progress',
+        'Cycle 5: assignee-RLS resolves the caller via current_user_id() reading the SPARSE profiles table — a provisioned login with a missing/NULL-user_id profiles row would be SILENTLY denied ALL edits (RSK-10). Found that notify-service ensureProfileLink created the row but BEST-EFFORT (swallowed upsert errors; wrote user_id/role only conditionally; endpoints returned 200 regardless). Fixed (G-A/G-B): ensureProfileLink now ALWAYS writes user_id, never swallows, returns {ok,roleLinked,reason}; /api/users/create + /reset-password surface profileLinked + profileWarning so a bulk run can detect exposure. node --check OK. REMAINING (G-C): a one-button bulk-provision endpoint + a read-only coverage dry-run + assert coverage BEFORE the RLS policy swap. Plan: docs/BULK-LOGIN-ONRAMP-PLAN.md. Server change deploy-gated; NOT pushed.'),
+      V('ALT-370','Honest writes — humanizeWriteError on every write surface (no silent RLS failures)','Bug','P1','In Progress',
+        'Advisor reality-check #1: until the write-path/RLS lands, users WILL hit 42501/missing-table on save; a silent or false-success write kills trust on the first edit. Routed EVERY user-facing write through humanizeWriteError across the data layer (leadWorkspace, meetings, contacts, companies, tasks, wishlist, dropdowns, views, account, approvals, assignment, merge, projectStatus, admin user/project/reference/pre-sales writes, accessSettings) + pages (list bulk actions, form create/update, detail-page actions) + CompanyPreview. Built by 2 disjoint agents (components+data / pages); QC FAILED v1 (admin-settings class skipped) → fixed admin.ts + accessSettings.ts; tsc clean + vite build green. Not pushed.'),
+      V('ALT-369','Persist list filters + search across refresh (per browser)','Feature','P2','In Progress',
+        'Filtering a list then refreshing / returning wiped every filter. New useListFilters hook persists each module\'s filter+search set to localStorage (keyed by entity, merged over defaults so new fields never break old saved blobs) — survives refresh like HubSpot/Zoho. Drop-in for useState<Filters>; "Clear filters" still resets. Universal across all 5 list modules. Build green; not yet pushed.'),
+      // ---- Bulk-ops audit (data-admin persona) — docs/product/BULK-OPS-AUDIT.md (2026-06-27) ----
+      V('ALT-376','Bulk import / re-import engine (CSV/Excel) — the headline data-admin workflow','Feature','P0','Backlog',
+        'Audit P0: admin can export but CANNOT import or update-via-file; entire export->edit->re-import loop is unbuilt. Build a service-role /api/<entity>/bulk-update (requireAdmin + getSupabaseAdmin, chunked, dry-run diff, per-row 207 report) + BulkImportWizard (column-map -> validate -> dedup -> preview -> commit) per BULK-IMPORT-EXPORT.md. DEPENDS on DEC-03 (ownership/RLS): the service-role endpoint is BOTH the import mechanism and the way around browser-RLS, so build it WITH the ownership fix.'),
+      V('ALT-377','Record-ID column on every export (export = the import template)','Feature','P2','In Progress',
+        'Audit P0 prerequisite — BUILT 2026-06-27, build green. ExportButton now prepends a stable Record-ID column (Company/Contact/Lead/Meeting/Wishlist ID) so an exported sheet can be edited and matched back on re-import — exactly how HubSpot ("Record ID") and Zoho ("<Module> Id") work. Centralized in one component -> all 5 modules at once; skips if a page already surfaces the id key. Pure export, zero RLS coupling. Not pushed.'),
+      V('ALT-378','Bulk delete / archive (admin-only soft-delete + recycle bin)','Feature','P1','Backlog',
+        'Audit P1: NO delete/archive anywhere — not even single-record. A bad import or stale data cannot be retired from the UI. Add admin-only soft-delete (deleted_by/deleted_date, existing convention) as a bulk toolbar action with a typed confirm + a recycle-bin view. Delete of non-owned rows needs the service-role path (partial DEC-03 coupling).'),
+      V('ALT-379','Wire up duplicate merge (it is dead code) + duplicate-finder + atomic RPC','Bug','P1','Backlog',
+        'Audit P1: mergeCompanies/mergeContacts + MergeDuplicatesModal exist but the modal is NEVER mounted in any page -> dedup is unreachable. Wire it into Companies/Contacts; add a "potential duplicates" finder; move the client-side re-point sequence into a SECURITY DEFINER RPC for atomicity (no half-merge). HubSpot/Zoho auto-surface duplicates + merge in one transaction with a survivor picker.'),
+      V('ALT-380','Generalized bulk field-edit (whitelist) — not just status; add to Leads','Feature','P1','Backlog',
+        'Audit P1: bulk field-update is limited to per-project STATUS (Companies/Contacts) and Leads have none. Generalize setStatus (bulkActions.ts) into a "bulk edit field" picker over a safe whitelist (City/Industry/Size/...) and add it to Leads. Same RLS path as reassign (partial DEC-03 coupling). HubSpot/Zoho: "Edit property for N records".'),
+      V('ALT-381','Progress bar + cancel + chunking on all bulk loops','Feature','P2','Backlog',
+        'Audit P2: every bulk op is a sequential await loop (200 rows = 200 round-trips) with only a spinner; UI looks frozen, partial result only at the end. Add onProgress(done,total) + progress bar + chunking; surface the partial-failure list. HubSpot runs it as a queued background job with a completion email.'),
+      V('ALT-382','Count-confirmation on bulk set-status / add-to-project','Feature','P2','Backlog',
+        'Audit P2: status overwrite / add-to-project on N rows fires with no "this changes N records" confirm (reassign has a modal; these do not). Add a count-confirmation step.'),
+      V('ALT-383','DECISION — gate PII (email/mobile) on export?','Security','P2','Backlog',
+        'Audit P2 + product call for Ankit (logged to Review Hub). Export currently emits masked email/mobile in clear via ExportButton accessors — any viewer can exfiltrate. BUT exporting contact details IS the intended calling workflow. Decide: gate full-value PII export behind admin/reveal-permission (+log) or keep open for outreach roles. Do NOT change unilaterally.'),
+      V('ALT-384','Bulk-action audit receipt + "undo last bulk action"','Feature','P2','Backlog',
+        'Audit P2: updated_by is stamped per row but there is no "batch X changed these N rows" receipt and no undo for any bulk action; merge has no rollback. Write a bulk-action log row + offer undo-last-bulk-action.'),
+      V('ALT-385','Server-side "select all matching" for large datasets','Chore','P2','Backlog',
+        'Audit P2: SelectAllMatchingBar selects only rows already loaded client-side — fine today (pages load the full set) but silently caps as data grows. Move to a true filter-based server selection when import/large-data lands.'),
+      // ---- HubSpot/Zoho parity (real schema, MCP-verified) — docs/product/CRM-PARITY-HUBSPOT-ZOHO.md (2026-06-27) ----
+      V('ALT-386','DECISION + FOUNDATION — Deals / Pipeline / value object (anchors the Sales Portal)','Feature','P0','Backlog',
+        'Parity gap #1 (biggest lever). HubSpot/Zoho model the sales process as a first-class DEAL object moving through PIPELINE stages with amount + close date + weighted FORECAST + win/loss (verified live: deal "Alembic Pharmaceuticals", pipeline=default, dealstage+amount+closedate). We have leads-with-a-status only — no value/pipeline/forecast. This is THE foundation of the Sales Portal (priority #2) and is INDEPENDENT of the ownership/RLS blocker. Net-new schema + pipeline board UI. Needs Ankit go-ahead.'),
+      V('ALT-387','DECISION — no-code custom fields (properties) model','Feature','P1','Backlog',
+        'Parity gap. HubSpot/Zoho let an admin add any typed property (dropdown/date/number/calc/required) to any object WITHOUT code; we have fixed DB columns (a field = a migration). Option: custom_field + custom_field_value tables + admin UI. Roadmap-shaping decision for Ankit; independent of launch blockers.'),
+      V('ALT-388','Typed/labeled associations + unified activity timeline','Feature','P1','Backlog',
+        'Parity gap. HubSpot associations are typed + LABELED (verified: contacts<->companies returned "Primary","Billing Contact") and N:N; we have hard-coded FKs. Also unify calls/emails/meetings/notes/tasks as first-class engagements on every record timeline (we have interaction log + call logs — verify richness). Mostly independent of decisions.'),
+      V('ALT-389','Dynamic lists / auto-updating segments','Feature','P2','Backlog',
+        'Parity gap. HubSpot/Zoho "active lists" auto-update as records match criteria; we have personal saved filter views only. Post-launch retention feature.'),
+      V('ALT-390','Workflow / automation engine (assign, email, task, stage-change triggers)','Feature','P2','Backlog',
+        'Parity gap. No automation today (all manual). Triggered workflows (on create/stage-change -> assign owner, send email, create task) are core to HubSpot/Zoho stickiness. Post-launch.'),
+      // ---- Autonomous UX leap (non-dependent, pure FE) ----
+      V('ALT-394','Read-only duplicate detector (Companies + Contacts)','Feature','P2','In Progress',
+        'The safe, immediately-useful half of dedup (ALT-379 keeps the merge-WRITE gated). New lib/findDuplicates.ts (pure: groups the current/filtered rows by normalized name/email/phone/website, returns groups of 2+, biggest first) + self-contained DuplicatesButton.tsx (toolbar button with an amber count badge + a modal listing each collision group; rows open in a new tab to reconcile; footer points to ALT-379 for one-click merge). Wired into Companies (name/email/website) and Contacts (email/mobile/name). HubSpot/Zoho auto-surface duplicates; this brings the read-only detection here with zero write risk. Build green. Pure FE. Not pushed.'),
+      // ---- DATA-OPS audit (43-agent workflow vs HubSpot/Zoho/Salesforce) — docs/product/DATA-OPS-AUDIT.md (2026-06-27). Full 51-ticket list in the doc. ----
+      V('ALT-395','CSV/Excel formula-injection hardening on export','Security','P1','In Progress',
+        'Audit finding (verified): ExportButton only quoted [\",\\n] — a cell starting with = + - @ or tab/CR could execute as a formula in Excel/Sheets (exfiltration/RCE on exported CRM data). BUILT 2026-06-27: sanitizeCell() prefixes such cells with a single quote, in toMatrix so it covers BOTH csv + xlsx and all 5 modules at once. Build green. Not pushed.'),
+      V('ALT-396','Safe reversible import/export — one-button UNDO + REDO + history log','Feature','P0','Backlog',
+        'USER-FLAGGED headline + a real differentiator (no major competitor ships REDO). Design in DATA-OPS-AUDIT.md §2: data_batch + data_batch_row (before/after images) + export_log; every bulk write goes through a service-role /api/:entity/bulk-update that snapshots before-images; UNDO reverts, REDO re-applies, both as new batches. Mapping/preview UI + History page are read-only/buildable now; the write/revert core uses requireAdmin service-role so it ships as an ADMIN tool now and only the agent-facing path waits on DEC-03 (ownership/RLS).'),
+      V('ALT-397','CSV/Excel import + re-import engine (create/update-only/upsert, Record-ID keyed)','Feature','P0','Backlog',
+        'No import engine exists (notify-service has 6 routes, none bulk). Service-role bulk-update endpoint, match on the shipped Record-ID column -> email/domain_clean/linkedin_clean; chunked, dry-run diff, per-row 207, don\'t-overwrite-with-blank guard. Depends on DEC-03 (service-role is also the way around the RLS blocker).'),
+      V('ALT-398','Import rollback (undo a specific import batch)','Feature','P0','Backlog',
+        'Stamp every imported/updated row with import_batch_id + before-image; "Undo this import" soft-deletes added rows + restores updated rows. Shares the ALT-396 machinery. Depends on DEC-03.'),
+      V('ALT-399','Import mapping/preview wizard (frontend)','Feature','P1','Backlog',
+        'BUILDABLE NOW (pure FE): parse uploaded headers, auto-match to entity columns, 3-row preview, per-column ignore/remap, surface unmapped/error cols before submit. Submits to the (later) service-role endpoint.'),
+      V('ALT-400','Recycle bin — list + restore soft-deleted records','Feature','P1','In Progress',
+        'BUILDABLE NOW (read + narrow admin write): deleted_date/deleted_by columns already exist and are read-filtered, but no UI ever sets/clears them. Admin-only page over deleted_date IS NOT NULL with Restore (nulls deleted_date/deleted_by). Validate the restore write against RLS on a throwaway admin login first.'),
+      V('ALT-401','Progress bar + cancel on bulk operations','Feature','P1','Done',
+        'SHIPPED (commit 3d266c7, 2026-06-28). Additive BulkProgress {onProgress, signal} threaded through every bulk loop in bulkActions.ts + assignment.ts; abort is checked only BETWEEN records so a write is never interrupted mid-flight, and partial counts return cleanly. Shared BulkProgressBar (determinate "N of M") + optional progress/onCancel props wired into the 3 bulk modals (Reassign/BulkProject/BulkStatus) across Leads/Meetings/Companies/Contacts. Behaviour identical when opts omitted. Build green. Pure FE/data-layer. Not pushed.'),
+      V('ALT-402','Bulk-action audit receipt + history (batch X changed N rows)','Feature','P1','Backlog',
+        'BUILDABLE NOW (needs a data_batch table; read is admin-only): write one batch row per bulk action (actor/time/action/entity/count/scope) + a viewable history; completion receipt. Same record later powers undo/redo (ALT-396).'),
+      V('ALT-403','PII export gating (mask/restrict sensitive columns by role) + export audit','Security','P1','Backlog',
+        'BUILDABLE NOW: export currently emits raw email/mobile client-side for anyone who can see the list, with no audit. Reuse contact_master_masked logic to gate full-PII export by role; log who exported what PII when (export side of ALT-396 export_log). NOTE: pairs with DEC-13 (the posture decision).'),
+      V('ALT-404','Named saved filters / dynamic + static segments','Feature','P1','Backlog',
+        'BUILDABLE NOW: a saved_segment store (name + serialized filter JSON + dynamic/static flag) so a data team can save the current filter set by name and recall it (HubSpot active/static lists). Can persist per-user in localStorage v1 like view/density prefs, DB-backed later.'),
+      V('ALT-405','No-code report / pivot builder (analyst)','Feature','P1','Backlog',
+        'BUILDABLE NOW (read-only): self-serve builder — pick entity, group-by rows/cols, aggregation, render table/chart with drill-down, over existing data via PostgREST/RPC. The biggest analyst-persona gap (today DashboardPage is 5 hardcoded KPIs).'),
+      V('ALT-406','Funnel / conversion analytics + customizable dashboards','Feature','P2','Backlog',
+        'BUILDABLE NOW (read-only): stage drop-off, lead->meeting rate, time-in-stage from existing data; let analysts add/remove/reorder KPI tiles + pin saved reports with dashboard-level filters.'),
+      V('ALT-407','Field-level change history (old->new, who, when, source)','Feature','P1','Backlog',
+        'Audit captures who/when but never old->new (appendInteraction writes free-text, no {field,old,new} diff). Add a change_history table written by data-layer upserts + the import engine; render a per-record History tab (render buildable now).'),
+      V('ALT-408','Data-quality command center (dups, missing, formatting health)','Feature','P2','Backlog',
+        'BUILDABLE NOW (read-only): a page summarizing duplicate counts, blank-required-field counts and normalization issues, reusing the existing duplicate detector (ALT-394). Plus edit-form validation parity + format normalization.'),
+      V('ALT-409','Consent / Do-Not-Call (DNC) / opt-out fields enforced at calling + export','Feature','P1','Backlog',
+        'BUILDABLE NOW + India DPDP/TRAI compliance: add consent_status/do_not_call/opt_out_date/lawful_basis to contact; DNC badge; exclude DNC rows from call lists/exports by default with an override reason. Critic-added governance gap for an outreach CRM.'),
+      V('ALT-410','GDPR/DPDP right-to-erasure + subject-access (DSAR) workflow','Security','P1','Backlog',
+        'Critic-added: "Forget this contact" admin action cascading pseudonymize/erase across all entities + interactions in one transaction with a tamper-evident erasure receipt, plus a one-person data-export bundle. Compliance posture for handling client PII.'),
+      V('ALT-411','Standardize audit columns (FK-typed actor) + record source/lineage flags','Chore','P1','Backlog',
+        'Audit cols are varchar user-ids with no FK (SCHEMA-AUDIT S1); migrate created_by/updated_by/deleted_by to bigint FK -> user_master, add updated_by where missing, add source enum + import_batch_id on every write (data lineage). Entangled with DEC-03 (created_by-vs-assignee).'),
+      V('ALT-412','Server-streamed full-dataset export + reconciliation count','Feature','P2','Backlog',
+        'Export is 100% client-side and silently exports whatever the browser loaded. Add a service-role streamed export over the full server-side filtered set + show "exported N of N matching" so a partial export can never pass as complete.'),
+      V('ALT-413','Active-filter chips (removable + Clear all) across all list pages','Feature','P2','In Progress',
+        'High-impact/low-effort daily win for a data team that filters constantly: a chip bar under the toolbar shows exactly what is filtering the list (one chip per selected facet value + per date-range), each removable with one click, plus Clear all. New reusable ActiveFilters component (FilterChip[] + onClearAll, renders nothing when empty); wired into all 5 list pages via disjoint agents, each computing chips from its own filter shape (Leads 7 facets+2 ranges; Meetings facets+2 ranges; Companies industry/city; Contacts company/city + hasLinkedin/showDemo; Wishlist 5 facets) and reusing each page existing clear handler. Free-text search excluded (own clear box). Build green. Pure FE. Not pushed.'),
+      V('ALT-416','Atomic record-merge (SECURITY DEFINER RPC) — fix non-atomic merge','Bug','P1','Done',
+        'RISK + CENSUS CORRECTION (2026-06-28): the discovery doc said record-merge was MISSING — it EXISTS (merge.ts / MergeDuplicatesModal.tsx, ALT-293) but is NON-ATOMIC (client-side sequence of Supabase calls; a crash mid-merge half-merges records with no rollback). Move the FK re-parent + loser soft-delete into ONE SECURITY DEFINER Postgres transaction with an audit row. Validate RLS on a throwaway admin login before prod. See CRM-CAPABILITY-CENSUS.md §2.'),
+      V('ALT-417','Import history + rollback/undo an import batch','Feature','P1','Backlog',
+        'CENSUS gap (HubSpot/Zoho/SF have it): log every import (actor/time/file/counts/batch-id) and let an admin DELETE the records a batch created (undo). Pairs with ALT-396 undo/redo + ALT-402 data_batch.'),
+      V('ALT-418','Import skipped-row / error file (per-row reason)','Feature','P1','Backlog',
+        'CENSUS gap: on import, produce a downloadable file of failed/skipped rows WITH the per-row reason (bad email, missing required, dup) — not just a success/fail count. Part of the import wizard (ALT-399).'),
+      V('ALT-419','Saved/reusable import field-mapping templates','Feature','P2','Backlog',
+        'CENSUS gap (Zoho saved mappings, SF .sdl): persist a named column->field mapping so recurring same-shape imports skip remapping. Builds on ALT-399.'),
+      V('ALT-420','Scheduled / recurring imports (FTP/cloud/URL)','Feature','P3','Backlog',
+        'CENSUS gap (Zoho scheduled import / Ops Hub): pull + upsert on a schedule from a source URL/bucket. Needs the service-role import endpoint first.'),
+      V('ALT-421','Validation-rules engine (required-when / regex / cross-field)','Feature','P1','Backlog',
+        'CENSUS gap (SF Validation Rules, Zoho): block save on bad data with admin-defined rules (required-when conditions, format/regex, cross-field). Data-quality at the write source.'),
+      V('ALT-422','Dependent/cascading picklists + reusable global picklist sets','Feature','P2','Backlog',
+        'CENSUS gap (SF/Zoho): controlling->dependent picklist filtering, and reusable shared picklist sets instead of per-field duplication. Extends the field/property system (ALT-377/378 metadata registry).'),
+      V('ALT-423','Record types — layout + picklist per segment','Feature','P2','Backlog',
+        'CENSUS gap (SF Record Types, Zoho Layouts): different page layout + picklist values per record segment/profile. Depends on the page-layout builder + metadata registry.'),
+      V('ALT-424','Tags / labels with filter-by-tag','Feature','P2','Backlog',
+        'CENSUS gap (Pipedrive labels, Zoho tags): free-form tags on records + filter/segment by tag. Lightweight, high daily utility; can be a tag table + join, surfaced in filters/chips.'),
+      V('ALT-425','Suppression / Do-Not-Contact lists as first-class (exclude from calls/exports)','Feature','P1','Backlog',
+        'CENSUS gap; extends ALT-409 consent/DNC: a managed suppression list that auto-excludes rows from call queues + exports by default, with an override-reason. Compliance + outreach hygiene.'),
+      V('ALT-426','Approval / Blueprint engine (guided stage transitions)','Feature','P2','Backlog',
+        'CENSUS gap (Zoho Blueprint, SF Approvals): generalise the existing Approvals page into configurable guided transitions with mandatory fields/actions per stage move.'),
+      V('ALT-427','Background bulk-job queue + "email me when done"','Feature','P2','Backlog',
+        'CENSUS gap (SF/Zoho): run long bulk ops as a background job (survives tab close) with an email/in-app completion receipt. Beyond the in-tab progress+cancel just shipped (ALT-401).'),
+      V('ALT-428','Surface silent truncation (Meetings 2000-cap, .limit(5000) facets, Cmd-K index)','Bug','P1','Done',
+        'LAUNCH-BLOCKER (data-admin census L1/L2/L19/L23/O2): Meetings list hard-caps at 2000 rows and the computed `truncated` flag is never shown — past 2000 records vanish from list/search/filter/export/Cmd-K and the "X of Y" counter, silently. Same for Contacts 50000-cap, fetchCompanyOptions/assignable-users .limit(5000), and the module-scope Cmd-K index. Surface a "showing N of M — refine to see the rest" banner everywhere a cap/sparse set is hit. Mostly S. Buildable now.'),
+      V('ALT-429','Companies: load full per-project Status & Owner for sort/filter/export','Bug','P1','Done',
+        'SHIPPED 2026-06-28: CompaniesPage filteredCompanyIds memo loads statuses for the ENTIRE filtered set on project/filter change (chunked .in() ~200/req, ~50 reqs for 10k), not just the current page; export no longer ships blank status for off-page rows. Live fix. Was LAUNCH-BLOCKER L4/L5.'),
+      V('ALT-430','Optimistic-concurrency / lost-update guard on record writes','Bug','P1','Done',
+        'SHIPPED 2026-06-29 (dark behind CONCURRENCY_GUARD=false): lib/concurrency.ts adds an updated_date precondition (.eq(updated_date,orig) -> 0 rows = conflict) on lead_master/lead_report/meeting_master/contact_master/wishlist updates; conflict UX in Lead form+detail, Meeting detail/modals/tab, Wishlist detail, Contact detail keeps typed values + prompts reload. Skipped project-status upserts (composite PK). Flip flag after confirming updated_date is reliably maintained.'),
+      V('ALT-431','Trusted write layer — server-derived actor + validation (stop trusting client audit fields)','Security','P1','Backlog',
+        'LAUNCH-RISK (V1/V2/V3): all writes go browser->PostgREST with client-supplied created_by/updated_by/actor stored verbatim (forgeable) and no server-side validation; correctness depends 100% on RLS. Route master writes through a service-role/RPC layer that derives the actor from the JWT (like notify-service already does) + validates. NEEDS DECISION (architecture).'),
+      V('ALT-432','Remove false "recoverable by an admin" promise on Merge (until restore exists)','Bug','P1','Done',
+        'TRUST BUG (R1): MergeDuplicatesModal tells the user the merged-away record is "recoverable by an admin" — but NO restore path exists anywhere in the app. Correct the copy immediately (S) and gate the promise behind the real recycle-bin (ALT-400). Also handle the per-project status collision (23505) that aborts merges (D2). Buildable now.'),
+      V('ALT-433','Resolve lead two-owner conflict (lead_report.user_id vs created_by)','Bug','P1','In Progress',
+        'LAUNCH-BLOCKER (O1/O4): reassign writes lead_report.user_id while the Edit-Lead form rewrites lead_master.created_by — a reassignment is silently reverted by an edit through the other path, and owner is inconsistent across modules (contact reassign doesn nott cascade to leads). This is the core DEC-03 ownership decision; pick ONE owner-of-record and make all writers + cascades agree. NEEDS DECISION (DEC-03).'),
+      V('ALT-434','Fix magic-FK address corruption (createLead address_id ?? 1; createClient borrows address)','Bug','P1','Done',
+        'DATA-CORRUPTION (O5/D8): createLead falls back to address_id ?? 1 and createClient borrows another client address_id to satisfy a NOT-NULL FK — every fallback lead/client is stamped with a wrong hard-coded foreign address, polluting city reporting/filters. DONE for createLead/updateLead (removed the ?? 1 fallback → null when no city, address_id is nullable). createClient DONE: read-only schema check confirmed address_master.city_id IS nullable, so createClient now inserts its own (city-null) address instead of borrowing a foreign one. Client form still does not capture a city (city-null address acceptable, no longer corrupting).'),
+      V('ALT-435','Stop rendering load failures as "no data"; explain hidden bulk buttons','Bug','P1','Done',
+        'VERIFIED SHIPPED 2026-06-28 (agent confirmed against source, not summaries): all 5 list pages return {error} from fetchCompanies/fetchAllContacts/fetchLeadsFallback/fetchMeetings, show AlertCircle+Retry on failure (distinct from empty), and disable bulk reassign/set-status with a title reason when no project selected. Remaining catch->[] are detail-panel helpers, not list paths.'),
+      V('ALT-436','Bulk-selection safety (clear on filter change; select-all respects true set; max guard)','Bug','P1','Done',
+        'DANGEROUS (L9/L8/L10): Contacts keeps row-selection across filter changes (other pages clear it) so a bulk action hits now-hidden rows; "select all N matching" on Meetings selects only the capped set; off-screen selections persist with no max guard. Clear selection on filter change + make select-all use the true filtered set or warn. Buildable now.'),
+      V('ALT-437','List display fixes: numeric/date sort + show meeting time & lead stage','Bug','P2','Done',
+        'L11/L12/L37: Contacts string-compare sorts numbers as text and clumps nulls; grid date columns sort lexically not chronologically; Meetings list hides meeting time and lead stage though the data exists. Use localeCompare/typed sort + surface the fields. Buildable now (S).'),
+      V('ALT-438','Point-in-time rollback ("restore CRM changes" within N days)','Feature','P2','Backlog',
+        'CENSUS (HubSpot parity): undo a bad bulk edit / import / automation across many records within an N-day window, filtered by user/import. Depends on field-history (ALT-407) + data_batch (ALT-402). NEEDS DECISION (retention window + storage).'),
+      V('ALT-439','Fuzzy / cross-table duplicate detection (name+company), not just exact','Feature','P2','Backlog',
+        'D4/D5: findDuplicates is read-only over currently-loaded rows only; find_contact_dup matches exact email/linkedin/mobile only. Add name+company fuzzy + whole-table scan so migrated dupes with slightly different emails are caught. Builds on ALT-394/416.'),
+      V('ALT-440','Default sort + user-pinned columns per view','Feature','P2','Done',
+        'CUSTOMIZATION (UI review): sort always resets on refresh; columns can hide/reorder but not pin. Persist {sortKey,sortDir} in user_view_pref and add TanStack columnPinning with a "Pin column" toggle. Buildable now (S), no decision.'),
+      V('ALT-441','Collaborators / secondary owners (in-the-loop) — build per design spec','Feature','P1','In Progress',
+        'V1 BUILT DARK 2026-06-29 behind COLLAB_ASSOC (flag off=prod unchanged): record_collaborator staged migration + data/collaborators.ts CRUD + CollaboratorsCard (chip-list + add-modal, viewer/editor role) on all 4 detail pages + admin CollaboratorAccessTab (per-object View / View+Edit, staged collaborator_access_setting). Posture decision RESOLVED (admin view/edit setting). REMAINING before launch: apply migrations + RLS (deferred post-DEC-03 validation) + notify-on-add + flip flag.'),
+      V('ALT-442','Associations across modules (link extra company/contact/lead/meeting)','Feature','P1','In Progress',
+        'V1 BUILT DARK 2026-06-29 behind COLLAB_ASSOC: record_association staged migration (canonical-ordered, label CHECK, is_primary, no-self) + data/associations.ts CRUD + AssociationsPanel (list + associate-picker + set-primary) on all 4 detail pages. REMAINING before launch: apply migration + RLS (post-DEC-03) + merge direct-FK relations into the panel + flip flag.'),
+      V('ALT-443','Bulk-assign owner + "max per company" distribution cap + departure reassignment','Feature','P2','Done',
+        'SHIPPED 2026-06-29 (live, additive): BulkReassignModal (multi-owner + max-per-company cap via distributeRecords round-robin) on Leads/Companies/Contacts/Meetings; assignment.ts countOwnedRecords + fetchOwned helpers; DepartingUserReassignTab admin tool (pick leaver -> per-module counts -> multi-owner+cap -> reassign all with progress+abort). Admin/canReassign gated; TODO gatekeeper on writes.'),
+      V('ALT-444','Data-health dashboard + scheduled enrichment + job-change tracking','Feature','P3','Backlog',
+        'Apollo/HubSpot parity (post-launch): % accurate/missing emails & phones, fill-rate, dup-volume; scheduled/ongoing enrichment to keep bulk-migrated data fresh. Larger; later.'),
+      V('ALT-445','Per-view column sets ("Sales view" vs "Ops view")','Feature','P2','Backlog',
+        'CUSTOMIZATION (UI review): one column layout per entity today; allow multiple named views with their own columns. NEEDS DECISION (how many named views).'),
+      V('ALT-446','Customizable dashboard tiles + date-range','Feature','P2','Backlog',
+        'CUSTOMIZATION: DashboardPage is 5 fixed all-time tiles identical for every role. Let users pick tiles + a date range; admin sets role defaults. NEEDS DECISION (per-user vs per-role).'),
+      V('ALT-447','Reorderable / collapsible detail-page sections','Feature','P3','Backlog',
+        'CUSTOMIZATION: detail info panels are fixed-order. Add drag-reorder + persist user_detail_section_pref. Buildable now (M).'),
+      V('ALT-448','Surface freshness fields: last-contacted / days-since-touch / next-step','Feature','P2','Backlog',
+        'UI review + UX "fast caller" gap: lists show no last-contacted/days-since-touch/next-step. Roll up from interaction log (last-contacted/days) — needs a rollup; next-step needs a field. NEEDS DECISION (compute source + next-step field shape).'),
+      V('ALT-449','WishlistPage parity (preview panel + bulk reassign) + EditableGrid save toast','Bug','P2','Done',
+        'UX review: WishlistPage lacks the row preview-panel and bulk-reassign other lists have (only Export works); EditableGrid cell saves give no success toast (silent in dense grid). Bring Wishlist to parity + add save confirmation. Buildable now.'),
+      V('ALT-451','Recently-viewed records in Cmd-K palette','Feature','P3','Done',
+        'SHIPPED 2026-06-28: useRecentlyViewed (localStorage altleads:recent:<userId>, last 8, deduped) recorded on all 5 detail pages; surfaced as a keyboard-navigable "Recently viewed" section in CommandPalette empty state. Pure FE. Addresses UX-AUDIT §5 "No recently viewed records".'),
+      V('ALT-450','Multi-project export for companies/contacts (status/owner/notes per project)','Feature','P2','Done',
+        'DECISION (raised by Ankit 2026-06-28): today the Companies export ships ONLY the currently-selected project per-project Account Status + Owner (fetchCompanyStatuses filters .eq(project_id) and selects account_status/owner_user_id only) — one project, no description/notes, no multi-select. A company lives in many projects each with its own status/owner/description/notes. OPTIONS: (1) keep selected-project-only; (2) wide = one column-set per project; (3) long = one row per company×project incl notes (recommended, best for re-import); (4) all-projects toggle. NEEDS OWNER DECISION on format before build.'),
+      V('ALT-414','Sticky table headers on all list pages','Feature','P2','Done',
+        'SHIPPED (commit a80a103, 2026-06-28). The header cells were already styled sticky (ALT-318) but never stuck because the table had no height-bounded scroll container. Gave each of the 5 list pages (Leads/Companies/Contacts/Meetings/Wishlist) an inner scroll wrapper (maxHeight calc(100vh - 320px) + overflowY auto, horizontal scroll preserved) and bumped header zIndex to 2, so the column header row stays visible while scrolling a long list. No logic/data/sort/selection change — header sticky + container scroll only. Build green. Pure FE. Not pushed.'),
+      V('ALT-393','Cmd-K command palette — quick-nav actions (jump anywhere)','Feature','P2','In Progress',
+        'Upgraded the global Cmd/Ctrl-K palette from search-only to a command bar (HubSpot/Linear pattern). Empty box now shows 10 verified quick-nav actions (Dashboard, Leads, Leads Board, Companies, Contacts, Meetings, Tasks, Wishlist, Notifications, Settings); typing filters actions by label/keyword AND blends in record search beneath — ONE unified keyboard list (one running index, arrows + Enter walk actions then records). Routes verified against App.tsx. Pairs with the new keyboard-first list nav (ALT-391). Build green. Pure FE. Not pushed.'),
+      V('ALT-392','/health build-stamp — verify which commit is live in one curl','Chore','P2','In Progress',
+        'Permanent answer to "is prod loaded with my push?". New gen-build-info.cjs (runs first in the root build script, inside Hostinger git checkout) writes build-info.json {commit, commitFull, branch, builtAt, node}; git is best-effort with env/`unknown` fallback but builtAt is always set. server.js loads it once at boot and /health now returns `build`. After any deploy: `curl https://crm.altleads.com/health` shows the exact live commit + build time. build-info.json gitignored; node --check OK. Additive/read-only; needs its own deploy to take effect. Not pushed.'),
+      V('ALT-391','Keyboard-first list navigation (j/k/Enter/x/ /Esc) — universal','Feature','P2','In Progress',
+        'The "feels fast" power-user leap every modern CRM has (Gmail/Linear/HubSpot). New reusable useListKeyboardNav hook + wired into all 5 list pages: j/k move a row cursor (with scroll-into-view + a blue left-bar focus accent), Enter opens the focused row, x toggles selection, / jumps to search, Esc clears the cursor. ONE document keydown listener per mounted list; bails on any editable target / Cmd-Ctrl-Alt combos / open preview, so Cmd-K palette + "?" help + cell-edit + typing all keep working. "?" help overlay updated to list the new keys. Build green across all 5 pages. Pure FE, zero RLS/decision coupling. Not pushed.'),
+      // ─── HungerBox first-launch domain (see docs/product/HUNGERBOX-LAUNCH.md) ───
+      V('ALT-452','DNC model + reddish/non-contactable treatment (company + site scope)','Feature','P1','In Progress',
+        'HUNGERBOX LAUNCH: Do-Not-Contact at whole-company OR company+location/site scope, set by agent (during outreach) or admin (bulk), with who/when/reason history. Effect: contacts in a DNC company+city render reddish-blur and become non-contactable (call/email/log disabled) so no one on the team can reach them. Location-aware (only the DNC city blurs unless whole company). Built behind HUNGERBOX_FEATURES flag (dark until migration applied). Writes route through gatekeeper ALT-431.'),
+      V('ALT-453','Feasibility model + reddish treatment (company + site scope)','Feature','P1','In Progress',
+        'HUNGERBOX LAUNCH: non-feasible at whole-company OR company+site scope (we cannot service them there) — same reddish/non-contactable treatment, tracked SEPARATELY from DNC (compliance vs business-fit). A contact may be blurred for either reason; show which. Behind HUNGERBOX_FEATURES.'),
+      V('ALT-454','Metro prioritisation flag + sort/filter (Indian Tier-1 cities)','Feature','P2','In Progress',
+        'HUNGERBOX LAUNCH: contacts prioritised by Indian metro cities (Delhi/NCR, Mumbai, Bengaluru, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad) vs others. Derived priority flag the team can sort + filter by for metro-first work queues. Canonical metro list in lib/hungerbox.ts.'),
+      V('ALT-455','Company-site entity + per-site pre-qualified questions + edit history','Feature','P1','In Progress',
+        'HUNGERBOX LAUNCH: a company has many sites/locations; each site holds pre-qualified answers we already have (total employees, commercial model, +) shown on company detail so agents know why to call / not call a site. Editable by users with full history (what changed, by whom, when, old to new). New company-site table + history table.'),
+      V('ALT-456','Feasible-only / metro-first work-queue filters','Feature','P2','In Progress',
+        'HUNGERBOX LAUNCH: filters on Companies/Contacts so work queues show only reachable, in-scope, feasible, metro-first targets (combine DNC + feasibility + metro priority + per-site feasibility).'),
+      V('ALT-457','Role walkthroughs + standing QC checklist','Chore','P1','In Progress',
+        'Written step-by-step happy-path per role (first login to daily job) + repeatable per-role QC checklist so PM does not hand-UAT every user after every change. docs/product/ROLE-WALKTHROUGHS.md. Starts with admin-data + agent for HungerBox launch.'),
+      // ─── Locked role capabilities 2026-06-28 (ACCESS-CONTROL-MODEL Part 9) ───
+      V('ALT-458','Agent edit scope: pre-sales questions + post-Meeting-Scheduled only; no company/contact master','Feature','P1','Backlog',
+        'LOCKED: Agent (role 3) edits ONLY the per-company/site prequalified answers (site employees, commercial model) + lead fields from Meeting-Scheduled stage onward. Agent UPDATE on company_master/contact_master is DENIED. RLS + UI gating. Pre-sales answers seeded from city/site questions. Validate on throwaway login.'),
+      V('ALT-459','QC role = Team-Lead-minus-assignment; Agent can also be QC','Feature','P1','Backlog',
+        'LOCKED: QC (role 6) can edit any record in their project (safe-edit) + approve, but CANNOT assign/reassign. Reads all. An Agent may hold QC too (acts as agent + QC-approves project leads). isApprover already includes QC; add TL-equivalent edit, withhold reassign. RLS + UI.'),
+      V('ALT-463','Sales roles: read + request-edit + feedback only; no master UPDATE (sales-owner = leads only)','Feature','P2','Backlog',
+        'LOCKED: SALES_HEAD/SALES_PERSON are sales-owner of LEADS only (distinct from CRM owner; two owners OK). They cannot edit anything in the CRM - only request an edit or give feedback. RLS denies UPDATE on master tables for sales roles; route to request/feedback path. Sales PORTAL scoping deferred (not in scope now); do not provision sales logins yet.'),
+      V('ALT-464','Prequalified-question granularity toggle (company-wise vs site-wise) — per-project admin setting','Feature','P2','Backlog',
+        'LOCKED: per-site prequalified answers can be answered company-wide OR site-wise; a toggle in admin settings, per project, picks granularity. Extends HungerBox company_site model.'),
+      V('ALT-460','Advanced per-field filters with exclude/NOT (HubSpot-style)','Feature','P1','In Progress',
+        'Per-field operators (is/is-not/contains/not-contains/any-of/none-of/known/unknown/between/date-relative) + AND-OR groups + EXCLUDE (e.g. company NOT in DNC, feasible-only, metro-only). Spec: docs/product/ADVANCED-FILTERS-SPEC.md. Maps to Supabase .in/.not/.or/.gte. Asked by Ankit 2026-06-28.'),
+      V('ALT-461','Saved views — per project, per user','Feature','P1','In Progress',
+        'Save a list view (serialized filter JSON + sort + visible columns + name) keyed per project_id + user_id. Extends data/views.ts. Decision: per-project-per-user (Ankit 2026-06-28). May need a saved_view table.'),
+      V('ALT-462','Call logs not working — fix','Bug','P1','In Progress',
+        'Ankit 2026-06-28: call logs not working. Diagnose root cause (write/display/RLS/schema-mismatch) and fix. callLogs.ts/calls.ts/components/calls + LeadDetail call tab + activityTimeline.'),
+      // ─── Tasks-module overhaul 2026-06-28 (spec: TASKS-OVERHAUL-SPEC.md) ───
+      V('ALT-465','Task Kanban view','Feature','P1','In Progress',
+        'Tasks not manageable like other modules: add a Kanban board (group by status and/or due bucket Overdue/Today/Week/Later), reusing LeadsKanbanPage pattern. Ankit 2026-06-28.'),
+      V('ALT-466','In-record activity hub (Zoho-style) — manage tasks/calls/notes inside the record','Feature','P1','In Progress',
+        'A record (lead/contact/company) manages its associated activities/cadence/calls/email/tasks/notes from inside the detail page (Zoho Open/Closed Activities + quick actions Log-Call/Add-Task/Note). Universal component across all 3 modules; reuse leadWorkspace.ts + activityTimeline.ts. Ankit 2026-06-28.'),
+      V('ALT-467','Task auto-complete on action log (call task -> LogCall popup in record -> task done)','Feature','P1','In Progress',
+        'Clicking a task opens its record + the right popup: CALL task opens LogCallModal in-record and on save auto-marks the task done + links the call; normal task opens a complete/outcome popup that closes it. Today the task never auto-finishes. Ankit 2026-06-28.'),
+      V('ALT-468','Bulk update in Task manager','Feature','P2','In Progress',
+        'MyTasksPage bulk-select + bulk update status/due/assignee/priority, reusing bulkActions.ts pattern. Ankit 2026-06-28.'),
+
+      // ── OSS-synthesis gaps: ALT-469..488 (added 2026-06-29) ──────────────────
+      V('ALT-469','Parent company / account hierarchy (self-ref FK + Subsidiaries panel)','Feature','P1','In Progress',
+        'BUILT DARK (COMPANY_HIERARCHY). parent_company_id self-ref FK + index staged on company_master (apply-company-hierarchy.cjs). CompanyHierarchyCard: parent breadcrumb (linked) + Subsidiaries list (linked) + admin/TL parent picker (self excluded, clear-parent). Mounted in CompanyDetailPage behind flag. Filter-by-parent = follow-up. CENSUS (SuiteCRM member_accounts + Vtiger parentid).'),
+      V('ALT-470','UTM / lead attribution fields (utm_source, utm_medium, utm_campaign)','Feature','P1','In Progress',
+        'BUILT DARK (LEAD_STATE_V2). utm_source/utm_medium/utm_campaign columns staged on lead_master (apply-leadstate-qualification-lost-utm.cjs); import mapping added to leads catalog (importMapping.ts); read-only chips on lead detail (QualificationCard). Filter = follow-up. CENSUS (ERPNext UTM funnel).'),
+      V('ALT-471','Qualification status field (Unqualified/In Process/Qualified) with QC audit trail','Feature','P1','In Progress',
+        'BUILT DARK (LEAD_STATE_V2). qualification_status + qualified_by(bigint) + qualified_on staged on lead_report (apply-leadstate-qualification-lost-utm.cjs, CHECK-constrained). QualificationCard: QC/Admin-editable segmented control + audit line; others read-only badge. CENSUS (ERPNext qualification_status/qualified_by/qualified_on).'),
+      V('ALT-472','Lost reason multi-select (structured lookup + junction table)','Feature','P1','In Progress',
+        'BUILT DARK (LEAD_STATE_V2). lost_reason lookup (9 seeded, admin-editable) + lead_lost_reason junction staged (keyed report_id). QualificationCard shows checklist when stage is terminal/lost (stage_ids 6/10/13/14/15); UI prompts >=1 reason (DB trigger enforcement = future). CENSUS (ERPNext mandatory lost_reasons).'),
+      V('ALT-473','Competitor tracking (lookup table + lead junction + filter/report)','Feature','P2','In Progress',
+        'BUILT DARK (LEAD_STATE_V2). competitor lookup (case-insensitive unique, grows via inline-add) + lead_competitor junction (keyed report_id) staged in apply-competitor-tracking.cjs. Competitors section in QualificationCard: selected chips + known-competitor quick-add buttons + inline new-competitor input. Filter/report = follow-up. CENSUS (ERPNext Competitor DocType + Table-MultiSelect on Opportunity).'),
+      V('ALT-474','Lead conversion flow (Lead -> Company + Contact + Deal, single atomic RPC)','Feature','P1','Backlog',
+        'Convert Lead action triggers convert_lead() Postgres function: upsert Company, upsert Contact, set lead status=Converted, optionally create Deal. Wizard UI pre-fills from lead data. Depends on ALT-386 (Deals). CENSUS (all 4 CRMs: SuiteCRM convertdefs.php, ERPNext create_prospect_and_contact(), EspoCRM convertEntityList, Vtiger ConvertLead_View). Source: reference-blueprints synthesis.'),
+      V('ALT-475','Deal-contact roles (Decision Maker / Influencer / Champion on deal_contact junction)','Feature','P2','Backlog',
+        'Add role enum column to deal_contact junction (Decision Maker/Economic Buyer/Champion/Influencer/End User/Other). Render contact-role chips on deal detail. Depends on ALT-386. CENSUS (SuiteCRM opportunities_contacts junction with contact_role; EspoCRM AccountContact.role). Source: reference-blueprints synthesis.'),
+      V('ALT-476','Stream / chatter on records (free-form post + @mention + follow)','Feature','P1','In Progress',
+        'BUILT DARK (STREAM_V1). stream_note + record_follow tables staged (apply-record-stream.cjs, polymorphic entity_type+entity_id = lead|contact|company|meeting). StreamPanel mounted on lead/contact/company detail: post note + Notify-people picker (structured @mention) + Follow toggle + author delete. Post fans out createNotification to mentioned+followers (no-op unless NOTIFICATIONS on). Inline @-autocomplete = follow-up. CENSUS (EspoCRM Stream / ERPNext Comments / Vtiger ModComments).'),
+      V('ALT-477','Recurring activity rules (RRULE: daily/weekly/N-times/until date)','Feature','P2','Backlog',
+        'rrule text column on meeting/task. Postgres function or pg_cron expands into N instances linked by recurrence_series_id. CENSUS (SuiteCRM repeat_type/interval/dow/until/count; Vtiger recurringtype). Source: reference-blueprints synthesis.'),
+      V('ALT-478','Activity reminders (email/in-app at N minutes before due)','Feature','P2','Backlog',
+        'reminder table (entity_type, entity_id, remind_at, type: email/in-app, user_id). pg_cron scans remind_at<=now() and dispatches via notify-service. UI: reminder time-picker on meeting/task edit. CENSUS (SuiteCRM reminder_time; EspoCRM reminders jsonArray; Vtiger SendReminder). Source: reference-blueprints synthesis.'),
+      V('ALT-479','Meeting attendee RSVP / acceptance status (None/Accepted/Tentative/Declined)','Feature','P2','Backlog',
+        'meeting_attendee table (meeting_id, user_id OR contact_id, acceptance_status). Display acceptance badges on meeting detail. Optional: email-based accept/decline link. CENSUS (SuiteCRM accept_status on calls_users/meetings_users; EspoCRM MeetingUser.status; Vtiger cntactivityrel). Source: reference-blueprints synthesis.'),
+      V('ALT-480','Reschedule intelligence — count + last reason on a lead (read-only, no migration)','Feature','P2','In Progress',
+        'BUILT DARK (RESCHEDULE_INSIGHT, no migration — works on existing meeting_reschedule data). RescheduleInsight banner on lead detail: "Rescheduled N times - last: <reason>", amber when >=2, computed via report_id -> meeting_schedule -> meeting_reschedule. Spots serial-stallers at a glance. Re-scoped from the original add-columns plan because the reschedule EVENTS already exist; only the rollup signal was missing. Follow-up: count badge/sort on the meetings LIST. CENSUS (SuiteCRM Calls_Reschedule).'),
+      V('ALT-481','Role-scoped picklist values (filter dropdown options by user role)','Feature','P2','Backlog',
+        'picklist_role_value table (picklist_key, value, allowed_roles[]). Form renderer filters options by current user role. CENSUS (Vtiger vtiger_role2picklist — only CRM of the four to implement this). Source: reference-blueprints synthesis.'),
+      V('ALT-482','Admin-configurable formula / computed fields (expression evaluated server-side)','Feature','P3','Backlog',
+        'Admin UI to define formula expressions (e.g. {amount}*{probability}/100) for a custom field. Evaluated via Postgres GENERATED column or Edge Function on save. Depends on ALT-387 (custom fields). CENSUS (SuiteCRM ComputeField AOW action; EspoCRM Formula language; ERPNext Server Script). Source: reference-blueprints synthesis.'),
+      V('ALT-483','Dynamic logic — conditional field show/hide/required (client-side, metadata-driven)','Feature','P3','Backlog',
+        'Metadata rules (if qualification_status==Qualified then show lost_reason). Evaluated client-side by form renderer from dynamicLogic config. Depends on ALT-387. CENSUS (EspoCRM dynamicLogic in entityDefs). Source: reference-blueprints synthesis.'),
+      V('ALT-484','First response time / SLA tracking on leads','Feature','P2','In Progress',
+        'PARTIAL — ALT-484-lite shipped: cold-lead freshness badge (LeadFreshnessInsight, dark behind FRESHNESS_INSIGHT, NO migration). Shows "Last activity N days ago" on a lead (green fresh / amber >=14d cooling / red >=30d cold) computed from lead_report.updated_date + meeting dates (report_id->meeting_schedule->meeting_master). Spots leads gone cold for daily follow-up. FULL SLA (first_contact_at auto-set, sla_target_hours per project, breach filter, per-agent avg report) still pending. CENSUS (ERPNext first_response_time).'),
+      V('ALT-485','Quick-create modal (minimal required fields, stays on current page)','Feature','P3','Backlog',
+        'Lightweight modal from list view header or Cmd-K. Shows only mandatory fields. Creates record without leaving page. CENSUS (SuiteCRM QuickCreate; ERPNext Quick Create; Vtiger QuickCreateAjax — all 4 CRMs implement this). Source: reference-blueprints synthesis.'),
+      V('ALT-486','notActualOptions — hide terminal status values from create/edit dropdowns','Feature','P3','Backlog',
+        'Mark Converted/Dead/DNC as notActualOptions: visible in existing record + filters but not selectable in create/edit status dropdown. Prevents agents accidentally terminating leads manually. CENSUS (EspoCRM notActualOptions in status enum metadata). Source: reference-blueprints synthesis.'),
+      V('ALT-487','File / document attachment storage (Supabase Storage + attachment table)','Feature','P3','Backlog',
+        'Supabase Storage bucket for CRM attachments. attachment table (entity_type, entity_id, storage_path, filename, mime_type, size, uploaded_by). File list in record detail, download via signed URL. CENSUS (SuiteCRM Documents module; EspoCRM attachmentMultiple field; Vtiger senotesrel). Source: reference-blueprints synthesis.'),
+      V('ALT-488','Multi-currency support (currency lookup + FX rates + base-currency amounts on Deals)','Feature','P3','Backlog',
+        'currency table (code, name, symbol, fx_rate_to_inr). Deal amounts stored in native + base currency. Manual or API FX rate update. Depends on ALT-386 (Deals). CENSUS (SuiteCRM amount+amount_usdollar+currency_id; ERPNext opportunity_amount+conversion_rate+base_opportunity_amount). Source: reference-blueprints synthesis.'),
+      V('ALT-489','In-app Notification Center (bell + unread count + event feed)','Feature','P1','In Progress',
+        'INTERNAL-LAUNCH UX gap (Ankit 2026-06-29): only transient toasts exist; no persistent notifications. Build app_notification table + bell/dropdown with unread count, fed on key events: assigned-to-you, reassigned, collaborator-added, task due/overdue, @mention. Rides the automation event-spine rails. Phase 2 = browser/OS web-push (service worker + permission). Reference: Odoo mail.activity/mail.message + Espo Stream notifications.'),
+      V('ALT-490','Import dedup QC — match-key + new/update/in-file-duplicate preview (HubSpot/Zoho parity)','Bug','P1','Done',
+        'SHIPPED 2026-06-29: import wizard step 2 match-key selector (default email for contact/lead, record_id for company); step 3 shows N new / M will-update (matched by KEY) / K in-file-duplicates as expandable pills via lib/importDedup (in-file grouping) + data/importDedup.fetchExistingKeys (chunked read-only .in(), safe with gateway off) + classifyRows. Additive; existing validation/skip/mapping/run unchanged.'),
+      V('ALT-491','FIRST-PARTY CRM API (crm.altleads.com/api/v1) + MCP server','Feature','P1','Backlog',
+        'REFRAMED per Ankit 2026-07-02: connectors ask for the CRM API, never Supabase. Branded versioned REST on our domain (/api/v1/leads|companies|contacts|meetings), domain objects not raw tables, per-connector API keys (admin-issued, acts-as user), writes REUSE the write-gateway (one write path, full audit), request log table. MCP server = thin client of THIS API (fast follow ~1 session). v1 MVP ~1-2 sessions, dark until mounted. Spec of record: docs/product/CRM-API.md. Gate: after assignment-RLS apply + gateway validation.'),
+      V('ALT-492','Safe view — mask sensitive contact info on records the user does NOT own','Feature','P1','In Progress',
+        'INTERNAL-LAUNCH (Ankit FLAG-1 2026-06-29): within a project all members see all records (rows), but records you do not own show a SAFE VIEW with contact info (email/phone) masked. Extends existing partial-mask + click-reveal. Ownership = lead_report.user_id / company_project_status.owner_user_id / contact_project_status.owner_user_id. Admin/TL/QC bypass. Pairs with ALT-493.'),
+      V('ALT-493','Grey/dull non-owned records in lists + detail (focus UX)','Feature','P2','In Progress',
+        'INTERNAL-LAUNCH UX (Ankit FLAG-1 2026-06-29): render records the user does not own in a dull/grey style across list + detail so reps focus on their own. Pairs with ALT-492 (safe-view masking).'),
+      V('ALT-494','Call-coaching Learning Module (closed-loop, self-improving) — PARKED','Feature','P3','On Hold',
+        'PARKED (Ankit 2026-06-30) until the calling tool is integrated + AI layer is live. Loop: generate ~5 call hooks -> analyse the same call recordings in real time -> score vs Persona/ICP -> iterate ("give again") + log every attempt+outcome every time -> train on logs -> recommend best-performing approaches for lookalike personas. Hard deps: call recording/transcript capture (calling-tool integration), AI/embeddings layer (AI-PGVECTOR-PLAN item H), an outcome signal, and a call_coaching_log spine. Detail in AI-PGVECTOR-PLAN.md Parking Lot.'),
+      V('ALT-495','Push notifications (browser Web Push - user is ALERTED, not just silent in-app bell)','Feature','P1','Backlog',
+        'Ankit 2026-07-02: in-app bell is silent; users must SEE alerts. Web Push: service worker + VAPID keys + push_subscription table + notify-service sender endpoint. Dark behind PUSH_NOTIFICATIONS. Complements ALT-489.'),
+      V('ALT-496','email_log - durable record of every outbound email','Feature','P1','Done',
+        'BUILT (tolerant writer live, table staged in apply-comms-capture.cjs). notify-service logEmail() records every sendMail success+failure (to, type, subject, status, error, message id, lead/report/meeting ids) at all 3 send paths (task_reminder, daily_digest, notify events). No-op warn until migration applies.'),
+      V('ALT-497','Export history - every export logged + file stored 30 days + re-downloadable','Feature','P2','Backlog',
+        'Ankit 2026-07-02: record who/what/when/rows per export; keep the exported file 30 days; re-download from a history view. Interpretation (confirm): exports do not mutate data so undo/redo = history + re-download. export_log + Supabase Storage bucket. Dark behind EXPORT_HISTORY.'),
+      V('ALT-498','Reassignment journal - durable old-owner to new-owner log on every lead reassign','Feature','P1','Done',
+        'BUILT (tolerant writer live in writeLeadOwner - the single choke point for single+bulk lead reassigns; captures old owner(s) pre-update; table staged in apply-comms-capture.cjs). Sources tagged single/bulk/departing.'),
+      V('ALT-499','Import creates lead_report + assignment (assigned_to column)','Bug','P0','Done',
+        'LAUNCH-CRITICAL fresh-import fix, BUILT: importEngine now seeds a lead_report (stage 1 Warm, report_id DB default) per imported lead with user_id resolved from assigned_to (numeric/email/full-name, bulk per chunk); unresolved imports UNASSIGNED with row warning; undo removes the report. importMapping leads catalog got assigned_to. Validate on crm-test at gateway enable. Prereq: apply-comms-capture.cjs (import_batch/import_row missing in prod).'),
+      V('ALT-500','Import wizard field keys did not match DB columns - most mapped data silently dropped','Bug','P0','Done',
+        'FOUND BY VERIFICATION 2026-07-02: ENTITY_CATALOGS used friendly keys (name/phone/website) but importEngine whitelists REAL columns (company_name/mobile_no/company_web_url) with NO translation layer - company imports would skip ALL rows (required company_name never arrived); contacts lost phone/company-link; leads lost name/notes/stage. FIXED: catalog keys are now real DB columns; company+project NAME columns bulk-resolve to company_id/project_id server-side; NEW leads get wishlist-recipe enrichment (generated ALT#### lead_number, client_assoc derived from project precedent, source=Datalist, address placeholder); no-match-key rows now INSERT (fresh-import semantics) instead of skipping; dedup fieldKeys aligned. Validate end-to-end on crm-test at gateway enable.'),
+      V('ALT-501','Status/stage-change journal - every lead_report state change recorded old->new','Feature','P1','Backlog',
+        'Capture gap #6 from the 2026-07-02 audit: lead_report.stage_id/report_status are overwritten IN PLACE; the interaction history mirror is best-effort (swallowed on failure) and the vendor lead_status_history table is write-dead (last write = migration). Add a status_change_log (report_id, lead_id, field, old_value, new_value, actor, ts) written durably at the updateLeadStage/saveReport choke points (tolerant until migration applies - same pattern as reassignment_log ALT-498). Feeds loss analysis + agent-performance reporting.'),
+      V('ALT-502','Convert Ankit answered rulings (OPEN-QUESTIONS + AMBIGUOUS-DECISIONS) into tickets + builds','Task','P0','Done',
+        'AUDIT 2026-07-02: both docs hold detailed OWNER RULINGS never converted to backlog items: per-project access modes incl. reveal-until-refresh + owner-set-to-self (A1/A4), downline-scoped reassign boundaries + SH stage limits (A2), downline+QC approvals flow with mandatory rejection comments + notifications (A5/B1), Mine-default for agents (B2), ONE call logger + Calls-as-module like Task manager + admin-editable dispositions (C1), notification recipient matrix incl. drop-vs-cancel semantics (Q5), DB-level masking (Q4, important-not-urgent). CONVERTED 2026-07-03 -> ALT-513 (client portal roles), ALT-514 (notification matrix), ALT-515 (DB-level masking), ALT-516 (safe-edit whitelist), ALT-517 (SH-to-SP-only + TL remark), ALT-518 (lite viewers). Engineering rulings D1/D3/D5/E1-E2/F1-F6 already recorded in AMBIGUOUS-DECISIONS. OPEN-QUESTIONS.md header tagged converted.'),
+      V('ALT-503','Email sending Phase 1: domain-authenticated per-user sending (DECIDED E, ADR-35)','Feature','P1','In Progress',
+        'Ankit 2026-07-03 chose E: NOW = domain auth (SPF/DKIM/DMARC), users send From = their own address, zero per-user setup (HubSpot/Zoho/Odoo model); LATER = connected inboxes (ALT-507). All sends -> email_log + record timeline. Compose UI on contact/lead detail. Works with per-project domains (ALT-506). Visual: decision-board.html entry 2 (DECIDED).'),
+      V('ALT-506','Per-project sending domains: verified-domain registry + project setting + auto-alias identity','Feature','P1','In Progress',
+        'Ankit 2026-07-03: each project/client gets its OWN sending domain. Build: (1) sending_domain registry in Settings - add domain, show its 3 DNS records, verify DNS, sending BLOCKED until Verified; (2) project setting picks ONE verified domain (fallback amplior.com), saved per project; (3) From = user local-part auto-aliased on the project domain, display name = full name, admin per-alias override. Benchmark: HubSpot unlimited authenticated domains; Odoo from_filter per domain. Pending micro-pick 3a (auto-alias, recommended) vs 3b (manual per-user). Visual: decision-board.html entry 3. ADR-35.'),
+      V('ALT-509','Compose v2: user email templates + attachments + rich text','Feature','P1','In Progress',
+        'Ankit 2026-07-03 (testing feedback): composer v1 is bare (to/subject/plain text). v2: (1) reusable EMAIL TEMPLATES with merge fields e.g. {{first_name}} {{company}} - admin-managed + personal; (2) file ATTACHMENTS (size-capped, stored + logged); (3) simple rich-text (bold/links/lists). Distinct from system templates (ALT-175). Backend send endpoint already accepts html - this is mostly UI + template store. BUILT 2026-07-03: email_template table (global admin + personal scopes), GET/POST /api/email/templates, picker in composer w/ merge fields {{first_name}}/{{full_name}}/{{company}}/{{my_name}}, Save-as-template. ATTACHMENTS BUILT 2026-07-03 (5 files / 7MB total, base64 via 12mb route-scoped body cap, names+sizes audited in email_log.attachments; bytes sent not stored). REMAINING: rich text only.'),
+      V('ALT-510','Emails visible on record timeline + admin Email Log viewer','Feature','P1','Done',
+        'Ankit 2026-07-03: sent an email, "activity not registered". The send WAS logged in email_log but NO UI shows it. Build: (1) Emails section/entries in the record activity timeline (lead/contact/company) reading email_log; (2) Admin > Email Log screen (filter by user/status/date, see failures + error text). Table + data already exist. BUILT 2026-07-03: email_log +contact_id/company_id, GET /api/email/log (record-scoped for all users, full log admin-only), EmailActivityPanel on Lead/Contact/Company detail (auto-refresh after send), Admin > Email Log tab (search + status filter, failures show error).'),
+      V('ALT-511','Sequences / cadence engine (multi-step outreach automation)','Feature','P2','Backlog',
+        'Ankit 2026-07-03: wants cadence/automation/workflow on email. Engine: enroll contact/lead into a sequence (Day 0 email A, Day 3 email B, stop-on-reply), per-step templates, throttles, working-hours windows, auto-stop on reply/bounce/unsubscribe. Depends: ALT-509 templates + ALT-507 reply-sync (stop-on-reply needs inbound). Post-beta build; benchmark = HubSpot Sequences / Apollo.'),
+      V('ALT-519','Connected mailboxes: GOOGLE (Internal Workspace app + Gmail API send)','Feature','P1','Backlog',
+        'Board entry 6 rung 1, Google side. INTERNAL app on Ankit Workspace = ZERO Google review. Build: Google Cloud project (needs Ankit admin, ~15 min), OAuth consent (internal), scopes gmail.send (+ gmail.readonly for ALT-521), connect flow in Settings, token store = user_mailbox_connection (RLS-locked, server-only), send via Gmail API in the ladder -> relay mailbox. CONSEQUENCE-IF-SKIPPED: sends stay on relay/system mailbox - no Sent-folder copy, weaker per-user reputation isolation.'),
+      V('ALT-520','Connected mailboxes: MICROSOFT (single-tenant Entra app + Graph sendMail)','Feature','P1','Backlog',
+        'Board entry 6 rung 1, Microsoft side - Ankit: users send from project domains via O365 Outlook. Single-tenant Entra app + one-time admin consent = NO Microsoft store verification. Scopes Mail.Send (+ Mail.Read for ALT-521). Same connect flow/token store/ladder slot as ALT-519. Project-domain -> provider mapping needed from Ankit (google vs microsoft per domain).'),
+      V('ALT-521','Reply sync: inbound replies land on the record timeline (2-way)','Feature','P2','Backlog',
+        'Depends ALT-519/520. Gmail: push notifications via Pub/Sub watch; Microsoft: Graph change notifications (webhooks). Match replies by Message-ID/In-Reply-To (stored in email_log.message_id). Unlocks stop-on-reply for cadences (ALT-511). CONSEQUENCE-IF-SKIPPED: users answer replies in Outlook/Gmail and the CRM record stays blind - capture-everything motive lost for inbound.'),
+      V('ALT-522','Multi-tenancy T2 DECIDED (ADR-36): Zoho/HubSpot-style tenant_id + RLS everywhere - phased plan','Epic','P1','Backlog',
+        'Ankit 2026-07-06: onboard customer companies as separate total accounts - CRM as their own, blank data start, our data never visible. Options: T1 instance-per-customer via Dokploy + separate Supabase project (sellable immediately, physical isolation, runbook exists in docs/deploy-platform); T2 true multi-tenant (tenant_id + RLS on ~65 tables - big retrofit, one missed filter = cross-customer breach); T3 hybrid = T1 now + tenant-aware new features + planned T2 at customer-count trigger. DECIDED T2 (Ankit 2026-07-06). Phases: P0 tenant registry table + rule every NEW table carries tenant_id; P1 staged retrofit of existing ~65 tables (tenant_id backfill=Amplior tenant, RLS policy per table, throwaway-login isolation TEST per table - one missed filter = cross-customer breach); P2 tenant provisioning + invite flow (blank org + org admin seed); P3 tenant settings/branding/billing hooks. Sequenced after internal beta stabilizes. T1 per-instance = emergency fallback for an early sale. P0 DONE 2026-07-06: tenant registry live in prod (tenant 1 = Amplior; additive + inert - no existing table/policy touched), new-tables-born-with-tenant_id rule in ONBOARDING.'),
+      V('ALT-513','Client-side portal role model: Company Admin / Sales Head / Sales Person (Q2 ruling)','Feature','P1','Backlog',
+        'From Ankit Q2 ruling (OPEN-QUESTIONS): sales team does NOT outreach - they attend meetings we schedule. 3 client roles: COMPANY ADMIN (admin of own company; add SH/SP subject to CRM super-admin APPROVAL; edit all view all but default view-only), SALES HEAD (assign/reassign/take meetings, view all, edit own, inherits ALL SP powers), SALES PERSON (own meetings only, request cancel/reschedule, give feedback - locked after submit, SH can edit on behalf). Per-project role edit/view matrix decided by CRM super admin in project/client settings. 3 dashboards: Agent / Sales / TL. Feeds CLIENT-PORTAL-HANDOFF.'),
+      V('ALT-514','Notification recipient matrix engine (Q5 ruling)','Feature','P1','Backlog',
+        'Ankit Q5 ruling: recipients keyed on ASSIGNED agent (lead_report.user_id) never created_by. Matrix: assignment -> assignee; meeting schedule -> agent + SP (+ SH too when SP directly assigned); sales team receives ONLY meeting schedule/feedback/reschedule/cancel; TL receives all downline+own meeting schedule / successful (feedback by SP or agent-marked w/ mandatory comment) / cancel-vs-drop (cancel = prospect cancelled, drop = SP-SH dropped) / reschedule; SP-SH cancel-reschedule REQUESTS -> TL + agent of that meeting who then confirm with prospect and update. Task notifications + daily summary personal toggle (built).'),
+      V('ALT-515','DB-level contact masking (Q4 ruling - important not urgent)','Task','P2','Backlog',
+        'Ankit Q4: "do not let user fetch data - anyone can hack this with simple knowledge - make it from DB level". Move email/phone masking out of UI into the DB: masked views / column grants driven by project-setting reveal permission (owner + all uplines; sales screen unhidden by default but SP cannot see other SPs, uplines see all). Reveal-until-tab-refresh stays UI. Mask patterns: ab****@domain.com / 999****999.'),
+      V('ALT-516','Agent safe-edit field whitelist + unassigned-records edit rule (Q3 ruling)','Feature','P1','Backlog',
+        'Ankit Q3: agents edit only SAFE fields (company status, contact status, description, comments + lead ops); client sales stream edits nothing except feedback/reschedule/cancel requests; UNASSIGNED records editable only by TL/admin (safe default); once assigned/reassigned the agent can edit; every change captured with actor + role (needs field history ALT-407). Partially overlaps write-gateway allow-list - reconcile there.'),
+      V('ALT-517','Sales-Head assigns to SP only + TL reassignment remark (Q1 ruling)','Feature','P2','Backlog',
+        'Ankit Q1: SH assigns meetings/leads to Sales PERSONS only (never agents); TL/project-manager can still change/reassign SP with an OPTIONAL remark why (remark field for TL only, not SH). Wishlist capture stays a deliberate separate flow.'),
+      V('ALT-518','Lite/viewer users for senior stakeholders (review-only)','Feature','P3','Backlog',
+        'Ankit minor ruling: create lite/team users like Zoho/HubSpot - view-only access for senior leaders/stakeholders to review, no edits.'),
+      V('ALT-512','Per-user sending guardrails (reputation isolation: throttle + auto-pause on bounces/complaints)','Feature','P2','In Progress',
+        'Ankit 2026-07-03 asked if each user could send from their own IP so one bad sender does not sink others - impossible (residential IPs are PBL-blocklisted, port 25 blocked, no PTR; botnet pattern). Correct isolation: (1) per-user daily send caps; (2) track per-user bounce/complaint rate from relay webhooks; (3) AUTO-PAUSE a user whose rate crosses threshold (>2 percent bounce / >0.1 percent complaint) + notify admin; (4) subdomain-per-project already isolates domain reputation (ALT-506); (5) Phase-2 connected inboxes give true per-user reputation (their own Gmail/Outlook account). Needs relay webhooks. SLICE 1 BUILT 2026-07-03: per-user daily cap on /api/email/send (EMAIL_USER_DAILY_CAP, default 200/day, counted from email_log since local midnight, 429 with plain-language message). Remaining: bounce/complaint webhooks + auto-pause + admin notify.'),
+      V('ALT-508','FIX: infinite spinner on first load (auth-callback deadlock)','Bug','P0','Done',
+        'Ankit 2026-07-03: cold load from the website spins forever; refresh fixes it. Root cause: awaited supabase.from() queries INSIDE onAuthStateChange callback - supabase-js holds its auth lock while dispatching, the query needs the lock to attach the JWT = deadlock on cold loads (TOKEN_REFRESHED path). Fix: callback made synchronous, profile/roles hydration deferred via setTimeout(0) (official supabase guidance) in AuthContext + usePortalSession; plus 10s watchdog so bootstrap failure lands on login screen, never a stuck spinner.'),
+            V('ALT-507','Email sending Phase 2: connected inboxes — SPLIT into ALT-519 (Google) + ALT-520 (Microsoft) + ALT-521 (reply sync)','Feature','P2','Done',
+        'Phase 2 of ADR-35 (after beta): users optionally connect their Gmail via OAuth so CRM-sent mail also lands in their real Sent folder and incoming replies sync onto the record timeline (2-way). Full HubSpot parity.'),
+      V('ALT-504','Import template download per entity (exact headers + required hints)','Feature','P2','Done',
+        'Ankit 2026-07-03: avoid header-mismatch issues - Download template button in Import step 1 generates <entity>-import-template.csv with the exact field labels as headers (autoMap matches labels) + row 2 marking REQUIRED/optional(validation). Shipped same day.'),
+      V('ALT-505','Company import: project + assigned-owner columns (seed company_project_status at import)','Feature','P1','Done',
+        'ADR-32: beta imports COMPANIES. Company import currently creates company_master only - no project bucket / owner. Mirror ALT-499 for companies: optional project + assigned_to mapped columns seed company_project_status (project_id, owner_user_id) so admin can bulk-assign at import time instead of one-by-one in-app. In-app assignment (reassignCompany) already works as fallback. BUILT 2026-07-03: wizard catalog + Project/Assigned To columns (template button includes them), engine resolves project by name + assignee by id/email/name per chunk, inserts seed company_project_status (owner_user_id nullable, warn on unmatched assignee), undo deletes the seeded row (undo_payload.cps_id).'),
+    ];
+  })()),
+
+  ...uxAuditTickets(),
+];
+
+// ─── MERGE LOGIC ─────────────────────────────────────────────────────────────
+function mergeTickets(existingRows, newTickets) {
+  // Build index from existing rows keyed by ID
+  const existingMap = {};
+  for (const row of existingRows) {
+    if (row.id) existingMap[row.id] = row;
+  }
+
+  const merged = [];
+  for (const t of newTickets) {
+    if (existingMap[t.id]) {
+      const ex = existingMap[t.id];
+      // The GENERATOR (this tracked file) is the source of truth for Status + Notes
+      // — it drives them via the PROGRESS map and per-ticket fields. The xlsx is
+      // gitignored and regenerated, so we only carry the original Created date over.
+      // Exception: if the generator left a ticket at the default 'Planned' but the
+      // existing sheet has a more-advanced status, keep the advanced one (so a manual
+      // bump in Excel isn't silently reverted).
+      const generatorIsAuthoritative = t.status && t.status !== 'Planned';
+      merged.push({
+        ...t,
+        created: ex.created || t.created,
+        status: generatorIsAuthoritative ? t.status : (ex.status || t.status),
+        notes: generatorIsAuthoritative ? t.notes : (ex.notes !== undefined ? ex.notes : t.notes),
+        finished: generatorIsAuthoritative ? t.finished : (ex.finished || t.finished),
+        updated: TODAY,
+      });
+    } else {
+      merged.push(t);
+    }
+  }
+  return merged;
+}
+
+// ─── COLUMN HELPERS ──────────────────────────────────────────────────────────
+const COL_HEADERS = [
+  'ID', 'Title', 'Type', 'Module', 'Wave/Epic', 'Priority', 'Status',
+  'Created', 'Last Updated', 'Finished', 'Owner', 'Notes'
+];
+
+const COL_WIDTHS = [12, 62, 12, 18, 22, 10, 14, 14, 14, 14, 14, 50];
+
+function dateCell(dt) {
+  // Plain ISO text (YYYY-MM-DD): displays exactly, sorts correctly, no Excel serial/timezone bugs.
+  return { v: dt || '', t: 's' };
+}
+
+function ticketToRow(t) {
+  return [
+    t.id, t.title, t.type, t.module, t.wave,
+    t.priority, t.status,
+    dateCell(t.created), dateCell(t.updated), dateCell(t.finished || null),
+    t.owner, t.notes || ''
+  ];
+}
+
+// ─── BUILD SHEETS ────────────────────────────────────────────────────────────
+function buildBacklogSheet(tickets) {
+  const ws = {};
+  const R0 = 0; // row 0 = header
+
+  // Header row
+  COL_HEADERS.forEach((h, c) => {
+    const cellRef = XLSX.utils.encode_cell({ r: R0, c });
+    ws[cellRef] = {
+      v: h, t: 's',
+      s: { font: { bold: true }, fill: { fgColor: { rgb: '1A7EE8' } }, fontColor: { rgb: 'FFFFFF' } }
+    };
+  });
+
+  // Data rows
+  tickets.forEach((t, ri) => {
+    const row = ticketToRow(t);
+    row.forEach((cell, ci) => {
+      const cellRef = XLSX.utils.encode_cell({ r: ri + 1, c: ci });
+      ws[cellRef] = typeof cell === 'object' ? cell : { v: cell, t: 's' };
+    });
+  });
+
+  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: tickets.length, c: COL_HEADERS.length - 1 } });
+  ws['!cols'] = COL_WIDTHS.map(w => ({ wch: w }));
+  // Freeze header row (row 1) using SheetJS sheetViews
+  ws['!sheetViews'] = [{ state: 'frozen', ySplit: 1, xSplit: 0, topLeftCell: 'A2', activeCell: 'A2', sqref: 'A2' }];
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: tickets.length, c: COL_HEADERS.length - 1 } }) };
+
+  return ws;
+}
+
+function buildRoadmapSheet() {
+  // Discovery/roadmap backlog (the 135 tickets from the platform-discovery + data-ops
+  // audit workflows) — kept in the tracker per Ankit's "all backlogs in the tracker, not MD".
+  // Source list regenerated from the workflow outputs into scripts/discovery-backlog.json.
+  const fs = require('fs');
+  const path = require('path');
+  let rows = [];
+  try {
+    rows = JSON.parse(fs.readFileSync(path.join(__dirname, 'discovery-backlog.json'), 'utf8'));
+  } catch (e) {
+    console.warn('  (Roadmap sheet: discovery-backlog.json not found — skipping rows)');
+  }
+  const header = ['Ref', 'Title', 'Domain / Persona', 'Severity', 'Phase', 'North-star', 'Depends on', 'Source'];
+  const aoa = [
+    ['ROADMAP / DISCOVERY BACKLOG — from the 36-agent platform discovery + 43-agent data-ops audit (2026-06-27). Full detail + architecture in docs/product/PLATFORM-DISCOVERY.md + DATA-OPS-AUDIT.md. Phases: foundation -> daily-launch -> platform -> intelligence.'],
+    [''],
+    header,
+    ...rows.map((r) => [r.ref, r.title, r.domain, r.severity, r.phase, r.northStar, r.dependsOn, r.source]),
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 8 }, { wch: 66 }, { wch: 16 }, { wch: 10 }, { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 18 }];
+  ws['!sheetViews'] = [{ state: 'frozen', ySplit: 3, xSplit: 0, topLeftCell: 'A4', activeCell: 'A4', sqref: 'A4' }];
+  if (rows.length) {
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 2, c: 0 }, e: { r: 2 + rows.length, c: header.length - 1 } }) };
+  }
+  return ws;
+}
+
+function buildLegendSheet() {
+  const rows = [
+    ['HOW TO USE'],
+    ['This tracker is kept up to date by re-running: cd new-code/web && node scripts/gen-backlog-tracker.cjs'],
+    ['Merge-by-ID preserves Created dates and manually-edited Notes/Status. Append new tickets in the script.'],
+    [''],
+    ['STATUS', 'Meaning'],
+    ['Done', 'Built and verified (per REBUILD_LOG)'],
+    ['In Progress', 'Actively being worked right now'],
+    ['Planned', 'Designed and scoped, not yet started'],
+    ['Blocked', 'Waiting on an external dependency or decision'],
+    [''],
+    ['PRIORITY', 'Meaning'],
+    ['P0', 'Must-have to go live. Blocks launch.'],
+    ['P1', 'Important. Needed for a complete, trustworthy product (before cutover).'],
+    ['P2', 'Should-have. Can land shortly after launch.'],
+    ['P3', 'Nice-to-have / later. Won\'t block anything.'],
+    [''],
+    ['TYPE', 'Meaning'],
+    ['Feature', 'New user-facing functionality'],
+    ['Bug', 'Fix for broken behaviour'],
+    ['Task', 'Internal work item (migration, config, decision)'],
+    ['Chore', 'Cleanup / housekeeping with no new user-visible change'],
+    ['Security', 'Access control, hardening, or vulnerability fix'],
+    ['Docs', 'Documentation, spec, or process artifact'],
+    [''],
+    ['MODULE', 'Part of the system'],
+    ['Deploy/Infra', 'Hosting, CI/CD, repo, build pipeline'],
+    ['Notifications', 'Email + in-app notification service'],
+    ['Contacts', 'Contact directory + call-disposition log'],
+    ['Companies', 'Company/target-account directory'],
+    ['Leads', 'Lead pipeline (list, workspace, approval)'],
+    ['Meetings', 'Meeting scheduling and tracking'],
+    ['Wishlist', 'Prospect wishlist + convert-to-lead'],
+    ['Admin', 'Users, roles, dropdowns, reference data'],
+    ['Security', 'RLS, IDOR, auth hardening'],
+    ['AI', 'pgvector / semantic search (future phase)'],
+    ['Docs', 'Specs, PRDs, user stories, logs'],
+    ['Data', 'Database migration, schema, seeding'],
+    [''],
+    ['OWNER', 'Meaning'],
+    ['Claude', 'Orchestrator / main session built this'],
+    ['Ankit', 'Product Manager — decision / action needed (primary)'],
+    ['Mohit', 'CEO — business-level escalation only'],
+    ['Sub-agent', 'Delegated to a specialist sub-agent'],
+  ];
+
+  const ws = {};
+  rows.forEach((row, ri) => {
+    row.forEach((cell, ci) => {
+      const ref = XLSX.utils.encode_cell({ r: ri, c: ci });
+      ws[ref] = { v: cell, t: 's' };
+    });
+  });
+  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length - 1, c: 1 } });
+  ws['!cols'] = [{ wch: 20 }, { wch: 80 }];
+  return ws;
+}
+
+function buildSummarySheet(tickets) {
+  const statuses = ['Done', 'In Progress', 'Planned', 'Blocked'];
+  const modules = ['Deploy/Infra', 'Notifications', 'Contacts', 'Companies', 'Leads', 'Meetings', 'Wishlist', 'Admin', 'Security', 'AI', 'Docs', 'Data'];
+
+  // Count by status
+  const byStatus = {};
+  statuses.forEach(s => byStatus[s] = 0);
+  tickets.forEach(t => { if (byStatus[t.status] !== undefined) byStatus[t.status]++; });
+
+  // Count by module
+  const byModule = {};
+  modules.forEach(m => byModule[m] = 0);
+  tickets.forEach(t => { if (byModule[t.module] !== undefined) byModule[t.module]++; });
+
+  const rows = [
+    ['AltLeads CRM — Backlog Summary', '', `Generated ${TODAY}`],
+    ['', '', ''],
+    ['Total tickets', tickets.length, ''],
+    ['', '', ''],
+    ['BY STATUS', 'Count', ''],
+    ...statuses.map(s => [s, byStatus[s], '']),
+    ['', '', ''],
+    ['BY MODULE', 'Count', ''],
+    ...modules.map(m => [m, byModule[m], '']),
+  ];
+
+  const ws = {};
+  rows.forEach((row, ri) => {
+    row.forEach((cell, ci) => {
+      const ref = XLSX.utils.encode_cell({ r: ri, c: ci });
+      ws[ref] = { v: cell, t: typeof cell === 'number' ? 'n' : 's' };
+    });
+  });
+  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length - 1, c: 2 } });
+  ws['!cols'] = [{ wch: 20 }, { wch: 10 }, { wch: 30 }];
+  return ws;
+}
+
+// ─── MAIN ────────────────────────────────────────────────────────────────────
+function main() {
+  let finalTickets = TICKETS;
+
+  // Merge with existing file if present
+  if (fs.existsSync(OUT_PATH)) {
+    console.log(`Found existing file at ${OUT_PATH} — merging by ID…`);
+    try {
+      const existing = XLSX.readFile(OUT_PATH, { cellDates: true });
+      const backlogSheet = existing.Sheets['Backlog'];
+      if (backlogSheet) {
+        const existingRows = XLSX.utils.sheet_to_json(backlogSheet, { header: 1, defval: '', raw: false });
+        // Map header positions
+        const headers = existingRows[0];
+        const idIdx = headers.indexOf('ID');
+        const createdIdx = headers.indexOf('Created');
+        const notesIdx = headers.indexOf('Notes');
+        const statusIdx = headers.indexOf('Status');
+
+        const parsedExisting = existingRows.slice(1).map(row => {
+          let created = null;
+          const rawCreated = row[createdIdx];
+          // Dates are plain YYYY-MM-DD text now; keep a valid one as-is (2020s+).
+          if (rawCreated && typeof rawCreated === 'string' && /^20[2-9]\d-\d{2}-\d{2}$/.test(rawCreated.trim())) {
+            created = rawCreated.trim();
+          }
+          return {
+            id: row[idIdx],
+            created,
+            notes: row[notesIdx],
+            status: row[statusIdx],
+          };
+        });
+        finalTickets = mergeTickets(parsedExisting, TICKETS);
+      }
+    } catch (e) {
+      console.warn('Could not read existing file (will create fresh):', e.message);
+    }
+  } else {
+    console.log('No existing file found — creating fresh.');
+  }
+
+  // Build workbook
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildBacklogSheet(finalTickets), 'Backlog');
+  XLSX.utils.book_append_sheet(wb, buildLegendSheet(), 'Legend');
+  XLSX.utils.book_append_sheet(wb, buildSummarySheet(finalTickets), 'Summary');
+  XLSX.utils.book_append_sheet(wb, buildRoadmapSheet(), 'Roadmap');
+
+  // Write file (cellDates:true ensures Date objects write as real date cells, not serial numbers)
+  XLSX.writeFile(wb, OUT_PATH, { cellDates: true });
+  console.log('\n✓ Workbook written to:', OUT_PATH);
+  console.log('  Total tickets:', finalTickets.length);
+
+  // Verify by re-reading
+  const check = XLSX.readFile(OUT_PATH);
+  const sheets = check.SheetNames;
+  console.log('  Sheets:', sheets.join(', '));
+
+  const backlog = check.Sheets['Backlog'];
+  const backlogData = XLSX.utils.sheet_to_json(backlog, { header: 1 });
+  console.log('  Backlog rows (incl. header):', backlogData.length);
+
+  // Status breakdown
+  const byStatus = {};
+  backlogData.slice(1).forEach(row => {
+    const s = row[6] || 'Unknown';
+    byStatus[s] = (byStatus[s] || 0) + 1;
+  });
+  console.log('\n  Tickets by Status:');
+  Object.entries(byStatus).forEach(([s, n]) => console.log(`    ${s}: ${n}`));
+}
+
+main();

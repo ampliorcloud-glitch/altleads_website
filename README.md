@@ -1,16 +1,29 @@
-# React + Vite
+# AltLeads Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+AltLeads is a modern, high-performance web platform built for outbound execution. It features a premium, responsive dark/light mode UI with an interactive 3D Torus model using `@react-three/fiber`, smooth scrolling animations with `gsap`, and is built on top of Next.js 16 and Tailwind CSS v4.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This repository holds multiple iterations of the AltLeads frontend.
 
-## React Compiler
+- `/altleads_website-main`: The production-ready Next.js 16 application. This directory contains the fully functional, updated website with proper dark/light mode configuration, optimized layouts, and the interactive 3D hero scene.
+- `/src/components`: This directory contains older legacy React/Vite components from previous iterations of the website (before the migration to Next.js). They are preserved here for reference but are no longer actively used in the production build.
+- `altleads-demo.html`: A static, single-file compiled demo of the older Vite application.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Running the Next.js App
 
-## Expanding the Oxlint configuration
+To start the modern Next.js application:
+```bash
+cd altleads_website-main
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Then visit `http://localhost:3000`.
+
+## Tech Stack
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS v4
+- Framer Motion & GSAP for animations
+- React Three Fiber & Drei for 3D elements

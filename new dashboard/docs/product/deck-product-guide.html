@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AltLeads CRM — Product Guide</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --soft:#f1f5f9;
+    --brand:#1A7EE8; --brand-dk:#0b1f54; --brand2:#0ea5e9;
+    --red:#dc2626; --amber:#d97706; --green:#16a34a; --purple:#7c3aed; --bg:#ffffff;
+  }
+  body { font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); }
+  .slide{ width:1280px; height:720px; padding:50px 64px; page-break-after:always; position:relative;
+          background:var(--bg); display:flex; flex-direction:column; overflow:hidden; }
+  .slide:last-child{ page-break-after:auto; }
+  .kicker{ font-size:13px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--brand); }
+  h2.title{ font-size:34px; font-weight:800; margin:6px 0 4px; letter-spacing:-.01em; }
+  .lead{ font-size:16px; color:var(--muted); margin-bottom:20px; max-width:1000px; line-height:1.5; }
+  .footer{ position:absolute; left:64px; right:64px; bottom:22px; display:flex; justify-content:space-between;
+           font-size:11.5px; color:var(--muted); border-top:1px solid var(--line); padding-top:9px; }
+  .pageno{ font-variant-numeric:tabular-nums; }
+  .brandmark{ position:absolute; top:26px; right:64px; font-size:18px; font-weight:800; letter-spacing:-.02em; color:var(--brand-dk); z-index:5; }
+  .brandmark span{ color:var(--brand); }
+  .cover .brandmark{ color:#fff; } .cover .brandmark span{ color:#bfe0ff; }
+
+  .cover{ justify-content:center; background:linear-gradient(135deg,#0b1f54 0%,#1A7EE8 58%,#0ea5e9 100%); color:#fff; }
+  .cover .kicker{ color:#cfe0ff; }
+  .cover h1{ font-size:58px; line-height:1.05; font-weight:800; margin:16px 0 16px; max-width:1000px; letter-spacing:-.02em; }
+  .cover .sub{ font-size:23px; color:#e6f0ff; max-width:880px; line-height:1.4; }
+  .pill{ display:inline-block; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3);
+         padding:7px 16px; border-radius:999px; font-size:14px; font-weight:600; margin-top:26px; }
+  .cover .meta{ margin-top:34px; font-size:15px; color:#bfdbfe; display:flex; gap:30px; } .cover .meta b{ color:#fff; }
+
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; flex:1; align-content:start; }
+  .three{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; flex:1; align-content:start; }
+  .panel{ border:1px solid var(--line); border-radius:12px; padding:16px 20px; background:#fff; }
+  .panel.b{ border-left:5px solid var(--brand); } .panel.g{ border-left:5px solid var(--green); }
+  .panel.a{ border-left:5px solid var(--amber); } .panel.p{ border-left:5px solid var(--purple); }
+  .panel h3{ font-size:16px; font-weight:700; margin-bottom:9px; }
+  .panel ul{ padding-left:18px; } .panel li{ font-size:14.5px; line-height:1.5; margin:5px 0; }
+  .panel p{ font-size:14.5px; line-height:1.5; }
+
+  .quote{ border-left:5px solid var(--brand); background:var(--soft); padding:16px 22px; border-radius:0 10px 10px 0;
+          font-size:19px; font-weight:600; line-height:1.45; margin:8px 0 18px; }
+
+  table.t{ width:100%; border-collapse:collapse; font-size:15px; }
+  table.t th,table.t td{ border-bottom:1px solid var(--line); padding:11px 14px; text-align:left; vertical-align:top; }
+  table.t thead th{ background:#eef4ff; font-weight:700; font-size:13px; color:#334155; text-transform:uppercase; letter-spacing:.04em; }
+  table.t td b{ color:var(--brand-dk); }
+
+  /* Journey steps */
+  .journey{ display:flex; flex-direction:column; gap:10px; flex:1; }
+  .jr{ display:flex; gap:14px; align-items:flex-start; }
+  .jr .n{ flex:0 0 30px; width:30px; height:30px; border-radius:999px; background:var(--brand); color:#fff;
+          font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .jr .c h4{ font-size:16px; font-weight:700; } .jr .c p{ font-size:14px; color:var(--muted); line-height:1.45; }
+
+  .fgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:13px; flex:1; align-content:start; }
+  .fc{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fff; }
+  .fc .ico{ font-size:20px; } .fc h4{ font-size:15px; font-weight:700; margin:6px 0 5px; }
+  .fc p{ font-size:13px; color:var(--muted); line-height:1.45; }
+  .tag{ display:inline-block; font-size:10.5px; font-weight:700; padding:2px 9px; border-radius:999px; margin-left:6px; }
+  .tag.soon{ background:#dbeafe; color:#1e40ab; } .tag.next{ background:#ede9fe; color:#5b21b6; }
+  .big{ font-size:30px; font-weight:800; line-height:1.3; max-width:1040px; }
+</style>
+</head>
+<body>
+
+<!-- 1 · COVER -->
+<section class="slide cover">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Product Guide</div>
+  <h1>How the team uses AltLeads CRM</h1>
+  <div class="sub">A plain-language walkthrough of the daily journey — for leadership approval and team onboarding.</div>
+  <div class="pill">The golden rule: the team does outreach + updates — never data entry</div>
+  <div class="meta"><span><b>For</b>&nbsp; Senior leadership & team</span><span><b>Date</b>&nbsp; 18 June 2026</span></div>
+</section>
+
+<!-- 2 · WHAT IT IS -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">In one line</div>
+  <h2 class="title">What AltLeads is</h2>
+  <div class="quote">Our own CRM where the outreach team works through companies & contacts, <span style="color:var(--brand);">calls and emails</span> them, and records what happened. The data is already loaded — the job is outreach + updates.</div>
+  <div class="three">
+    <div class="panel b"><h3>📋 Already loaded</h3><p>525 companies, 600+ contacts, 600+ leads — no one re-types data.</p></div>
+    <div class="panel g"><h3>📞 Outreach-first</h3><p>Call, email, log the outcome, set status, add a note, schedule a meeting.</p></div>
+    <div class="panel p"><h3>🧠 Captures everything</h3><p>Every touch is timestamped & attributed — building the memory that powers AI later.</p></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">2 / 10</span></div>
+</section>
+
+<!-- 3 · ROLES -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Who uses it</div>
+  <h2 class="title">Roles & what they do</h2>
+  <table class="t">
+    <thead><tr><th style="width:22%;">Role</th><th>What they do in AltLeads</th></tr></thead>
+    <tbody>
+      <tr><td><b>Agent / Sales Person</b></td><td>Work their assigned call-list. Call & email, log every outcome, set status, add notes, schedule meetings. <b>Update only — no creating or deleting records.</b></td></tr>
+      <tr><td><b>Team Lead / Manager</b></td><td>Everything an agent does, plus see their team's records, approve lead reports, and reassign work.</td></tr>
+      <tr><td><b>QC</b></td><td>Read everything for quality checks.</td></tr>
+      <tr><td><b>Admin</b></td><td>Full control: add users, manage option-lists & projects, maintain the data (incl. bulk updates), see everything.</td></tr>
+    </tbody>
+  </table>
+  <div class="panel b" style="margin-top:16px;"><h3>The golden rule</h3><p>The team's daily screen is about <b>updating</b>, not creating. Creating & importing data is an <b>admin</b> function — so reps never waste time on data entry.</p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">3 / 10</span></div>
+</section>
+
+<!-- 4 · A DAY (AGENT) -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">The daily journey</div>
+  <h2 class="title">A day in AltLeads — Agent</h2>
+  <div class="journey">
+    <div class="jr"><div class="n">1</div><div class="c"><h4>Log in & see your work</h4><p>crm.altleads.com → email + password. Dashboard shows what's pending; sidebar has Leads, Companies, Contacts, Meetings, Wish List, Approvals.</p></div></div>
+    <div class="jr"><div class="n">2</div><div class="c"><h4>Open your call-list</h4><p>Go to Contacts or Companies, pick your <b>project</b> — the list scopes to your work.</p></div></div>
+    <div class="jr"><div class="n">3</div><div class="c"><h4>Call or email</h4><p>Open the record → one click to Call or Email. <span style="color:var(--muted);">(click-to-call is part of the upcoming UX polish.)</span></p></div></div>
+    <div class="jr"><div class="n">4</div><div class="c"><h4>Log what happened</h4><p>Set the call outcome (Connected / No Answer / Interested…), the status (Hot / Warm / Cold…), and a note. It's added to the Activity timeline instantly.</p></div></div>
+    <div class="jr"><div class="n">5</div><div class="c"><h4>Move it forward</h4><p>Schedule a meeting or submit for approval — the right people get an email + in-app alert automatically. Then on to the next contact.</p></div></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">4 / 10</span></div>
+</section>
+
+<!-- 5 · THE RECORD -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">What a record holds</div>
+  <h2 class="title">Everything about a prospect, in one place</h2>
+  <div class="three">
+    <div class="panel b"><h3>🏢 Company</h3><ul><li>Name, website, industry, city, CIN, owner</li><li>Per-project Account Status, Feasibility, Decision Power</li><li>Its Contacts & its Leads</li><li>Full Activity history</li></ul></div>
+    <div class="panel b"><h3>👤 Contact</h3><ul><li>Name, designation, company (masked details)</li><li>Per-project Status, description, comments</li><li>Log-a-Call panel</li><li>Associated Leads & Colleagues</li></ul></div>
+    <div class="panel b"><h3>🎯 Lead</h3><ul><li>Full workspace: info + Activity / Report / Meeting tabs</li><li>Stage progress & approvals</li><li>Linked to its company & contact</li></ul></div>
+  </div>
+  <div class="panel g" style="margin-top:14px;"><h3>HubSpot-style associations</h3><p>Company ↔ Contacts ↔ Leads ↔ Meetings are all linked — open one and reach the rest. Create a lead from inside a contact or company, pre-filled.</p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">5 / 10</span></div>
+</section>
+
+<!-- 6 · PRIVACY -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Privacy by design</div>
+  <h2 class="title">Masking — protect the contact details</h2>
+  <div class="two">
+    <div class="panel g"><h3>Everyone can see</h3><ul><li>Contact name</li><li>Company & city</li><li>Notes & status</li></ul></div>
+    <div class="panel a"><h3>Only owner + manager + admin can see</h3><ul><li>Phone number</li><li>Email address</li><li>LinkedIn</li></ul></div>
+  </div>
+  <div class="panel b" style="margin-top:14px;"><h3>No confusion</h3><p>When a detail is restricted, the system shows it as <b>locked</b> (not just blank) — so people know it exists and who owns it. Enforced by the database, per project — not just hidden in the screen.</p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">6 / 10</span></div>
+</section>
+
+<!-- 7 · NOTIFICATIONS + MANAGER/ADMIN -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Hand-offs & oversight</div>
+  <h2 class="title">Nobody misses a hand-off</h2>
+  <div class="three">
+    <div class="panel b"><h3>🔔 Notifications</h3><p>Automatic email + in-app alerts on: lead assigned/reassigned, meeting scheduled/rescheduled/cancelled, approval requested/approved/sent-back. Each email links into the CRM.</p></div>
+    <div class="panel b"><h3>👔 Manager (Team Lead)</h3><p>Sees the team's pipeline. Approves or sends back lead reports with feedback. Reassigns work — the new owner is notified.</p></div>
+    <div class="panel b"><h3>🛠️ Admin</h3><p>Adds users & logins, manages pick-lists/projects/access, and maintains data in bulk — keeping 500+ companies current without burdening the team.</p></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">7 / 10</span></div>
+</section>
+
+<!-- 8 · COMING SOON -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">Where it's heading</div>
+  <h2 class="title">Coming soon — even easier, even smarter</h2>
+  <div class="fgrid">
+    <div class="fc"><div class="ico">🗓️</div><h4>Task Manager <span class="tag soon">soon</span></h4><p>Schedule a task → it becomes a ticket linked to the contact/company/lead (and any other records you attach). The reminder tells you what to do and where.</p></div>
+    <div class="fc"><div class="ico">▦</div><h4>Edit from the list <span class="tag soon">soon</span></h4><p>Change status, notes & call outcome straight from the list — spreadsheet-fast on busy days.</p></div>
+    <div class="fc"><div class="ico">📞</div><h4>One-click call & email <span class="tag soon">soon</span></h4><p>Dial or draft an email from the record in a single click.</p></div>
+    <div class="fc"><div class="ico">🧩</div><h4>Chrome extension <span class="tag next">next</span></h4><p>See & edit CRM contact details on an open LinkedIn profile — live.</p></div>
+    <div class="fc"><div class="ico">👀</div><h4>Client portal <span class="tag next">next</span></h4><p>Clients see what's scheduled / succeeded, plus a dashboard.</p></div>
+    <div class="fc"><div class="ico">🤖</div><h4>AI suggestions <span class="tag next">next</span></h4><p>Best time to call, what to say, and which companies to target this month.</p></div>
+  </div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">8 / 10</span></div>
+</section>
+
+<!-- 9 · WHY BETTER -->
+<section class="slide">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker">The point</div>
+  <h2 class="title">Why this beats the old system</h2>
+  <div class="two">
+    <div class="panel g"><h3>For the team</h3><ul><li>Spend time talking to prospects, not entering data.</li><li>Your call-list, your updates, your history — in one place.</li><li>Reminders & notifications so nothing slips.</li></ul></div>
+    <div class="panel b"><h3>For the business</h3><ul><li>Ours, not the vendor's — change it same-day, no fees.</li><li>One linked source of truth across all modules.</li><li>A compounding data advantage that powers future AI.</li></ul></div>
+  </div>
+  <div class="panel p" style="margin-top:14px;"><h3>The big idea</h3><p>Every update the team makes during outreach quietly builds an information base only we have — which becomes our biggest advantage.</p></div>
+  <div class="footer"><span>Amplior · Confidential</span><span class="pageno">9 / 10</span></div>
+</section>
+
+<!-- 10 · ROLLOUT -->
+<section class="slide cover" style="background:linear-gradient(135deg,#0b1f54 0%,#1A7EE8 60%,#0ea5e9 100%);">
+  <div class="brandmark"><span>Alt</span>Leads</div>
+  <div class="kicker" style="color:#cfe0ff;">Rollout</div>
+  <h1 style="font-size:42px;">Internal team first — then clients</h1>
+  <div class="sub" style="margin-bottom:10px;">Going live for the team needs only: logins, the outreach-only screen posture, an access check, and email sign-off.</div>
+  <div class="pill">Full detail in the Internal Launch Plan</div>
+  <div class="meta" style="margin-top:30px;"><span><b>Status</b>&nbsp; Built & live at crm.altleads.com</span><span><b>Next</b>&nbsp; Launch decisions → go-live</span></div>
+</section>
+
+</body>
+</html>

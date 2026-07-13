@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AltLeads Decision Board — visual decisions, newest at the bottom</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F6F8FB; color: #111827; padding: 40px; max-width: 1180px; margin: 0 auto; }
+  h1 { font-size: 24px; } .sub { color: #6B7280; font-size: 13px; margin: 4px 0 26px; }
+  .entry { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 22px; margin-bottom: 26px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .entry h2 { font-size: 17px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .status { font-size: 11px; font-weight: 700; padding: 3px 11px; border-radius: 11px; }
+  .decided { background: #ECFDF5; color: #047857; } .awaiting { background: #FFF7ED; color: #C2410C; }
+  .meta { font-size: 12px; color: #9CA3AF; margin: 4px 0 14px; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+  .opt { border: 1px solid #E5E7EB; border-radius: 10px; padding: 14px; width: 262px; font-size: 12.5px; position: relative; }
+  .opt h4 { font-size: 13px; margin-bottom: 6px; }
+  .opt .pro { color: #047857; } .opt .con { color: #B91C1C; }
+  .opt.picked { border: 2px solid #047857; background: #F0FDF4; }
+  .opt.picked::after { content: '✔ CHOSEN'; position: absolute; top: -10px; right: 10px; background: #047857; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9px; }
+  .opt.reco::after { content: '★ RECOMMENDED'; position: absolute; top: -10px; right: 10px; background: #1A7EE8; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9px; }
+  .note { font-size: 12.5px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 10px 13px; margin-top: 12px; }
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 10px 0; }
+  .step { background: #fff; border: 1px solid #D1D5DB; border-radius: 8px; padding: 8px 13px; font-size: 12px; text-align: center; }
+  .step b { display: block; font-size: 12.5px; }
+  .conn { width: 26px; height: 2px; background: #93C5FD; position: relative; }
+  .conn::after { content: '▶'; color: #93C5FD; position: absolute; right: -7px; top: -9px; font-size: 11px; }
+  /* full-fidelity deck styles (mock forms etc.) — entries embed the ORIGINAL visuals */
+  .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; padding: 18px; width: 320px; box-shadow: 0 1px 3px rgba(0,0,0,.05); position: relative; }
+  .card h3 { font-size: 14px; margin-bottom: 4px; }
+  .card.picked { border: 2px solid #047857; background: #F0FDF4; }
+  .card.picked::after { content: '✔ CHOSEN'; position: absolute; top: -10px; right: 10px; background: #047857; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 10px; margin-bottom: 10px; }
+  .bad { background: #FEF2F2; color: #B91C1C; } .good { background: #ECFDF5; color: #047857; }
+  .mock { border: 1px dashed #D1D5DB; border-radius: 8px; padding: 12px; font-size: 12.5px; background: #FAFAFA; }
+  .mock .q { margin: 6px 0; }
+  .pill { display: inline-block; border: 1px solid #D1D5DB; border-radius: 12px; padding: 2px 10px; margin: 2px 3px 2px 0; font-size: 11.5px; background: #fff; }
+  .pill.on { background: #1A7EE8; color: #fff; border-color: #1A7EE8; }
+  .yn { display: inline-block; width: 34px; text-align: center; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 11px; padding: 1px 0; margin-left: 6px; background: #fff; }
+  .yn.on { background: #047857; color: #fff; border-color: #047857; }
+  textarea.mockta { width: 100%; height: 44px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 11.5px; padding: 6px; resize: none; background: #fff; }
+  .why { font-size: 12px; color: #6B7280; margin-top: 10px; line-height: 1.5; }
+  .life { display: flex; gap: 0; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .stage { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px 16px; font-size: 12.5px; text-align: center; }
+  .stage b { display: block; font-size: 13px; }
+  .lifeconn { width: 34px; height: 2px; background: #93C5FD; position: relative; }
+  .lifeconn::after { content: '▶'; color: #93C5FD; position: absolute; right: -7px; top: -9px; font-size: 12px; }
+  table { border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
+  th, td { border: 1px solid #E5E7EB; padding: 8px 14px; text-align: left; }
+  th { background: #F3F4F6; }
+  h3.sect { font-size: 15px; margin: 18px 0 10px; }
+</style>
+</head>
+<body>
+<h1>📋 AltLeads Decision Board</h1>
+<div class="sub">One visual per decision · newest at the BOTTOM · chosen option gets the green ✔ · full detail lives in DECISIONS.md / the linked docs</div>
+
+<!-- ═══════════════ ENTRY 1 ═══════════════ -->
+<div class="entry">
+  <h2>1 · Meeting feedback model (D2) <span class="status decided">DECIDED 2026-07-03</span></h2>
+  <div class="meta">Captured as ADR-33 · tickets ALT-168/311 · originally shown as deck-feedback-models.html — full visual reproduced below with the chosen model updated</div>
+
+  <h3 class="sect">❌ TODAY — three different models for the same meeting</h3>
+  <div class="row">
+    <div class="card">
+      <h3>1 · CRM (spec / partially built)</h3>
+      <span class="tag bad">server-driven Yes/No questions</span>
+      <div class="mock">
+        <div style="font-weight:600; margin-bottom:6px;">Meeting outcome</div>
+        <span class="pill on">Successful</span><span class="pill">Reschedule</span><span class="pill">Cancel</span>
+        <div class="q">Was the decision-maker present? <span class="yn on">Yes</span><span class="yn">No</span></div>
+        <div class="q">Budget discussed? <span class="yn">Yes</span><span class="yn on">No</span></div>
+        <div class="q">Next step agreed? <span class="yn on">Yes</span><span class="yn">No</span></div>
+      </div>
+      <div class="why">Questions come from <code>feedback_question_master</code> — admin-editable per project. Structured = reportable.</div>
+    </div>
+    <div class="card">
+      <h3>2 · Client portal (already shipped)</h3>
+      <span class="tag bad">free-text + 3 options — DIFFERENT shape</span>
+      <div class="mock">
+        <div style="font-weight:600; margin-bottom:6px;">How did the meeting go?</div>
+        <span class="pill on">Good fit</span><span class="pill">Not a fit</span><span class="pill">Follow up</span>
+        <textarea class="mockta">Client seemed interested but wants pricing first...</textarea>
+      </div>
+      <div class="why">Free text can't be counted, filtered, or fed into the monthly "Amplior gave vs Sales filled" remarks report. Also silently resets after submit — no read-back, no lock.</div>
+    </div>
+    <div class="card">
+      <h3>3 · Sales portal (stub)</h3>
+      <span class="tag bad">"Coming soon" — nothing</span>
+      <div class="mock" style="display:flex;align-items:center;justify-content:center;height:120px;color:#9CA3AF;">Feedback page — coming soon</div>
+      <div class="why">Sales people (the ones whose feedback you most need) currently have no form at all.</div>
+    </div>
+  </div>
+
+  <h3 class="sect">✅ CHOSEN — one model, rendered in all three places <span class="status decided" style="vertical-align:middle;">with Ankit's Cancel/drop merge</span></h3>
+  <div class="row">
+    <div class="card picked" style="width:480px;">
+      <h3>The ONE feedback form (same everywhere: CRM · client portal · sales portal)</h3>
+      <span class="tag good">structured questions + ONE optional remark</span>
+      <div class="mock">
+        <div style="font-weight:600; margin-bottom:6px;">Meeting outcome</div>
+        <span class="pill on">Successful</span><span class="pill">Reschedule</span><span class="pill">Cancel/drop</span>
+        <div class="q">Was the decision-maker present? <span class="yn on">Yes</span><span class="yn">No</span></div>
+        <div class="q">Budget discussed? <span class="yn">Yes</span><span class="yn on">No</span></div>
+        <div class="q">Next step agreed? <span class="yn on">Yes</span><span class="yn">No</span></div>
+        <div class="q" style="margin-top:8px;">Optional remark
+          <textarea class="mockta">Wants pricing before committing to a pilot.</textarea>
+        </div>
+      </div>
+      <div class="why">Questions still admin-editable per project (<code>feedback_question_master</code>). The single optional remark keeps the human nuance WITHOUT losing the countable answers. Answers land in <code>feedback_answer</code> (1,435 rows already) — the remarks report keeps working. <b>Per Ankit's ruling, Cancel & Drop are merged into ONE outcome "Cancel/drop"</b> — one form, one DB model.</div>
+    </div>
+    <div class="card" style="width:480px;">
+      <h3>Lifecycle (who can change it, when)</h3>
+      <div class="life">
+        <div class="stage"><b>Draft</b>owner fills</div>
+        <div class="lifeconn"></div>
+        <div class="stage"><b>Submitted</b>read-only view<br>owner may still edit</div>
+        <div class="lifeconn"></div>
+        <div class="stage"><b>Meeting closed</b>🔒 LOCKED<br>admin-only override</div>
+      </div>
+      <div class="why">Fixes today's silent-reset bug (portal form wipes itself, no proof anything saved). Every edit is visible; after the meeting closes the record is evidence, not a draft. Notifications follow your Q5 matrix (TL gets "successful + feedback given").</div>
+      <table>
+        <tr><th>Surface</th><th>Today</th><th>After</th></tr>
+        <tr><td>CRM meeting page</td><td>model #1 (partial)</td><td>the ONE form</td></tr>
+        <tr><td>Client portal</td><td>model #2 (free text)</td><td>the ONE form</td></tr>
+        <tr><td>Sales portal</td><td>stub</td><td>the ONE form</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="note"><b>Ankit's decision (2026-07-03):</b> "yes, proposed is okay" + Cancel & Drop are the same → label "Cancel/drop", ONE form, one DB model. <b>Note for the Client-Portal agent:</b> the portal feedback form must use THIS model (handoff doc §9 updated). Recorded as ADR-33.</div>
+</div>
+
+<!-- ═══════════════ ENTRY 2 ═══════════════ -->
+<div class="entry">
+  <h2>2 · Users sending email FROM the CRM (ALT-503) <span class="status decided">DECIDED 2026-07-03 — E</span></h2>
+  <div class="meta">Researched 2026-07-03: how HubSpot / Zoho / Odoo actually do it → option D added, now recommended</div>
+  <div class="flow">
+    <div class="step"><b>One-time</b>3 DNS records on amplior.com<br>(SPF · DKIM · DMARC)</div><div class="conn"></div>
+    <div class="step"><b>Domain authenticated</b>inbox providers trust<br>mail we send for amplior.com</div><div class="conn"></div>
+    <div class="step"><b>Every user, zero setup</b>CRM sends From:<br>priya@amplior.com etc.</div><div class="conn"></div>
+    <div class="step"><b>Replies</b>go to the user's<br>real inbox</div>
+  </div>
+  <div class="row">
+    <div class="opt"><h4>D · Domain-authenticated sending</h4>The HubSpot/Zoho/Odoo model above. One DNS setup by you → ALL users send as themselves instantly. Sent mail logged in CRM (email_log) + on the record timeline.<div class="pro">✓ = PHASE 1 of E — building now</div></div>
+    <div class="opt picked"><h4>E · D + connected inboxes</h4><b>Phase 1 (now): domain-authenticated sending</b> (= all of D). <b>Phase 2 (after beta):</b> users optionally connect Gmail (OAuth) → sent mail also lands in their Sent folder + incoming replies sync onto the record (2-way).<div class="pro">✓ full HubSpot parity · ✓ Ankit: "right now domain auth & then later connected inbox"</div></div>
+    <div class="opt"><h4>A · Workspace delegation</h4>Google-only admin-wide send-as.<div class="con">✗ heavier setup, Google-locked — superseded by D</div></div>
+    <div class="opt"><h4>B · Per-user app passwords</h4>Each user pastes a Gmail app password.<div class="con">✗ 43 users × manual friction — worst option</div></div>
+  </div>
+  <div class="note"><b>Ankit's decision (2026-07-03): E — "right now domain auth & then later connected inbox."</b> Phase 1 = domain-authenticated sending (build now, ALT-503); Phase 2 = connected inboxes after beta (ALT-507). Plus his extension: <b>each project/client gets its OWN sending domain</b> — engineered as Entry 3 below (ADR-35).</div>
+</div>
+
+<!-- ═══════════════ ENTRY 3 ═══════════════ -->
+<div class="entry">
+  <h2>3 · Per-project sending domains (ALT-506, extends the E decision) <span class="status decided">BUILT 2026-07-03 — both 3a &amp; 3b work</span></h2>
+  <div class="meta">Ankit 2026-07-03: "for each project/client there will be separate domain… configure in setting & saved only for that project… assign domain to users." Benchmarked: HubSpot = unlimited authenticated domains, From must match one; Odoo = one server per domain + from_filter, the From address picks the server. Same pattern below.</div>
+
+  <h3 class="sect">How it works (engineered, benchmark-identical)</h3>
+  <div class="flow">
+    <div class="step"><b>Settings → Sending Domains</b>add a domain, get its<br>3 DNS records (SPF·DKIM·DMARC)</div><div class="conn"></div>
+    <div class="step"><b>Verified ✓</b>CRM checks DNS;<br>unverified domains CANNOT send</div><div class="conn"></div>
+    <div class="step"><b>Project setting</b>each project picks ONE<br>sending domain (saved on project)</div><div class="conn"></div>
+    <div class="step"><b>User sends on a lead</b>From = user's alias on<br>that project's domain</div><div class="conn"></div>
+    <div class="step"><b>Replies</b>Reply-To = user's real<br>@amplior.com inbox</div>
+  </div>
+
+  <h3 class="sect">Settings screens (what you'll configure)</h3>
+  <div class="row">
+    <div class="card" style="width:360px;">
+      <h3>Admin → Sending Domains (registry)</h3>
+      <span class="tag good">add once, reuse across projects</span>
+      <div class="mock">
+        <table style="margin:0;width:100%;">
+          <tr><th>Domain</th><th>Status</th></tr>
+          <tr><td>amplior.com</td><td>✓ Verified</td></tr>
+          <tr><td>outreach.hungerbox-leads.com</td><td>✓ Verified</td></tr>
+          <tr><td>clientx-connect.com</td><td>⏳ DNS pending</td></tr>
+        </table>
+      </div>
+      <div class="why">Each row shows its own 3 DNS records to copy. Whoever owns the domain (you or the client's IT) adds them; the CRM re-checks and flips to Verified. Sending is blocked until Verified — protects deliverability.</div>
+    </div>
+    <div class="card" style="width:360px;">
+      <h3>Project → Settings → Email</h3>
+      <span class="tag good">one field, saved per project</span>
+      <div class="mock">
+        <div class="q"><b>Project:</b> HungerBox</div>
+        <div class="q">Sending domain: <span class="pill on">outreach.hungerbox-leads.com</span></div>
+        <div class="q">Fallback: <span class="pill">amplior.com</span> (used if none set)</div>
+      </div>
+      <div class="why">Only Verified domains appear in the dropdown. Change it anytime — future sends switch instantly; past emails keep their original From in email_log (history is never rewritten).</div>
+    </div>
+    <div class="card" style="width:360px;">
+      <h3>Who sends as what (automatic)</h3>
+      <span class="tag good">zero per-user setup — the D promise kept</span>
+      <div class="mock">
+        <table style="margin:0;width:100%;">
+          <tr><th>User</th><th>HungerBox project</th></tr>
+          <tr><td>Priya (priya@amplior.com)</td><td>From: priya@outreach.hungerbox-leads.com</td></tr>
+          <tr><td>Rahul (rahul.k@amplior.com)</td><td>From: rahul.k@outreach.hungerbox-leads.com</td></tr>
+        </table>
+      </div>
+      <div class="why">Alias auto-derived from the user's email local-part on the project's domain. Display name = user's full name. Admin can override any single alias in Settings if a client wants specific names.</div>
+    </div>
+  </div>
+
+  <h3 class="sect">The one pick left (everything else above is engineered & final unless you object)</h3>
+  <div class="row">
+    <div class="opt picked"><h4>3a · Auto-alias (default) + 3b overrides — BOTH built</h4>User's local-part on the project domain, automatically (table above). Admin edits exceptions only.<div class="pro">✓ zero setup for 43 users · ✓ HubSpot-style</div></div>
+    <div class="opt"><h4>3b · Admin assigns every alias by hand</h4>Per user per project, typed manually in project settings.<div class="con">✗ 43 users × N projects of clicking — only worth it if clients dictate exact names</div></div>
+  </div>
+  <div class="note"><b>Resolved by building BOTH (Ankit: "build both with option in setting"):</b> 3a auto-alias is the default behaviour; the Admin → Email Domains tab has a "From-address overrides" section = 3b for exceptions. No pick needed anymore. Note: per-client domains need the domain OWNER to add the DNS records — client-owned = one-time ask to their IT; domains we buy = we add them in the registrar. Both supported by the same registry.</div>
+</div>
+
+<!-- ═══════════════ ENTRY 4 ═══════════════ -->
+<div class="entry">
+  <h2>4 · Email relay: WHO physically carries our mail (replaces Brevo idea) <span class="status awaiting">AWAITING YOUR PICK</span></h2>
+  <div class="meta">Ankit 2026-07-03: "brevo is not free… I want in such a way where I control everything, can we not do what brevo is doing?" — engineered 3 real options.</div>
+  <div class="row">
+    <div class="opt reco"><h4>S1 · Google Workspace SMTP relay — ₹0, you already own it</h4>You pay for Google Workspace (amplior.com) already. Workspace includes an <b>SMTP relay</b> (smtp-relay.gmail.com): our CRM hands mail to Google, Google delivers it as any user on YOUR Workspace domains. hungerbox.co.in gets added to your Workspace as a secondary domain (you own it → 10-min, free). SPF/DKIM = Google's own, enabled from your Admin console — <b>real DNS records, today, no new vendor</b>.<div class="pro">✓ ₹0 · ✓ you control it in YOUR admin console · ✓ Google-grade deliverability</div><div class="con">✗ daily caps (~10k relay recipients/day org-wide — far above beta needs)</div></div>
+    <div class="opt"><h4>S2 · Amazon SES — pay-per-use, no subscription</h4>No monthly fee ever: ₹~9 per 1,000 emails, prepaid nothing. Full API control, per-domain DKIM, bounce webhooks (feeds ALT-512 guardrails). Needs an AWS account + a one-time "production access" request (1-2 days).<div class="pro">✓ cheapest at scale · ✓ webhooks for bounce/complaint automation</div><div class="con">✗ new vendor account · ✗ pay-per-use (tiny, but not zero)</div></div>
+    <div class="opt"><h4>S3 · Self-host our own mail server (true "be Brevo")</h4>Run an open-source mail server (e.g. Postal) on our own droplet. Zero per-mail cost, absolute control.<div class="con">✗ DigitalOcean blocks port 25 (support ticket) · ✗ WE own IP warm-up, blocklist fights, reverse-DNS — a part-time ops job that hurts deliverability vs S1/S2 · not recommended until volume is huge</div></div>
+  </div>
+  <div class="note"><b>Recommendation: S1 now</b> (₹0, your own console = the control you asked for), S2 later if volume outgrows caps or we want bounce webhooks. Reply "email S1" / "S2" / "S3".</div>
+</div>
+
+<!-- ═══════════════ ENTRY 5 ═══════════════ -->
+<div class="entry">
+  <h2>5 · ALT-507: connect Gmail/Outlook inboxes (Phase 2 of your E decision) <span class="status awaiting">AWAITING GO</span></h2>
+  <div class="meta">What it is: each user clicks "Connect Google" once → CRM sends through THEIR mailbox → email lands in their real Sent folder + replies sync back onto the lead. Engineered 2026-07-03.</div>
+  <div class="flow">
+    <div class="step"><b>User: Connect Google</b>official permission popup<br>(OAuth — no passwords)</div><div class="conn"></div>
+    <div class="step"><b>CRM composes</b>same compose popup,<br>templates + attachments</div><div class="conn"></div>
+    <div class="step"><b>THEIR Gmail sends</b>lands in their real<br>Sent folder</div><div class="conn"></div>
+    <div class="step"><b>Replies sync back</b>onto the lead timeline<br>(2-way)</div>
+  </div>
+  <div class="row">
+    <div class="opt reco"><h4>Engineered shortcut: INTERNAL Google app — zero review wait</h4>Because ALL 43 users are @amplior.com on YOUR Workspace, we register the app as <b>Internal</b> in your Google Cloud console → <b>no Google verification review at all</b> (the weeks-long external review only applies to public apps). Works day 1.<div class="pro">✓ no verification clock · ✓ admin (you) controls the app · ✓ full Sent-folder + reply sync scopes allowed</div></div>
+    <div class="opt"><h4>Public app (external review)</h4>Only needed if non-amplior users (e.g. client sales teams on their own domains) must connect inboxes too. Google review: weeks + security assessment for read scopes.<div class="con">✗ slow — do later only if client-side users need it</div></div>
+  </div>
+  <div class="note"><b>Decision asked:</b> reply "507 go" to green-light the Internal-app build (needs ~15 min of your time once: create the Google Cloud project under your admin account, or give me delegated access). Sequenced after beta launch unless you say sooner.</div>
+</div>
+
+<!-- ═══════════════ ENTRY 6 ═══════════════ -->
+<div class="entry">
+  <h2>6 · REVISED: the unified sending engine (after Ankit's O365 fact) <span class="status decided">DECIDED 2026-07-03 ("rest ok") — awaiting domain→provider mapping</span></h2>
+  <div class="meta">Ankit 2026-07-03: users are @amplior.com but "send emails from their O365 outlook from their project's respective domain… it can be either Google Workspace or Office 365". That means REAL MAILBOXES exist on project domains → connected inboxes (entry 5) become the PRIMARY engine, not phase-2. Supersedes the S1-only framing of entry 4.</div>
+
+  <h3 class="sect">How one Send button picks its pipe (the routing ladder)</h3>
+  <div class="flow">
+    <div class="step"><b>1 · Connected mailbox?</b>user linked their O365 / Gmail<br>account for this project's domain</div><div class="conn"></div>
+    <div class="step"><b>YES → send via THEIR mailbox</b>Microsoft Graph / Gmail API ·<br>real Sent folder · replies sync</div>
+  </div>
+  <div class="flow">
+    <div class="step"><b>2 · else: org relay for that domain</b>Workspace SMTP relay (Google domains)<br>or M365 SMTP (Microsoft domains)</div><div class="conn"></div>
+    <div class="step"><b>3 · else: fallback</b>system mailbox +<br>Reply-To user (today's mode)</div>
+  </div>
+
+  <div class="row">
+    <div class="opt reco"><h4>Why this is the benchmark answer</h4>Exactly HubSpot's hybrid: 1:1 emails ride the user's own mailbox (best deliverability + Sent folder + reply sync); volume/system mail rides the relay. <b>Yes — ALT-507 and "our own mail system" CO-EXIST by design</b>; the ladder decides per send.<div class="pro">✓ per-user reputation isolation (your ALT-512 goal) comes free on rung 1</div></div>
+    <div class="opt"><h4>What changes in our build</h4>sending_domain gets a <b>provider</b> field (google | microsoft | relay). Users connect ONE mailbox per project domain (OAuth). Both apps are ZERO-REVIEW: Google = Internal app on your Workspace; Microsoft = single-tenant Entra app + your admin consent.</div>
+    <div class="opt"><h4>Self-hosting ruled out for now (your Dokploy/office-PC question)</h4>DO blocks port 25 at the NETWORK level — Dokploy can't help (it's software on the same blocked network). Office PC is worse: home/office ISPs block port 25, IP is dynamic + on residential blocklists, no reverse-DNS → ~100% spam. True self-host needs a port-25-friendly VPS (Hetzner/OVH) + weeks of IP warm-up + ongoing ops. Park as S3-later.</div>
+  </div>
+  <div class="note"><b>DECIDED (Ankit "rest ok"):</b> ladder = the spec; split into ALT-519 (Google app) / ALT-520 (Microsoft app) / ALT-521 (reply sync). Prep BUILT same day: provider field + user_mailbox_connection (tokens RLS-locked) + ladder skeleton in the send endpoint. <b>Still needed from Ankit:</b> which project domains are Google vs Microsoft. ⚠ <b>Consequence framing (his new standing rule):</b> the MOTIVE here is inbox placement + everything-captured. Rung-1 (own mailbox) is the strongest inbox-placement path; if we launched relay-only and reputation dipped, mail could land in spam and the motive would be lost despite the build — mitigations: verification gate (built), warm-up limits + auto-pause guardrails (ALT-512), Postmaster monitoring, and rung-1 rollout ASAP.</div>
+</div>
+
+<!-- ═══════════════ ENTRY 7 ═══════════════ -->
+<div class="entry">
+  <h2>7 · Sell the CRM to other companies (multi-tenancy) <span class="status decided">DECIDED 2026-07-06 — T2</span></h2>
+  <div class="meta">Ankit 2026-07-06: "invite a new user as separate total account… who can use CRM as their own… data we can control if they can see ours or not, but can deliver blank as well. We want to sell this to other companies." MOTIVE: a sellable product where customer data is isolated (blank start) and OUR data is never exposed.</div>
+  <div class="row">
+    <div class="opt"><h4>T1 · Instance-per-customer (fallback if T2 timeline pinches)</h4>Each customer gets their OWN copy: separate Supabase project (their own empty database + logins) + their own app on our Dokploy server (their subdomain, e.g. crm.customer.com). We already have the launch runbook — the CRM test instance was deployed exactly this way.<div class="pro">✓ sellable now, zero code changes · ✓ STRONGEST isolation — their data physically separate, ours untouchable · ✓ per-customer pricing/branding easy</div><div class="con">✗ ops per customer (updates deployed per instance) — fine to ~10-15 customers</div><div style="color:#B45309">⚠ Consequence-if-wrong: at 30+ customers, per-instance updates become a maintenance treadmill → mitigate by scripting fleet deploys via the Dokploy API (we already drive it by script); detect = time-per-release climbing.</div></div>
+    <div class="opt picked"><h4>T2 · True multi-tenant (one app, tenant_id everywhere)</h4>The HubSpot/Zoho architecture: ONE database, every table gets a tenant_id, RLS isolates every query. One deploy serves all customers.<div class="pro">✓ scales to thousands of customers · ✓ one update updates everyone</div><div class="con">✗ BIG retrofit: ~65 tables + every RLS policy + every query re-audited</div><div style="color:#B45309">⚠ Consequence-if-wrong: ONE missed tenant filter = customer A sees customer B's (or OUR) data — a trust-ending breach of the exact motive. This is why it needs a dedicated hardening phase, not a quick bolt-on.</div></div>
+    <div class="opt"><h4>T3 · Hybrid path (recommended sequence)</h4>T1 now for the first paying customers (revenue + learning, zero risk), and design every NEW feature tenant-aware; do the T2 retrofit only when customer count demands it, as a planned project.<div class="pro">✓ revenue first, architecture debt paid when justified</div><div style="color:#B45309">⚠ Consequence-if-wrong: if T2 never gets scheduled, we fossilize into unscalable per-instance ops → mitigate with an explicit customer-count trigger (e.g. "at 8 paying customers, start T2").</div></div>
+  </div>
+  <div class="note"><b>Ankit's decision (2026-07-06): T2 — "similar to Zoho/HubSpot, until it becomes issue. Plan for same."</b> ADR-36. Phased plan in ALT-522: P0 tenant registry + every NEW table born with tenant_id · P1 retrofit tenant_id + RLS across existing ~65 tables (staged, table-by-table, throwaway-login validated) · P2 tenant provisioning/invite flow (blank org, admin seed) · P3 tenant-scoped settings/branding/billing hooks. ⚠ Standing consequence: one missed tenant filter = cross-customer data breach — every P1 table ships with an isolation test, no exceptions. Sequenced AFTER internal beta stabilizes (it must not destabilize launch).</div>
+</div>
+
+<!-- Add new entries below this line -->
+</body>
+</html>

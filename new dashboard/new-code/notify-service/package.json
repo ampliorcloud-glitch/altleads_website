@@ -1,0 +1,19 @@
+{
+  "name": "amplior-notify-service",
+  "version": "1.0.0",
+  "description": "Email notification service for Amplior CRM",
+  "main": "server.js",
+  "scripts": {
+    "build": "cd ../web && npm install && npm run build",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.0",
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.4.0",
+    "@supabase/supabase-js": "^2.49.4"
+  }
+}
