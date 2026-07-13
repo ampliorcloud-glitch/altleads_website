@@ -1,9 +1,8 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
     try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
         const body = await request.json();
         const { name, email, phone, company, message, formType, sqlRequired, teamSize } = body;
 
@@ -14,6 +13,20 @@ export async function POST(request) {
                 { status: 400 }
             );
         }
+
+        // Configure Nodemailer transporter
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
+
+        // The from email address
+        const fromEmail = process.env.SMTP_FROM_EMAIL || '"AltLeads" <noreply@altleads.com>';
 
         // Build the detail rows based on form type
         const isBookDemo = formType === "book-demo";
@@ -84,20 +97,17 @@ export async function POST(request) {
         </div>`;
 
         // ── Send internal team notification ──────────────────────────
-        await resend.emails.send({
-            from: "AltLeads <noreply@altleads.com>",
-            to: ["hemalb@amplior.com"],
+        await transporter.sendMail({
+            from: fromEmail,
+            to: "hemalb@amplior.com",
             subject: internalSubject,
             html: internalHtml,
         });
 
         // ── Send user email ────────────────────────────────────────
-        // TO: form filler
-        // CC: contact@altleads.com (disabled for testing — uncomment for production)
-        await resend.emails.send({
-            from: "AltLeads <noreply@altleads.com>",
-            to: [email],
-            // cc: ["contact@altleads.com"],   // ← uncomment for production
+        await transporter.sendMail({
+            from: fromEmail,
+            to: email,
             subject: userSubject,
             html: userHtml,
         });
