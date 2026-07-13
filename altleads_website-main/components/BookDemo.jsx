@@ -13,9 +13,9 @@ const perks = [
 ];
 
 const inputClass =
-  "w-full bg-transparent border-b-2 border-slate-200 dark:border-white/15 focus:border-blue-500 dark:focus:border-blue-400 outline-none py-3.5 text-base font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-colors duration-300";
+  "w-full bg-transparent border-b-2 border-slate-900 dark:border-white/30 focus:border-blue-600 dark:focus:border-blue-400 outline-none py-3.5 text-base font-medium text-black dark:text-white placeholder:text-slate-600 dark:placeholder:text-slate-300 transition-colors duration-300";
 
-const labelClass = "block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2";
+const labelClass = "block text-xs font-bold text-black dark:text-white uppercase tracking-widest mb-2";
 
 export default function BookDemo() {
   const [status, setStatus] = useState("idle");
@@ -102,7 +102,7 @@ export default function BookDemo() {
             transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
             className="flex flex-col gap-6 p-8 md:p-10 rounded-3xl"
           >
-            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">What to expect</p>
+            <p className="text-xs font-bold text-black dark:text-white uppercase tracking-widest mb-2">What to expect</p>
             <div className="flex flex-col gap-7">
               {perks.map(({ icon: Icon, title, desc }, i) => (
                 <motion.div
@@ -117,8 +117,8 @@ export default function BookDemo() {
                     <Icon className="w-4.5 h-4.5 text-blue-500" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900 dark:text-white text-sm mb-0.5">{title}</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{desc}</p>
+                    <p className="font-bold text-black dark:text-white text-sm mb-0.5">{title}</p>
+                    <p className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed">{desc}</p>
                   </div>
                 </motion.div>
               ))}
@@ -179,7 +179,7 @@ export default function BookDemo() {
                   {status === "sending" ? "Sending…" : status === "error" ? "Try Again" : "Book My Demo"}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider text-center">
+                <p className="text-slate-800 dark:text-slate-200 text-xs font-bold uppercase tracking-wider text-center">
                   No credit card required<br />Response within 2 hours
                 </p>
               </div>
