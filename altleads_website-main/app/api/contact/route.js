@@ -1,13 +1,42 @@
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
 
+// Where new website leads go (Ankit, 12 Nov 2026): Mohit only, data team in BCC.
+const LEADS_TO = process.env.LEADS_TO || "mohit@amplior.com";
+const LEADS_BCC = process.env.LEADS_BCC || "data.team@amplior.com";
+
+// Stop one sender flooding the form (and our mail sender's reputation).
+const hits = new Map();
+function tooMany(ip) {
+    const now = Date.now();
+    const recent = (hits.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
+    recent.push(now);
+    hits.set(ip, recent);
+    if (hits.size > 5000) hits.clear();
+    return recent.length > 5;
+}
+
+const esc = (v) =>
+    String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
 export async function POST(request) {
     try {
-        const body = await request.json();
-        const { name, email, phone, company, message, formType, sqlRequired, teamSize } = body;
+        const raw = await request.json();
+        const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+        if (raw.website) {
+            // Hidden trap field: real people never fill it.
+            return NextResponse.json({ success: true });
+        }
+        if (tooMany(ip)) {
+            return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+        }
+        const email = String(raw.email || "").trim();
+        const { name, phone, company, message, formType, sqlRequired, teamSize } = Object.fromEntries(
+            ["name", "phone", "company", "message", "formType", "sqlRequired", "teamSize"].map((k) => [k, esc(raw[k])])
+        );
 
         // Validate required fields
-        if (!email || !phone || !company || !name) {
+        if (!email || !phone || !company || !name || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)) {
             return NextResponse.json(
                 { error: "Missing required fields" },
                 { status: 400 }
@@ -46,7 +75,7 @@ export async function POST(request) {
 
         const detailRows = [
             `<tr><td style="padding:12px 16px;font-weight:600;color:#334155;border-bottom:1px solid #f1f5f9;width:180px;">Full Name</td><td style="padding:12px 16px;color:#0f172a;border-bottom:1px solid #f1f5f9;">${name}</td></tr>`,
-            `<tr><td style="padding:12px 16px;font-weight:600;color:#334155;border-bottom:1px solid #f1f5f9;">Email</td><td style="padding:12px 16px;color:#0f172a;border-bottom:1px solid #f1f5f9;"><a href="mailto:${email}" style="color:#6366f1;">${email}</a></td></tr>`,
+            `<tr><td style="padding:12px 16px;font-weight:600;color:#334155;border-bottom:1px solid #f1f5f9;">Email</td><td style="padding:12px 16px;color:#0f172a;border-bottom:1px solid #f1f5f9;"><a href="mailto:${esc(email)}" style="color:#6366f1;">${esc(email)}</a></td></tr>`,
             `<tr><td style="padding:12px 16px;font-weight:600;color:#334155;border-bottom:1px solid #f1f5f9;">Phone</td><td style="padding:12px 16px;color:#0f172a;border-bottom:1px solid #f1f5f9;"><a href="tel:${phone}" style="color:#6366f1;">${phone}</a></td></tr>`,
             `<tr><td style="padding:12px 16px;font-weight:600;color:#334155;border-bottom:1px solid #f1f5f9;">Company</td><td style="padding:12px 16px;color:#0f172a;border-bottom:1px solid #f1f5f9;">${company}</td></tr>`,
         ];
@@ -111,7 +140,9 @@ export async function POST(request) {
         // ── Send internal team notification ──────────────────────────
         await transporter.sendMail({
             from: fromEmail,
-            to: "hemalb@amplior.com",
+            to: LEADS_TO,
+            bcc: LEADS_BCC,
+            replyTo: email,
             subject: internalSubject,
             html: internalHtml,
         });
