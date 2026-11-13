@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Send, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import Turnstile from "./Turnstile";
 
 export default function ContactForm() {
     const [status, setStatus] = useState("idle"); // idle, sending, success, error
@@ -19,6 +20,7 @@ export default function ContactForm() {
             company: formData.get("company"),
             message: formData.get("message"),
             formType: "contact",
+            turnstileToken: formData.get("cf-turnstile-response"),
         };
 
         try {
@@ -32,9 +34,11 @@ export default function ContactForm() {
                 setStatus("success");
             } else {
                 setStatus("error");
+                window.turnstile?.reset();
             }
         } catch {
             setStatus("error");
+            window.turnstile?.reset();
         }
     };
 
@@ -116,6 +120,8 @@ export default function ContactForm() {
                     className="w-full px-6 py-4 bg-[#f8fafc] border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium resize-none"
                 ></textarea>
             </div>
+
+            <Turnstile />
 
             <button
                 disabled={status === "sending"}

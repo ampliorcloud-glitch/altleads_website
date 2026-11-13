@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, Users, MessageSquare, Wrench, Shield } from "lucide-react";
 import { useState } from "react";
 import SectionWrapper from "./SectionWrapper";
+import Turnstile from "./Turnstile";
 
 const perks = [
   { icon: Users, title: "Personalised Walkthrough", desc: "Tailored to your industry and team size." },
@@ -33,12 +34,15 @@ export default function BookDemo() {
       teamSize: formData.get("teamSize"),
       message: formData.get("message"),
       formType: "book-demo",
+      turnstileToken: formData.get("cf-turnstile-response"),
     };
     try {
       const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       setStatus(res.ok ? "success" : "error");
+      if (!res.ok) window.turnstile?.reset();
     } catch {
       setStatus("error");
+      window.turnstile?.reset();
     }
   };
 
@@ -170,6 +174,7 @@ export default function BookDemo() {
                   className={`${inputClass} resize-none`}
                 />
               </div>
+              <Turnstile />
               <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
                 <button
                   type="submit"

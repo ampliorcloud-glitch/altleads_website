@@ -30,6 +30,14 @@ export async function POST(request) {
         if (tooMany(ip)) {
             return NextResponse.json({ error: "Too many requests" }, { status: 429 });
         }
+        // Cloudflare captcha must pass (fails closed if the secret is missing).
+        const check = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+            method: "POST",
+            body: new URLSearchParams({ secret: process.env.TURNSTILE_SECRET_KEY || "", response: String(raw.turnstileToken || ""), remoteip: ip }),
+        }).then((r) => r.json()).catch(() => ({ success: false }));
+        if (!check.success) {
+            return NextResponse.json({ error: "Please complete the security check" }, { status: 400 });
+        }
         const email = String(raw.email || "").trim();
         const { name, phone, company, message, formType, sqlRequired, teamSize } = Object.fromEntries(
             ["name", "phone", "company", "message", "formType", "sqlRequired", "teamSize"].map((k) => [k, esc(raw[k])])
